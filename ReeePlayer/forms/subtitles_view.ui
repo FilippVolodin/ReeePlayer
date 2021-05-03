@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SubtitlesView</class>
+ <widget class="QWidget" name="SubtitlesView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>622</width>
+    <height>99</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SubtitlesView</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="SubtitlesTextEdit" name="edtSubtitles">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <family>Verdana</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="tabChangesFocus">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <action name="actTest">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>actTest</string>
+   </property>
+   <property name="toolTip">
+    <string>actTest</string>
+   </property>
+  </action>
+  <action name="btnShowSubtitle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/SubtitlesView/hide_subtitle</normaloff>
+     <normalon>:/SubtitlesView/show_subtitle</normalon>:/SubtitlesView/hide_subtitle</iconset>
+   </property>
+   <property name="text">
+    <string>btnShowSubtitle</string>
+   </property>
+  </action>
+  <action name="btnShowSubtitles">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/SubtitlesView/hide_subtitles</normaloff>
+     <normalon>:/SubtitlesView/show_subtitles</normalon>:/SubtitlesView/hide_subtitles</iconset>
+   </property>
+   <property name="text">
+    <string>btnShowSubtitles</string>
+   </property>
+  </action>
+  <action name="btnSlowDown">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/SubtitlesView/slow_down</normaloff>:/SubtitlesView/slow_down</iconset>
+   </property>
+   <property name="text">
+    <string>btnSlowDown</string>
+   </property>
+  </action>
+  <action name="btnSpeedUp">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/SubtitlesView/speed_up</normaloff>:/SubtitlesView/speed_up</iconset>
+   </property>
+   <property name="text">
+    <string>btnSpeedUp</string>
+   </property>
+  </action>
+  <action name="btnInsertLeft">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/SubtitlesView/insert_prev</normaloff>:/SubtitlesView/insert_prev</iconset>
+   </property>
+   <property name="text">
+    <string>btnInsertLeft</string>
+   </property>
+  </action>
+  <action name="btnInsertRight">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/SubtitlesView/insert_next</normaloff>:/SubtitlesView/insert_next</iconset>
+   </property>
+   <property name="text">
+    <string>btnInsertRight</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>SubtitlesTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>subtitles_text_edit.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="mainwindow.qrc"/>
+ </resources>
+ <connections/>
+</ui>

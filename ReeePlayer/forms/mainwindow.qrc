@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/MainWindow">
+        <file alias="reload">Resources/refresh.png</file>
+        <file alias="delete">Resources/delete.png</file>
+        <file alias="next">Resources/next.png</file>
+        <file alias="prev">Resources/previous.png</file>
+        <file alias="add_clip">Resources/add_clip.png</file>
+        <file alias="cancel_clip">Resources/cancel_clip.png</file>
+        <file alias="save_clip">Resources/save_clip.png</file>
+        <file alias="pause">Resources/pause.png</file>
+        <file alias="play">Resources/play.png</file>
+        <file alias="repeat_clips">Resources/repeat_clips.png</file>
+        <file alias="open_project">Resources/open_project.png</file>
+    </qresource>
+    <qresource prefix="/SpinBox">
+        <file alias="next_clip">Resources/next_clip.png</file>
+        <file alias="prev_clip">Resources/prev_clip.png</file>
+    </qresource>
+    <qresource prefix="/SubtitlesView">
+        <file alias="insert_next">Resources/insert_next.png</file>
+        <file alias="insert_prev">Resources/insert_prev.png</file>
+        <file alias="hide_subtitle">Resources/hide_subtitle.png</file>
+        <file alias="hide_subtitles">Resources/hide_subtitles.png</file>
+        <file alias="show_subtitle">Resources/show_subtitle.png</file>
+        <file alias="show_subtitles">Resources/show_subtitles.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PlayerWindow</class>
+ <widget class="QMainWindow" name="PlayerWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>834</width>
+    <height>739</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+    <property name="topMargin">
+     <number>2</number>
+    </property>
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+    <property name="bottomMargin">
+     <number>2</number>
+    </property>
+    <item>
+     <widget class="VideoWidget" name="videoWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>5</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>100</height>
+       </size>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::TabFocus</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="playbackLayout">
+      <property name="leftMargin">
+       <number>3</number>
+      </property>
+      <item>
+       <widget class="QToolButton" name="btnPlay">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border : none</string>
+        </property>
+        <property name="text">
+         <string>Play</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="slider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16</height>
+         </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QSlider::groove:horizontal {
+    background: red;
+    position: absolute; /* absolutely position 4px from the left and right of the widget. setting margins on the widget should work too... */
+    left: 4px; right: 4px;
+	top: 2px; bottom: 4px;
+}
+
+QSlider::handle:horizontal {
+    height: 20px;
+    background: white; /*DarkOrange;*/
+    margin: 0px -4px; /* expand outside the groove */
+}
+
+QSlider::add-page:horizontal {
+    background: lightgray;
+}
+
+QSlider::sub-page:horizontal {
+    background: darkgreen; /*CornflowerBlue;*/
+}</string>
+        </property>
+        <property name="pageStep">
+         <number>60000</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="invertedAppearance">
+         <bool>false</bool>
+        </property>
+        <property name="invertedControls">
+         <bool>false</bool>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksBelow</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblTime">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>0:00 / 0:00</string>
+        </property>
+        <property name="margin">
+         <number>3</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>834</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget1">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="windowTitle">
+    <string>Subtitles 1</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="SubtitlesView" name="edtSubtitles1" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>70</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget2">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="windowTitle">
+    <string>Subtitles 2</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="SubtitlesView" name="edtSubtitles2" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>70</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actPlayPause">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/play</normaloff>
+     <normalon>:/MainWindow/pause</normalon>:/MainWindow/play</iconset>
+   </property>
+   <property name="text">
+    <string>Play/Pause</string>
+   </property>
+   <property name="toolTip">
+    <string>Play/Pause</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
+  </action>
+  <action name="actAddClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/add_clip</normaloff>:/MainWindow/add_clip</iconset>
+   </property>
+   <property name="text">
+    <string>Add Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Return</string>
+   </property>
+  </action>
+  <action name="actSaveClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/save_clip</normaloff>:/MainWindow/save_clip</iconset>
+   </property>
+   <property name="text">
+    <string>Save Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Save Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Return</string>
+   </property>
+  </action>
+  <action name="actCancelClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/cancel_clip</normaloff>:/MainWindow/cancel_clip</iconset>
+   </property>
+   <property name="text">
+    <string>Cancel Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Cancel Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actRemoveClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/delete</normaloff>:/MainWindow/delete</iconset>
+   </property>
+   <property name="text">
+    <string>Remove Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actPrevClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/prev</normaloff>:/MainWindow/prev</iconset>
+   </property>
+   <property name="text">
+    <string>Prev Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Prev Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Backspace</string>
+   </property>
+  </action>
+  <action name="actNextClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/next</normaloff>:/MainWindow/next</iconset>
+   </property>
+   <property name="text">
+    <string>Next Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Next Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Return</string>
+   </property>
+  </action>
+  <action name="actRepeatClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/play</normaloff>:/MainWindow/play</iconset>
+   </property>
+   <property name="text">
+    <string>Repeat Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Repeat Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VideoWidget</class>
+   <extends>QWidget</extends>
+   <header>video_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SubtitlesView</class>
+   <extends>QWidget</extends>
+   <header>subtitles_view.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="mainwindow.qrc"/>
+  <include location="../mainwindow.qrc"/>
+ </resources>
+ <connections/>
+</ui>

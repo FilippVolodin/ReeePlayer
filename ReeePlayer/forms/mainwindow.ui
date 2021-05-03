@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindowClass</class>
+ <widget class="QMainWindow" name="MainWindowClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>933</width>
+    <height>759</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ReeePlayer</string>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>16</width>
+    <height>16</height>
+   </size>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="VideoTreeView" name="videos">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="acceptDrops">
+        <bool>true</bool>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+       </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::InternalMove</enum>
+       </property>
+       <property name="defaultDropAction">
+        <enum>Qt::MoveAction</enum>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="edtSearchedText"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnFindClips">
+            <property name="text">
+             <string>Find Clips</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableView" name="tblClips"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>933</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actOpenDir"/>
+    <addaction name="actReloadDir"/>
+    <addaction name="separator"/>
+    <addaction name="actExit"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="iconSize">
+    <size>
+     <width>20</width>
+     <height>20</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actOpenDir"/>
+   <addaction name="actReloadDir"/>
+   <addaction name="separator"/>
+   <addaction name="actRepeatClips"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actOpenDir">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/open_project</normaloff>:/MainWindow/open_project</iconset>
+   </property>
+   <property name="text">
+    <string>Open Directory</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Directory</string>
+   </property>
+  </action>
+  <action name="actRepeatClips">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/repeat_clips</normaloff>:/MainWindow/repeat_clips</iconset>
+   </property>
+   <property name="text">
+    <string>Repeat Clips</string>
+   </property>
+   <property name="toolTip">
+    <string>Repeat Clips</string>
+   </property>
+  </action>
+  <action name="actReloadDir">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/reload</normaloff>:/MainWindow/reload</iconset>
+   </property>
+   <property name="text">
+    <string>Reload Directory</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload Directory</string>
+   </property>
+  </action>
+  <action name="actExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="toolTip">
+    <string>Exit</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>VideoTreeView</class>
+   <extends>QTreeView</extends>
+   <header>video_tree_view.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="mainwindow.qrc"/>
+ </resources>
+ <connections/>
+</ui>
