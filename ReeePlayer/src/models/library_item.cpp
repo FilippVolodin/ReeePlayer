@@ -187,14 +187,11 @@ Qt::ItemFlags LibraryItem::flags(int column) const
 void LibraryItem::expand(bool value)
 {
     m_expanded = value;
-    //QString expanded = value ? "true" : "false";
-    //domNode.attributes().namedItem("expanded").setNodeValue(expanded);
 }
 
 bool LibraryItem::is_expanded() const
 {
     return m_expanded;
-    //return domNode.attributes().namedItem("expanded").nodeValue() == "true";
 }
 
 int LibraryItem::get_clips_count(bool force) const
@@ -309,12 +306,6 @@ void LibraryItem::find_clips(QStringView str, int max_clips, std::vector<Clip*>&
         for (Clip* clip : file_clips)
         {
             const std::vector<QString>& texts = clip->get_subtitles();
-            //std::search(texts.begin(), texts.end(),
-            //    [str](const QString& text)
-            //    {
-            //        return text.contains(str, Qt::CaseInsensitive);
-            //    });
-
             for (const QString& text : texts)
             {
                 if (str.isEmpty() || text.contains(str, Qt::CaseInsensitive))

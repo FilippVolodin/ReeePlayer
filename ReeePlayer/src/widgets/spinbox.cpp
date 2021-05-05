@@ -55,7 +55,3 @@ void SpinBox::on_btn_inc_clicked()
     bool ctrl = qApp->keyboardModifiers() & Qt::ControlModifier;
     stepBy(ctrl ? 1 : 4);
 }
-
-//void SpinBox::on_value_changed(int)
-//{
-//}

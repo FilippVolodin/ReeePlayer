@@ -1129,7 +1129,6 @@ void WatchingClipState::activate()
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
     {
         m_pw->m_subtitle_views[i]->set_editable(true);
-        //m_pw->m_subtitle_views[i]->set_show_always(true);
         QVariant v = m_pw->m_app->get_setting("gui",
             QString(SHOW_SUBTITLES_KEY).arg(i).arg("watching_clip"));
         m_pw->m_subtitle_views[i]->set_show_always(v.isNull() ? true : v.toBool());

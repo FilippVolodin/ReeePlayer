@@ -26,8 +26,6 @@ private:
     void on_btn_dec_clicked();
     void on_btn_inc_clicked();
 
-    //void on_value_changed(int);
-
     Ui::SpinBox ui;
 };
 

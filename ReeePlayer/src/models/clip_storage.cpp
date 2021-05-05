@@ -134,16 +134,12 @@ const Clips& File::get_clips() const
 void File::add_clip(Clip* clip)
 {
     clip->set_file(this);
-    //m_clips.push_back(clip);
     m_clips.insert(clip);
     m_library->clip_added(clip);
 }
 
 void File::remove_clip(Clip* clip)
 {
-    //m_clips.erase(std::remove(m_clips.begin(), m_clips.end(), clip), m_clips.end());
-    //m_clips.erase(clip);
-
     for (auto it = m_clips.begin(); it != m_clips.end(); ++it)
     {
         if (*it == clip)
@@ -184,9 +180,3 @@ void File::set_length(int length)
         get_library()->file_changed(this);
     }
 }
-
-//void File::sort_clips()
-//{
-//    auto less = [](const Clip* l, const Clip* r) -> bool { return l->get_begin() < r->get_begin(); };
-//    std::sort(m_clips.begin(), m_clips.end(), less);
-//}

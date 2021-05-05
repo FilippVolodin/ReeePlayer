@@ -35,16 +35,6 @@ signals:
     void clip_removed_sig(Clip*);
 private:
     LibraryItem* scan_folder(const QString& path, bool is_root = true);
-    //void get_file_set(const LibraryItem* item, QSet<QString>& files) const;
-    //void get_file_map(const LibraryItem* item,
-    //    QMap<int, QString>& files) const;
-    //void get_map(const LibraryItem* item,
-    //    QMap<int, const LibraryItem*>& map) const;
-    //void get_max_id(const LibraryItem* item, int& max) const;
-
-    //void fill_maps(const LibraryItem* item);
-    //void fill_maps(const std::vector<LibraryItem*> item);
-    //void clear_maps(const LibraryItem* item);
 
     File* load_file(const QString&);
     void save_file(const File*) const;

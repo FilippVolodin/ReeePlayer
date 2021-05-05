@@ -40,12 +40,10 @@ target_sources(ReeePlayer PRIVATE
 target_sources(ReeePlayer PRIVATE
 	src/models/app.cpp
 	src/models/clip_storage.cpp
-	src/models/file_manager.cpp
 	src/models/library.cpp
 	src/models/library_item.cpp
 	src/models/session.cpp
 	src/models/repetition_model.cpp
-	src/models/subtitles.cpp
 )
 	
 target_include_directories(ReeePlayer PRIVATE include src)

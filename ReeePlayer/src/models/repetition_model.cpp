@@ -48,11 +48,8 @@ float get_next_level(int64_t elapsed, float level)
         return 1.0;
 
     float next;
-    //int64_t elapsed = cur_time - clip_time;
     BestRepInterval rep_int = get_repetititon_interval(level);
 
-    //int64_t ri = get_repetititon_interval(level);
-    //int64_t ri_max = ri * 1.5 + 86400 * 1.5;
     if (elapsed < rep_int.begin)
     {
         float x = (float)elapsed / rep_int.begin;
@@ -60,12 +57,7 @@ float get_next_level(int64_t elapsed, float level)
         float f = 1.0 / (1.0 + qExp((0.5 - x) * 10));
         f = (f - 0.00669285092) * 1.01356730981;
         next = level + f;
-        //next = level + 1.0 / (1.0 + qExp(-(x - 0.65) * 14));
     }
-    //else if (elapsed < rep_int.end)
-    //{
-    //    next = level + 1;
-    //}
     else
     {
         constexpr float BASE3 = 1.61803399f;
@@ -87,7 +79,6 @@ float get_priority(int64_t now, int64_t time, float level)
     int64_t elapsed = now - (time + rep_int.begin);
     if (elapsed >= 0)
     {
-        //return 1 / qExp((float)elapsed / 86400);
         return 1 / qExp(level);
     }
 

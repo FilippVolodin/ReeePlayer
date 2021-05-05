@@ -32,17 +32,11 @@ public:
 
     SubsCollection get_subtitles(const QString& video_file);
     void save_subtitle_priority(const QString& video_file, const SubsCollection&);
-            
-    //void add_clip(int file_id, int begin, int end,
-    //    std::vector<QString>& subtitles);
-    //void clip_repeated(int clip_id, int begin, int end);
-    //void update_text(int clip_id, int text_id, const QString& text);
 private:
     SubsCollection get_subtitles(const QString& video_file, const QString& priorities);
 
     libvlc_instance_t* m_vlc_inst = nullptr;
 
-    //std::unique_ptr<Project> m_project;
     std::unique_ptr<QSettings> m_settings;
     std::unique_ptr<Library> m_library;
 };

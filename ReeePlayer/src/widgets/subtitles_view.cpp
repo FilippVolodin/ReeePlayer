@@ -35,8 +35,6 @@ SubtitlesView::SubtitlesView(QWidget *parent)
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     toolbar->addWidget(spacer);
 
-    //toolbar->addAction(ui.btnSlowDown);
-    //toolbar->addAction(ui.btnSpeedUp);
     m_sb_sync = new QSpinBox(this);
     m_sb_sync->setMinimum(-1000000);
     m_sb_sync->setMaximum(1000000);
@@ -134,16 +132,9 @@ void SubtitlesView::clear()
     ui.edtSubtitles->clear();
 }
 
-//void SubtitlesView::set_read_only(bool value)
-//{
-//    ui.edtSubtitles->setReadOnly(value);
-//    update_background();
-//}
-
 void SubtitlesView::set_editable(bool value)
 {
     m_is_editable = value;
-    //update_text_visibility();
     ui.edtSubtitles->setReadOnly(!m_is_visible || !m_is_editable);
     update_background();
 }
@@ -271,20 +262,14 @@ void SubtitlesView::update_text_visibility()
     if (m_is_visible)
     {
         ui.edtSubtitles->setPlainText(m_text);
-        //ui.edtSubtitles->setReadOnly(false);
     }
     else
     {
-        //if (m_is_visible)
-        //    m_text = ui.edtSubtitles->toPlainText();
-
         if (!m_text.isEmpty())
             ui.edtSubtitles->setPlainText("...");
         else
             ui.edtSubtitles->clear();
-        //ui.edtSubtitles->setReadOnly(true);
     }
-    //m_is_visible = ui.btnShowSubtitle->isChecked();
     ui.edtSubtitles->setReadOnly(!m_is_visible || !m_is_editable);
     update_background();
 }
@@ -292,7 +277,7 @@ void SubtitlesView::update_text_visibility()
 void SubtitlesView::update_background()
 {
     QPalette p = ui.edtSubtitles->palette();
-    QColor color(0xFAFAFA); //= p.color(QPalette::Disabled, QPalette::Base);
+    QColor color(0xFAFAFA);
     bool can_focused = false;
     if (ui.edtSubtitles->isEnabled() && !ui.edtSubtitles->isReadOnly())
     {

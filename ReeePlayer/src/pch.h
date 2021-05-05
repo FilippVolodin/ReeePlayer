@@ -3,6 +3,7 @@
 
 #include <windows.h>
 
+#include <QtWidgets/QApplication>
 #include <QtGlobal>
 #include <QWidget>
 #include <QToolBar>
@@ -35,8 +36,6 @@
 #include <QSpinBox>
 #include <QLineEdit>
 
-//#include <QSetting>
-
 __pragma(warning(push))
 __pragma(warning(disable:4127))
 #include <QtSql>
@@ -53,7 +52,5 @@ typedef SSIZE_T ssize_t;
 #endif
 
 #include <vlc/vlc.h>
-
-//using  int64_t;
 
 #endif //PCH_H

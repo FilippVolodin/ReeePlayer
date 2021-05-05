@@ -1,7 +1,6 @@
 #ifndef SUBTITLES_VIEW_H
 #define SUBTITLES_VIEW_H
 
-//#include <QWidget>
 #include "ui_subtitles_view.h"
 
 class SubtitlesView : public QWidget
@@ -16,7 +15,6 @@ public:
     void set_text(const QString&);
     void clear();
 
-    //void set_read_only(bool);
     void set_editable(bool);
 
     bool is_showed_once() const;

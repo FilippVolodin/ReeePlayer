@@ -21,28 +21,6 @@ void SubtitlesTextEdit::focusOutEvent(QFocusEvent * e)
 
 void SubtitlesTextEdit::keyPressEvent(QKeyEvent* e)
 {
-    //bool ctrl_lr = e->modifiers() == Qt::ControlModifier &&
-    //    (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right);
-    //if (ctrl_lr)
-    //{
-    //    //QPlainTextEdit::keyPressEvent(e);
-    //    e->ignore();
-    //}
-    //else
-    //{
-    //    QPlainTextEdit::keyPressEvent(e);
-    //}
-
-    //bool test1 = e->modifiers() == Qt::AltModifier;
-
-    //bool alt_lr = e->modifiers() == Qt::AltModifier &&
-    //    (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right);
-    //if (alt_lr)
-    //{
-    //    //QPlainTextEdit::keyPressEvent(e);
-    //    int test = 0;
-    //}
-
     QPlainTextEdit::keyPressEvent(e);
 }
 

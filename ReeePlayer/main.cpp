@@ -1,11 +1,6 @@
-// #include "pch.h"
-#include <QtWidgets/QApplication>
+#include "pch.h"
 #include "models/app.h"
 #include "widgets/mainwindow.h"
-
-#include "qsubtitles.h"
-#include "html.h"
-#include "webvtt.h"
 
 int main(int argc, char *argv[])
 {

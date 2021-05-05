@@ -86,20 +86,12 @@ private:
     high_resolution_clock::time_point m_last_time;
 };
 
-//struct OnPlayEvent
-//{
-//    bool is_active = false;
-//    int start_time = -1;
-//    int stop_time = -1;
-//};
-
 class VideoWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     libvlc_media_player_t* m_vlc_mp = nullptr;
-
 
     VideoWidget(QWidget* parent);
     ~VideoWidget();
@@ -122,9 +114,6 @@ public:
     int get_length() const;
     bool at_end() const;
 
-    //AccuratePlayerTimer m_player_timer;
-    QTimer* m_poller;
-
 signals:
     void opening();
     void length_changed(int);
@@ -136,9 +125,6 @@ signals:
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
-public: //TODO private
-
-
 private:
     void repeat();
     static void libvlc_mp_callback(const libvlc_event_t* event, void* data);
@@ -154,7 +140,6 @@ private:
     int m_repeats = 0;
     int m_length = 0;
 
-    bool m_initialized = false;
     CallBackTimer* m_timer = nullptr;
 };
 
