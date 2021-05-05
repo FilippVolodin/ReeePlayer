@@ -3,7 +3,6 @@
 #include <qsubtitles.h>
 #include "models/repetition_model.h"
 #include "models/session.h"
-#include "models/file_manager.h"
 #include "models/clip_storage.h"
 #include "models/library.h"
 #include "models/app.h"
