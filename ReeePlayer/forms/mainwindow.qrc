@@ -11,6 +11,9 @@
         <file alias="play">Resources/play.png</file>
         <file alias="repeat_clips">Resources/repeat_clips.png</file>
         <file alias="open_project">Resources/open_project.png</file>
+        <file alias="closed_folder">Resources/closed_folder.png</file>
+        <file alias="opened_folder">Resources/opened_folder.png</file>
+        <file alias="video_file">Resources/video_file.png</file>
     </qresource>
     <qresource prefix="/SpinBox">
         <file alias="next_clip">Resources/next_clip.png</file>

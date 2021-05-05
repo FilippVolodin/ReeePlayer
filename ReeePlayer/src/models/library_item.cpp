@@ -155,9 +155,16 @@ QVariant LibraryItem::data(int column, int role) const
     }
     case Qt::DecorationRole:
     {
-        if (column == 0 && m_item_type == ItemType::Folder)
+        if (column == 0)
         {
-            QPixmap pixmap(":/MainWindow/folder");
+            const char* res;
+            if (m_item_type == ItemType::Folder)
+                res = is_expanded() ?
+                ":/MainWindow/opened_folder" :
+                ":/MainWindow/closed_folder";
+            else if (m_item_type == ItemType::File)
+                res = ":/MainWindow/video_file";
+            QPixmap pixmap(res);
             return QVariant::fromValue(pixmap);
         }
         break;
