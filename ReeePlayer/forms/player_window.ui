@@ -425,7 +425,6 @@ QSlider::sub-page:horizontal {
  </customwidgets>
  <resources>
   <include location="mainwindow.qrc"/>
-  <include location="../mainwindow.qrc"/>
  </resources>
  <connections/>
 </ui>
