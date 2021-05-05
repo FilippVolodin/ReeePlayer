@@ -99,6 +99,9 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
     setup_playback_rates();
     restore_state();
 
+    ui.dockWidget1->toggleViewAction()->setText("Show/hide subtitles 1");
+    ui.dockWidget2->toggleViewAction()->setText("Show/hide subtitles 2");
+
     m_default_bg = palette().color(QPalette::Window);
     m_library = m_app->get_library();
 
@@ -108,6 +111,14 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 
 PlayerWindow::~PlayerWindow()
 {
+}
+
+QMenu* PlayerWindow::createPopupMenu()
+{
+    QMenu* menu = new QMenu(this);
+    menu->addAction(ui.dockWidget1->toggleViewAction());
+    menu->addAction(ui.dockWidget2->toggleViewAction());
+    return menu;
 }
 
 void PlayerWindow::watch(File* file)

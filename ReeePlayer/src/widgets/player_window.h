@@ -116,6 +116,9 @@ class PlayerWindow : public QMainWindow
 public:
     PlayerWindow(App* app, QWidget* parent = Q_NULLPTR);
     ~PlayerWindow();
+
+    QMenu* createPopupMenu() override;
+
     void watch(File* file);
     void watch_clip(Clip* clip);
     void repeat(std::vector<File*>&& files);
