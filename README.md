@@ -104,7 +104,7 @@ cd "../ReeePlayer_build"
 cmake --build . --config Release
 ```
 
-## Прочее
+## Other
 
 - Icons by [Icons8.com](http://Icons8.com)
 - The footage shown in this guide is from [OverSimplified](https://www.youtube.com/c/OverSimplified/videos) channel
