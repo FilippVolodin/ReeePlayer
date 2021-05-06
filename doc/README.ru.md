@@ -93,9 +93,7 @@
 ### Windows
 
 - Установить [Qt 6](https://www.qt.io/). Добавить в переменную среды `PATH` каталог `%QTDIR%/bin`
-
 - Скачать медиаплейер [VLC 3.0.8](http://download.videolan.org/pub/videolan/vlc/3.0.8/). Добавить в переменную среды `PATH` каталог с распакованным архивом, либо скопировать директорию `plugins` и библиотеки `libvlc.dll`, `libvlccore.dll` в каталог сборки.
-
 - Установить cmake версии не ниже 3.16.0
 
 Выполнить из каталога с проектом:
@@ -105,3 +103,8 @@ mkdir "../ReeePlayer_build"
 cd "../ReeePlayer_build"
 cmake --build . --config Release
 ```
+
+## Прочее
+
+- Иконки с сайта [Icons8.com](http://Icons8.com)
+- Кадры, показанные в этом руководстве, из видео с канала [OverSimplified](https://www.youtube.com/c/OverSimplified/videos)
