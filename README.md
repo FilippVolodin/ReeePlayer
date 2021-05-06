@@ -34,9 +34,9 @@ The upper left corner of the window shows the remaining number of clips to repea
 
 When the counter reaches zero, you can still continue repeating. In this case, the most appropriate clips will be suggested (with the repetition time approaching). For these, the next repetition interval will increase according to the time elapsed since the previous repetition.
 
-## Подробности
+## Details
 
-### Просмотр
+### Watching
 
 When you start watching a video file named `x.<ext>`, the application searches for subtitle files named `x<lang>.<srt or vtt>` in the same directory. Available subtitles can be selected from the ![](doc/subs_cmb.png?raw=true) dropdown list in both panels. 
 
