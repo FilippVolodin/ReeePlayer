@@ -1,6 +1,8 @@
 #ifndef PCH_H
 #define PCH_H
 
+// Prevent #define max (and min)
+#define NOMINMAX
 #include <windows.h>
 
 #include <QtWidgets/QApplication>
@@ -23,10 +25,8 @@
 #include <QFileDialog>
 #include <QSet>
 #include <QtMath>
-#include <QtXml/QDomNode>
 #include <QHash>
 #include <QAbstractItemModel>
-#include <QtXml/QDomDocument>
 #include <QModelIndex>
 #include <QPainter>
 #include <QButtonGroup>
@@ -34,17 +34,19 @@
 #include <QJsonObject>
 #include <QStylePainter>
 #include <QSpinBox>
+#include <QComboBox>
 #include <QLineEdit>
-
-__pragma(warning(push))
-__pragma(warning(disable:4127))
-#include <QtSql>
-__pragma(warning(pop))
+#include <QSettings>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QMimeData>
+#include <QStandardPaths>
 
 #include <algorithm>
 #include <optional>
 #include <set>
 #include <stack>
+#include <thread>
 
 #if defined(_MSC_VER)
 #include <BaseTsd.h>

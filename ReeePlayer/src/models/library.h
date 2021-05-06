@@ -26,25 +26,16 @@ public:
     LibraryItem* get_root() const;
     QString get_root_path() const;
 
-    LibraryItem* get_dir_files(const QString& path);
-
-    int refresh_clips_count();
-
 signals:
-
     void clip_removed_sig(Clip*);
+
 private:
     LibraryItem* scan_folder(const QString& path, bool is_root = true);
 
     File* load_file(const QString&);
     void save_file(const File*) const;
 
-    QDomDocument m_document;
     LibraryItem* m_root;
-    QSet<QString> m_file_set;
-    QMap<int, QString> m_file_map;
-    QMap<int, const LibraryItem*> m_map;
-    int m_max_id = -1;
     QString m_root_path;
     QSettings* m_settings;
 

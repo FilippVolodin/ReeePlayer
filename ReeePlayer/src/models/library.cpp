@@ -173,12 +173,6 @@ QString Library::get_root_path() const
     return m_root_path;
 }
 
-LibraryItem* Library::get_dir_files(const QString& path)
-{
-    int start_id = m_max_id + 1;
-    return scan_folder(path, start_id);
-}
-
 void Library::save()
 {
     for (const File* file : m_changed_files)
@@ -186,11 +180,6 @@ void Library::save()
         save_file(file);
     }
     m_changed_files.clear();
-}
-
-int Library::refresh_clips_count()
-{
-    return 0;
 }
 
 LibraryItem* Library::scan_folder(const QString& path, bool is_root)
@@ -237,7 +226,6 @@ LibraryItem* Library::scan_folder(const QString& path, bool is_root)
     {
         bool expanded = m_settings->contains("expanded/" + path);
         cur_item->expand(expanded);
-
         cur_item->append_childs(dir_items);
         return cur_item;
     }
