@@ -8,7 +8,7 @@ The ReeePlayer application is designed for spaced repetition of fragments (clips
 
 ## Getting Started
 
-Before you start, it is recommended to create or select a directory on disk for media files that you plan to use for spaced repetition.
+Before you start, it is recommended to create or select a directory on your computer for media files that you plan to use for spaced repetition.
 
 This directory can be opened either with (`Open Directory`) button or being drag-and-dropped with a mouse from Explorer into the application window.
  
@@ -85,6 +85,18 @@ Hotkeys:
 - `5`, `6`,`7`,`8`,`9`,`0` - playback rate: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
 - `Enter` - mark the clip as repeated and go to the next one
 - `Backspace` - return to the previous repeated clips
+
+### Where the clips are stored
+
+All clips of a file named `x.<ext>` are stored in the file `x.user.json` in the same directory. For example:
+
+![](doc/files_example.png?raw=true)
+
+This storage approach allows you to change the file hierarchy as you wish, i.e. move, rename, merge directories. It's important to keep the clip file next to the media file and only move them together.
+
+The file format is [JSON](https://en.wikipedia.org/wiki/JSON), so you can view and edit it in any text editor:
+
+![](doc/json_example.png?raw=true)
 
 ## Build
 
