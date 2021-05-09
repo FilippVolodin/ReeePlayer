@@ -47,9 +47,9 @@ The ![](doc/show_always.png?raw=true) button controls subtitle visibility (alway
 Hotkeys:
 
 - `Space` - play/pause
-- Left`, `Right` - rewind or forward for 2 seconds
-- 5`, 6`,7`,8`,9`,0` - playback rate: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
-- `1`,`2` - show the current text of the first/second subtitles if they are hidden
+- `Left`, `Right` - rewind or forward for 2 seconds
+- `5`, `6`, `7`, `8`, `9`, `0` - playback rate: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
+- `1`, `2` - show the current text of the first/second subtitles if they are hidden
 - `Enter` - add a clip
 
 ### Adding a clip
@@ -71,7 +71,7 @@ If you want to complete the text of the clip with the previous or next cues from
 Hotkeys:
 
 - `Space` - play the clip
-- `5`, `6`,`7`,`8`,`9`,`0` - playback speed: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
+- `5`, `6`, `7`, `8`, `9`, `0` - playback speed: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
 - `Enter`, `Ctrl+Enter` - save the clip
 - `Delete` - cancel clip creation
 
@@ -82,7 +82,7 @@ In this mode, you can edit the clip (beginning, end, texts) in the same way as w
 Hotkeys:
 
 - `Space` - play the clip
-- `5`, `6`,`7`,`8`,`9`,`0` - playback rate: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
+- `5`, `6`, `7`, `8`, `9`, `0` - playback rate: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
 - `Enter` - mark the clip as repeated and go to the next one
 - `Backspace` - return to the previous repeated clips
 
