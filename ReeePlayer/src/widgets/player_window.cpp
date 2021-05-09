@@ -379,6 +379,8 @@ void PlayerWindow::on_actPrevClip_triggered()
         update_clip_subtitles(m_clip);
         m_library->save();
 
+        ui.videoWidget->setFocus();
+
         m_clip = m_session->get_prev_clip();
         show_clip();
     }
@@ -393,6 +395,8 @@ void PlayerWindow::on_actNextClip_triggered()
     m_clip->set_level(m_next_level);
     m_clip->set_rep_time(now());
     m_library->save();
+
+    ui.videoWidget->setFocus();
 
     m_clip = m_session->get_next_clip();
     show_clip();
