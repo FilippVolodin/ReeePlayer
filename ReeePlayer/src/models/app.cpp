@@ -8,9 +8,10 @@ App::App()
     const char * const vlc_args[] =
     {
         "--play-and-pause",
-        "--intf=dummy"
+        "--intf=dummy",
+        "--no-spu"
     };
-    m_vlc_inst = libvlc_new(2, vlc_args);
+    m_vlc_inst = libvlc_new(3, vlc_args);
 
     QStringList paths = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     if (!paths.isEmpty())
