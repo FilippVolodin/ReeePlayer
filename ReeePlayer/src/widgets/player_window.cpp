@@ -271,7 +271,7 @@ void PlayerWindow::setup_subs_views()
             [this, i](bool show) { on_subtitles_show_always(i, show); });
 
         connect(m_subtitle_views[i], &SubtitlesView::on_insert_clicked, this,
-            [this, i](bool show) { on_subtitles_insert_clicked(i, show); });
+            [this, i](int show) { on_subtitles_insert_clicked(i, show); });
 
         connect(m_subtitle_views[i], &SubtitlesView::on_file_changed,
             [this, i](int index) { on_subs_file_changed(i, index); });
