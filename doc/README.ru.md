@@ -4,7 +4,8 @@
 
 ## Ссылки в соцсетях
 
-- [vk.com](https://vk.com/reeeplayer)
+- [Facebook](https://www.facebook.com/groups/reeeplayer)
+- [VK](https://vk.com/reeeplayer)
 
 ## Основы
 

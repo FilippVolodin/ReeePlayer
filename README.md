@@ -4,7 +4,8 @@ The ReeePlayer application is designed for spaced repetition of fragments (clips
 
 ## Social Network Links
 
-- [vk.com](https://vk.com/reeeplayer)
+- [Facebook](https://www.facebook.com/groups/reeeplayer)
+- [VK](https://vk.com/reeeplayer)
 
 ## Guides in other languages
 
