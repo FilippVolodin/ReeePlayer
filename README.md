@@ -11,6 +11,11 @@ The ReeePlayer application is designed for spaced repetition of fragments (clips
 
 - [Russian](doc/README.ru.md)   
 
+## Download
+
+- [For Windows](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x64.zip)
+- [For Windows (x86)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x86.zip)
+
 ## Getting Started
 
 Before you start, it is recommended to create or select a directory on your computer for media files that you plan to use for spaced repetition.
