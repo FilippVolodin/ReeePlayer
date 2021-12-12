@@ -7,6 +7,11 @@
 - [Facebook](https://www.facebook.com/groups/reeeplayer)
 - [VK](https://vk.com/reeeplayer)
 
+## Скачать
+
+- [Для Windows](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x64.zip)
+- [Для Windows (x86)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x86.zip)
+
 ## Основы
 
 В самом начале для удобства рекомендуется создать или выбрать каталог на диске, в котором будут располагаться те медиафайлы, которые планируется использовать для интервального повторения. 
