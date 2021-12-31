@@ -1,3 +1,5 @@
+[![Github All Releases](https://img.shields.io/github/downloads/FilippVolodin/ReeePlayer/total.svg)]()
+
 # ReeePlayer
 
 The ReeePlayer application is designed for spaced repetition of fragments (clips) of video and audio files with similar principle as in [Anki](https://en.wikipedia.org/wiki/Anki_(software)).
