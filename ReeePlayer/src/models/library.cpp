@@ -78,8 +78,9 @@ File* Library::load_file(const QString& path)
                 clip->set_end(json_clip["end"].toInt());
             if (json_clip.contains("level") && json_clip["level"].isDouble())
                 clip->set_level(json_clip["level"].toDouble());
+            bool ok;
             if (json_clip.contains("repeated") && json_clip["repeated"].isDouble())
-                clip->set_rep_time(json_clip["repeated"].toInteger());
+                clip->set_rep_time(json_clip["repeated"].toString().toLongLong(&ok, 10));
             if (json_clip.contains("text1") && json_clip["text1"].isString())
                 text1 = json_clip["text1"].toString();
             if (json_clip.contains("text2") && json_clip["text2"].isString())
@@ -102,7 +103,7 @@ void Library::save_file(const File* file) const
     for (const Clip* clip : file->get_clips())
     {
         QJsonObject json_clip;
-        json_clip["begin"] = clip->get_begin();
+        json_clip["begin"] = QJsonValue(clip->get_begin());
         json_clip["end"] = clip->get_end();
         json_clip["level"] = clip->get_level();
         json_clip["repeated"] = clip->get_rep_time();

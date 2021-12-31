@@ -346,7 +346,7 @@ void PlayerWindow::setup_playback_rates()
         ++id;
     }
     set_playback_rate(DEFAULT_PLAYBACK_RATE_INDEX);
-    connect(m_rate_btn_group, &QButtonGroup::buttonClicked,
+    connect(m_rate_btn_group, static_cast<void(QButtonGroup::*)(QAbstractButton*)>(&QButtonGroup::buttonClicked),
         this, &PlayerWindow::on_set_playback_rate);
 }
 

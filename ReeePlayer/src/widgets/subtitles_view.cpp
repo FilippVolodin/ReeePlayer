@@ -60,8 +60,8 @@ SubtitlesView::SubtitlesView(QWidget *parent)
         set_show_once(show);
         emit on_show_once(show);
     });
-
-    connect(m_sb_sync, &QSpinBox::valueChanged, this, &SubtitlesView::on_sb_sync_valueChanged, Qt::QueuedConnection);
+    
+    connect(m_sb_sync, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &SubtitlesView::on_sb_sync_valueChanged, Qt::QueuedConnection);
 
     connect(ui.btnSpeedUp, &QAction::triggered, [this]()
     {
@@ -96,8 +96,8 @@ SubtitlesView::SubtitlesView(QWidget *parent)
     {
         update_background();
     });
-
-    connect(m_cmb_subs, &QComboBox::currentIndexChanged,
+    
+    connect(m_cmb_subs, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
         [this](int index)
         {
             emit on_file_changed(index);

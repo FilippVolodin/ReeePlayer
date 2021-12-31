@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Widgets Sql Xml REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Sql Xml REQUIRED)
 
 add_executable(ReeePlayer WIN32)
 	
@@ -55,9 +55,9 @@ set_target_properties(ReeePlayer PROPERTIES
 )
 
 target_link_libraries(ReeePlayer PRIVATE
-	Qt6::Widgets
-	Qt6::Sql
-	Qt6::Xml
+	Qt5::Widgets
+	Qt5::Sql
+	Qt5::Xml
 	QSubtitles
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlc.lib
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlccore.lib

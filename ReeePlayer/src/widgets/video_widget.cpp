@@ -226,6 +226,6 @@ void VideoWidget::sync_stop()
 {
     stop();
     while (!is_stopped())
-        Sleep(15);
+        std::this_thread::sleep_for(std::chrono::milliseconds(15));
 }
 

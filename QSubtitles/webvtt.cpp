@@ -16,6 +16,7 @@ namespace qsubs::webvtt
             return nullptr;
 
         QTextStream stream(&file);
+        stream.setCodec("UTF-8");
         Parser parser(stream);
         return parser.parse();
     }
@@ -67,7 +68,6 @@ namespace qsubs::webvtt
         qsizetype pos = 0;
         skip_whispaces(str, pos);
 
-        qDebug() << (cue == nullptr);
         try
         {
             cue->set_start_time(collect_timestamp(str, pos));

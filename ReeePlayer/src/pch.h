@@ -1,10 +1,6 @@
 #ifndef PCH_H
 #define PCH_H
 
-// Prevent #define max (and min)
-#define NOMINMAX
-#include <windows.h>
-
 #include <QtWidgets/QApplication>
 #include <QtGlobal>
 #include <QWidget>

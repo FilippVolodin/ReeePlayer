@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Core REQUIRED)
+find_package(Qt5 COMPONENTS Core REQUIRED)
 
 add_library(QSubtitles
 	qsubtitles.cpp
@@ -21,6 +21,6 @@ add_library(QSubtitles
 
 target_precompile_headers(QSubtitles PUBLIC pch.h)
 
-target_link_libraries(QSubtitles PRIVATE Qt6::Core)
+target_link_libraries(QSubtitles PRIVATE Qt5::Core)
 
 target_include_directories(QSubtitles PUBLIC ${PROJECT_SOURCE_DIR})

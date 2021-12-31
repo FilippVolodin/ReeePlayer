@@ -5,6 +5,25 @@
 namespace qsubs::html
 {
 
+    static constexpr inline bool requiresSurrogates(char32_t ucs4) noexcept
+    {
+        return (ucs4 >= 0x10000);
+    }
+
+    [[nodiscard]] constexpr auto fromUcs4(char32_t c) noexcept
+    {
+        struct R {
+            char16_t chars[2];
+            [[nodiscard]] constexpr operator QStringView() const noexcept { return { begin(), end() }; }
+            [[nodiscard]] constexpr qsizetype size() const noexcept { return chars[1] ? 2 : 1; }
+            [[nodiscard]] constexpr const char16_t* begin() const noexcept { return chars; }
+            [[nodiscard]] constexpr const char16_t* end() const noexcept { return begin() + size(); }
+        };
+        return requiresSurrogates(c) ? R{ {QChar::highSurrogate(c),
+                                          QChar::lowSurrogate(c)} } :
+            R{ {char16_t(c), u'\0'} };
+    }
+
     struct HTMLRef
     {
         const char* name;
@@ -2318,7 +2337,7 @@ namespace qsubs::html
                     if (spec != 0)
                         result = spec;
                 }
-                result.append(QChar::fromUcs4(number));
+                result.append(fromUcs4(number));
             }
             else
             {

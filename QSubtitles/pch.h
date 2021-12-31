@@ -4,3 +4,5 @@
 #include <QRegularExpression>
 
 #include <set>
+#include <variant>
+#include <optional>
