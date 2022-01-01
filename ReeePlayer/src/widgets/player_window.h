@@ -152,14 +152,15 @@ private:
     void on_player_time_changed(int);
     void on_player_playing();
     void on_player_paused();
+    void on_player_timer_triggered(int64_t);
 
     void on_slider_value_changed(int);
 
     void on_edt_loop_a_value_changed(int);
     void on_edt_loop_b_value_changed(int);
 
-    void on_forward_shortcut_activated();
-    void on_backward_shortcut_activated();
+    //void on_forward_shortcut_activated();
+    //void on_backward_shortcut_activated();
     void on_change_loop_shortcut_activated();
     void on_escape_shortcut_activated();
     void on_show_subtitles_shortcut_activated(int index);
@@ -172,6 +173,7 @@ private:
 
     void set_duration(int);
     void set_time(int);
+    void seek(int, bool jk);
 
     void set_state(std::shared_ptr<UIState>);
 
@@ -206,6 +208,8 @@ private:
 
     void next_clip();
 
+    void activate_jumpcutter(int);
+
     Ui::PlayerWindow ui;
 
     bool m_showed = false;
@@ -230,6 +234,8 @@ private:
     SubtitlesView* m_subtitle_views[NUM_SUBS_VIEWS];
     std::shared_ptr<const qsubs::ISubtitles> m_subtitles[NUM_SUBS_VIEWS];
     const qsubs::ICue* m_cues[NUM_SUBS_VIEWS];
+
+    std::vector<uint8_t> m_max_volume;
 
     SpinBox* m_edt_loop_a;
     QAction* m_edt_loop_a_action;

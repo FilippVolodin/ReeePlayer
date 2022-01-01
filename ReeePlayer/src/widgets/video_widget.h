@@ -50,6 +50,11 @@ public:
             m_thread.joinable());
     }
 
+    libvlc_time_t get_player_time()
+    {
+        return m_player_time;
+    }
+
     void set_player_time(libvlc_time_t player_time)
     {
         m_player_time.store(player_time, std::memory_order_release);
@@ -102,6 +107,7 @@ public:
 
     void play();
     void play(int from, int to, int repeats);
+    void set_timer(int time);
     void pause();
     void toggle_pause();
     void stop();
@@ -122,6 +128,7 @@ signals:
     void paused();
     void stopped();
     void end_reached();
+    void timer_triggered(int64_t);
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;

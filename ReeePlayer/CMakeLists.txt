@@ -40,6 +40,7 @@ target_sources(ReeePlayer PRIVATE
 target_sources(ReeePlayer PRIVATE
 	src/models/app.cpp
 	src/models/clip_storage.cpp
+    src/models/jumpcutter.cpp
 	src/models/library.cpp
 	src/models/library_item.cpp
 	src/models/session.cpp

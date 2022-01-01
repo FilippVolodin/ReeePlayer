@@ -7,6 +7,7 @@
 #include "models/library.h"
 #include "models/app.h"
 #include "spinbox.h"
+#include "models/jumpcutter.h"
 
 constexpr float PLAYBACK_RATES[] = { 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f };
 static const QKeySequence PLAYBACK_KEYS[] =
@@ -251,13 +252,15 @@ void PlayerWindow::setup_actions()
 void PlayerWindow::setup_player_events()
 {
     connect(ui.videoWidget, &VideoWidget::time_changed,
-        this, &PlayerWindow::on_player_time_changed);
+        this, &PlayerWindow::on_player_time_changed, Qt::QueuedConnection);
     connect(ui.videoWidget, &VideoWidget::playing,
         this, &PlayerWindow::on_player_playing);
     connect(ui.videoWidget, &VideoWidget::paused,
         this, &PlayerWindow::on_player_paused);
     connect(ui.videoWidget, &VideoWidget::length_changed,
         this, &PlayerWindow::set_duration);
+    connect(ui.videoWidget, &VideoWidget::timer_triggered,
+        this, &PlayerWindow::on_player_timer_triggered);
 }
 
 void PlayerWindow::setup_subs_views()
@@ -416,7 +419,8 @@ void PlayerWindow::on_actPlayPause_triggered()
     else
     {
         if (ui.videoWidget->at_end())
-            ui.videoWidget->set_time(0);
+            seek(0, true);
+            //ui.videoWidget->set_time(0);
         ui.videoWidget->play();
     }
 }
@@ -442,6 +446,8 @@ void PlayerWindow::on_player_time_changed(int time)
 {
     set_slider_value(time);
     set_time(time);
+    activate_jumpcutter(time);
+    //QMetaObject::invokeMethod(this, "activate_jumpcutter", Qt::QueuedConnection, Q_ARG(int, time));
 }
 
 void PlayerWindow::on_player_playing()
@@ -454,12 +460,18 @@ void PlayerWindow::on_player_paused()
     ui.actPlayPause->setChecked(false);
 }
 
+void PlayerWindow::on_player_timer_triggered(int64_t)
+{
+    ui.videoWidget->pause();
+}
+
 void PlayerWindow::on_slider_value_changed(int value)
 {
     if (ui.videoWidget->get_time() != value)
     {
         qDebug(">>> on_slider_value_changed: %d", value);
-        ui.videoWidget->set_time(value);
+        //ui.videoWidget->set_time(value);
+        seek(value, true);
         set_time(value);
     }
 }
@@ -478,28 +490,30 @@ void PlayerWindow::on_edt_loop_b_value_changed(int)
     ui.videoWidget->play(std::max(a, b - 1000), b, 1);
 }
 
-void PlayerWindow::on_forward_shortcut_activated()
-{
-    int new_time = ui.videoWidget->get_time() + 2000;
-    ui.videoWidget->set_time(new_time);
-    // Callback on_player_time_changed doesn't work when player is paused
-    if (!ui.videoWidget->is_playing())
-    {
-        set_time(new_time);
-        set_slider_value(new_time);
-    }
-}
-
-void PlayerWindow::on_backward_shortcut_activated()
-{
-    int new_time = ui.videoWidget->get_time() - 2000;
-    ui.videoWidget->set_time(new_time);
-    if (!ui.videoWidget->is_playing())
-    {
-        set_time(new_time);
-        set_slider_value(new_time);
-    }
-}
+//void PlayerWindow::on_forward_shortcut_activated()
+//{
+//    int new_time = ui.videoWidget->get_time() + 2000;
+//    //ui.videoWidget->set_time(new_time);
+//    seek(new_time);
+//    // Callback on_player_time_changed doesn't work when player is paused
+//    if (!ui.videoWidget->is_playing())
+//    {
+//        set_time(new_time);
+//        set_slider_value(new_time);
+//    }
+//}
+//
+//void PlayerWindow::on_backward_shortcut_activated()
+//{
+//    int new_time = ui.videoWidget->get_time() - 2000;
+//    //ui.videoWidget->set_time(new_time);
+//    seek(new_time, true);
+//    if (!ui.videoWidget->is_playing())
+//    {
+//        set_time(new_time);
+//        set_slider_value(new_time);
+//    }
+//}
 
 void PlayerWindow::on_change_loop_shortcut_activated()
 {
@@ -603,6 +617,15 @@ void PlayerWindow::set_time(int value)
     m_ui_state->set_time(value);
 }
 
+void PlayerWindow::seek(int t, bool jk)
+{
+    //if (jk)
+    //    //QMetaObject::invokeMethod(this, "activate_jumpcutter", Qt::QueuedConnection, Q_ARG(int, t));
+    //    activate_jumpcutter(t);
+    //else
+        ui.videoWidget->set_time(t);
+}
+
 void PlayerWindow::set_state(std::shared_ptr<UIState> new_state)
 {
     m_ui_state = new_state;
@@ -663,10 +686,14 @@ void PlayerWindow::show_video()
     }
 
     ui.videoWidget->play();
+    ui.videoWidget->set_rate(1.0);
 
-    int time = m_file->get_player_time();
-    if (time > 0)
-        ui.videoWidget->set_time(time);
+    //int time = m_file->get_player_time();
+    //if (time > 0)
+    //    seek(time, true);
+        //ui.videoWidget->set_time(time);
+
+    m_max_volume = read_wav();
 }
 
 void PlayerWindow::show_clip()
@@ -885,10 +912,12 @@ int PlayerWindow::get_loop_b() const
     return m_edt_loop_b->value();
 }
 
-void PlayerWindow::rewind(int ms)
+void PlayerWindow::rewind(int delta_ms)
 {
-    int new_time = ui.videoWidget->get_time() + ms;
-    ui.videoWidget->set_time(new_time);
+    int new_time = ui.videoWidget->get_time() + delta_ms;
+    //ui.videoWidget->set_time(new_time);
+    seek(new_time, delta_ms > 0);
+
     // Callback on_player_time_changed doesn't work when player is paused
     if (!ui.videoWidget->is_playing())
     {
@@ -929,6 +958,29 @@ void PlayerWindow::next_clip()
 {
     m_clip = m_session->get_next_clip();
     show_clip();
+}
+
+void PlayerWindow::activate_jumpcutter(int t)
+{
+    int chunk = t / 10;
+    int cur_chunk = chunk;
+    m_max_volume.size();
+    bool silent = true;
+    while (silent && cur_chunk < m_max_volume.size())
+    {
+        silent = m_max_volume[cur_chunk] < 10;
+        ++cur_chunk;
+    }
+    if (cur_chunk - chunk > 20)
+    {
+        //set_time(cur_chunk * 10);
+        ui.videoWidget->set_time(cur_chunk * 10);
+        qDebug("jump: %d -> %d", chunk * 10, cur_chunk * 10);
+    }
+    else
+    {
+        //ui.videoWidget->set_time(t);
+    }
 }
 
 UIState::UIState(PlayerWindow* pw) : m_pw(pw)
@@ -1023,7 +1075,8 @@ void WatchingState::set_time(int)
 void WatchingState::play()
 {
     if (m_pw->ui.videoWidget->at_end())
-        m_pw->ui.videoWidget->set_time(0);
+        m_pw->seek(0, true);
+        //m_pw->ui.videoWidget->set_time(0);
     m_pw->ui.videoWidget->play();
 }
 

@@ -46,9 +46,10 @@ void VideoWidget::init(libvlc_instance_t* vlc_inst)
     connect(this, &VideoWidget::end_reached,
         this, &VideoWidget::repeat);
 
-    m_timer = new CallBackTimer(10, [mp = m_vlc_mp]()
+    m_timer = new CallBackTimer(10, [this, mp = m_vlc_mp]()
     {
-        libvlc_media_player_pause(mp);
+        emit this->timer_triggered(this->m_timer->get_player_time());
+        //libvlc_media_player_pause(mp);
     });
 
     connect(this, &VideoWidget::playing, [this]()
@@ -100,6 +101,11 @@ void VideoWidget::play(int start_time, int stop_time, int repeats)
     m_timer->set_trigger(stop_time);
 }
 
+void VideoWidget::set_timer(int stop_time)
+{
+    m_timer->set_trigger(stop_time);
+}
+
 void VideoWidget::pause()
 {
     if(is_playing())
@@ -129,6 +135,7 @@ bool VideoWidget::is_stopped() const
 
 void VideoWidget::set_time(int value)
 {
+    qDebug("VideoWidget::set_time %d -> %d", libvlc_media_player_get_time(m_vlc_mp), value);
     if(value != libvlc_media_player_get_time(m_vlc_mp))
         libvlc_media_player_set_time(m_vlc_mp, value);
 }
