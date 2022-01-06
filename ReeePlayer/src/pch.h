@@ -41,6 +41,10 @@
 #include <QJsonArray>
 #include <QMimeData>
 #include <QStandardPaths>
+#include <QProcess>
+#include <QTemporaryDir>
+#include <QFutureWatcher>
+#include <QtConcurrent>
 
 #include <algorithm>
 #include <optional>

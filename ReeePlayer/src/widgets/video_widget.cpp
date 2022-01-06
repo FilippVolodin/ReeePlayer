@@ -48,8 +48,7 @@ void VideoWidget::init(libvlc_instance_t* vlc_inst)
 
     m_timer = new CallBackTimer(10, [this, mp = m_vlc_mp]()
     {
-        emit this->timer_triggered(this->m_timer->get_player_time());
-        //libvlc_media_player_pause(mp);
+        emit this->timer_triggered(this->m_timer->get_time());
     });
 
     connect(this, &VideoWidget::playing, [this]()
@@ -79,6 +78,7 @@ void VideoWidget::set_file_name(const QString& file_name, bool)
 void VideoWidget::play()
 {
     m_timer->set_trigger(-1);
+    m_timer->start();
     libvlc_media_player_play(m_vlc_mp);
 }
 
@@ -108,8 +108,11 @@ void VideoWidget::set_timer(int stop_time)
 
 void VideoWidget::pause()
 {
-    if(is_playing())
+    if (is_playing())
+    {
+        m_timer->stop();
         toggle_pause();
+    }
 }
 
 void VideoWidget::toggle_pause()
@@ -119,6 +122,7 @@ void VideoWidget::toggle_pause()
 
 void VideoWidget::stop()
 {
+    m_timer->stop();
     libvlc_media_player_stop(m_vlc_mp);
 }
 
@@ -136,21 +140,36 @@ bool VideoWidget::is_stopped() const
 void VideoWidget::set_time(int value)
 {
     qDebug("VideoWidget::set_time %d -> %d", libvlc_media_player_get_time(m_vlc_mp), value);
-    if(value != libvlc_media_player_get_time(m_vlc_mp))
+    if (value != libvlc_media_player_get_time(m_vlc_mp))
+    {
         libvlc_media_player_set_time(m_vlc_mp, value);
+        if (!is_playing())
+            m_timer->set_player_time(value);
+    }
+}
+
+float VideoWidget::get_rate() const
+{
+    return libvlc_media_player_get_rate(m_vlc_mp);
 }
 
 void VideoWidget::set_rate(float rate)
 {
-    if (libvlc_media_player_set_rate(m_vlc_mp, rate) != -1)
+    if (std::abs(get_rate() - rate) > 0.1)
     {
-        m_timer->set_rate(rate);
+        if (libvlc_media_player_set_rate(m_vlc_mp, rate) != -1)
+            m_timer->set_rate(rate);
     }
 }
 
 int VideoWidget::get_time() const
 {
     return libvlc_media_player_get_time(m_vlc_mp);
+}
+
+int VideoWidget::get_accuracy_time() const
+{
+    return m_timer->get_time();
 }
 
 int VideoWidget::get_length() const

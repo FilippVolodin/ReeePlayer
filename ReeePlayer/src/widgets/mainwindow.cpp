@@ -3,9 +3,11 @@
 #include "models/clip_storage.h"
 #include "models/library.h"
 #include "models/app.h"
+#include "models/jumpcutter.h"
 #include "library_tree_model.h"
 #include "clips_view_model.h"
 #include "player_window.h"
+#include "waiting_dialog.h"
 
 constexpr const char* MAIN_WINDOW_GEOMETRY_KEY = "main_window_geometry";
 constexpr const char* MAIN_WINDOW_STATE_KEY = "main_window_state";
@@ -182,8 +184,7 @@ void MainWindow::on_videos_doubleClicked(const QModelIndex& index)
     LibraryItem* item = m_library_tree->get_item(index);
     if (item->get_item_type() == ItemType::File)
     {
-        hide();
-        getPlayerWindow()->watch(item->get_file());
+        watch(item->get_file());
     }
 }
 
@@ -288,6 +289,43 @@ QSize MainWindow::load_size(const QString& key) const
 void MainWindow::save_size(const QString& key, QSize s) const
 {
     m_app->set_setting("gui", key, QString("%1,%2").arg(s.width()).arg(s.height()));
+}
+
+void MainWindow::watch(File* file)
+{
+    if (!is_vol_exist(file->get_path()))
+    {
+        QFutureWatcher<void> future_watcher;
+        WaitingDialog wd;
+        std::function<void(QString)> log = [&](QString info)
+        {
+            QMetaObject::invokeMethod(&wd, "append_info", Q_ARG(QString, info));
+        };
+
+        QObject::connect(&future_watcher, &QFutureWatcher<void>::finished, &wd, &QDialog::accept);
+
+        future_watcher.setFuture(QtConcurrent::run([filename = file->get_path(), log]()
+        {
+            QString temp_wav = create_wav(filename, log);
+            if (!temp_wav.isEmpty())
+            {
+                std::vector<uint8_t> volumes = read_wav(temp_wav, log);
+                QFileInfo fi(filename);
+                QString vol_filename = fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
+                
+                save_volumes(vol_filename, volumes);
+                QDir dir;
+                dir.remove(vol_filename);
+            }
+        }));
+
+        wd.exec();
+
+        future_watcher.waitForFinished();
+    }
+
+    hide();
+    getPlayerWindow()->watch(file);
 }
 
 void MainWindow::repeat(std::vector<File*> files)

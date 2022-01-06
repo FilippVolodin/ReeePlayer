@@ -25,7 +25,7 @@ public:
     Library* get_library();
 
     QSettings* get_settings();
-    QVariant get_setting(const QString&, const QString&) const;
+    QVariant get_setting(const QString&, const QString&, const QVariant& default_value = QVariant()) const;
     void set_setting(const QString&, const QString&, const QVariant&);
 
     libvlc_instance_t* get_vlc_instance() const;

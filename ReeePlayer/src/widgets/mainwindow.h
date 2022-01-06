@@ -50,6 +50,7 @@ private:
     QSize load_size(const QString&) const;
     void save_size(const QString&, QSize) const;
 
+    void watch(File* file);
     void repeat(std::vector<File*>);
 
     Ui::MainWindowClass ui;

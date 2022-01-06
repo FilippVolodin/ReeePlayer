@@ -11,6 +11,8 @@ class ClipInfoDialog;
 class App;
 class Library;
 class Session;
+class JumpCutter;
+class JumpCutterSettings;
 
 namespace qsubs
 {
@@ -38,6 +40,8 @@ public:
     virtual void on_save_clip() {}
     virtual void on_cancel_clip() {}
     virtual void on_remove_clip() {}
+    virtual void on_time_changed(int) {};
+    virtual void on_player_timer_triggered(int) {};
 protected:
     PlayerWindow* m_pw;
 };
@@ -56,6 +60,8 @@ public:
 
     void play() override;
     void on_close() override;
+    void on_time_changed(int) override;
+    void on_player_timer_triggered(int) override;
     void set_time(int) override;
 };
 
@@ -75,6 +81,7 @@ public:
     void play() override;
     void on_save_clip() override;
     void on_cancel_clip() override;
+    void on_player_timer_triggered(int) override;
 };
 
 class WatchingClipState : public ClipState
@@ -87,6 +94,7 @@ public:
     void on_save_clip() override;
     void on_cancel_clip() override;
     void on_remove_clip() override;
+    void on_player_timer_triggered(int) override;
 };
 
 class RepeatingClipState : public ClipState
@@ -97,6 +105,7 @@ public:
 
     void play() override;
     void on_remove_clip() override;
+    void on_player_timer_triggered(int) override;
 };
 
 enum class Mode { Watching, WatchingClip, Repeating };
@@ -127,6 +136,7 @@ public:
 protected:
     void showEvent(QShowEvent *event);
     void closeEvent(QCloseEvent *event);
+    void timerEvent(QTimerEvent* event) override;
 private:
 
     void setup_actions();
@@ -145,6 +155,9 @@ private:
     void on_actRemoveClip_triggered();
     void on_actPlayPause_triggered();
     void on_actRepeatClip_triggered();
+    void on_actJumpCutterSettings_triggered();
+    void on_actShowWaveform_triggered(bool);
+    void on_actJumpCutter_triggered(bool);
 
     void on_btnMinus_clicked(bool);
     void on_btnPlus_clicked(bool);
@@ -173,7 +186,6 @@ private:
 
     void set_duration(int);
     void set_time(int);
-    void seek(int, bool jk);
 
     void set_state(std::shared_ptr<UIState>);
 
@@ -208,7 +220,7 @@ private:
 
     void next_clip();
 
-    void activate_jumpcutter(int);
+    void jumpcutter(int);
 
     Ui::PlayerWindow ui;
 
@@ -217,6 +229,8 @@ private:
     App* m_app;
     Library* m_library;
     std::shared_ptr<Session> m_session;
+    std::shared_ptr<JumpCutter> m_jc;
+    //std::shared_ptr<JumpCutterSettings> m_jc_settings;
 
     ClipInfoDialog* m_clip_info_dialog;
 
@@ -230,12 +244,12 @@ private:
 
     float m_next_level = 0.0;
 
+    float m_playback_rate = 1.0;
+
     std::vector<QString> m_subtitle_files;
     SubtitlesView* m_subtitle_views[NUM_SUBS_VIEWS];
     std::shared_ptr<const qsubs::ISubtitles> m_subtitles[NUM_SUBS_VIEWS];
     const qsubs::ICue* m_cues[NUM_SUBS_VIEWS];
-
-    std::vector<uint8_t> m_max_volume;
 
     SpinBox* m_edt_loop_a;
     QAction* m_edt_loop_a_action;

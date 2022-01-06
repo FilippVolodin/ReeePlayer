@@ -19,7 +19,7 @@ public:
                     if (m_trigger_time != -1 && get_time() > m_trigger_time)
                     {
                         func();
-                        m_is_executed.store(false, std::memory_order_release);
+                        m_trigger_time = -1;
                     }
                 }
                 std::this_thread::sleep_for(
@@ -37,12 +37,14 @@ public:
 
     void stop()
     {
+        set_player_time(get_time());
         m_is_executed.store(false, std::memory_order_release);
     }
 
     void start()
     {
         m_is_executed.store(true, std::memory_order_release);
+        m_last_time = high_resolution_clock::now();
     }
 
     bool is_running() const noexcept {
@@ -65,30 +67,36 @@ public:
     void set_trigger(libvlc_time_t trigger_time)
     {
         m_trigger_time = trigger_time;
+        m_is_executed.store(true, std::memory_order_release);
     }
 
     void set_rate(float rate)
     {
+        set_player_time(get_time());
         m_rate = rate;
     }
-private:
+
     libvlc_time_t get_time() const
     {
+        if (!m_is_executed)
+            return m_player_time;
+
         high_resolution_clock::time_point cur_time =
             high_resolution_clock::now();
-
-        int diff = (cur_time - m_last_time).count() / 1000000;
-        return m_player_time + diff * m_rate;
+        
+        int diff = (cur_time - m_last_time.load()).count() / 1000000;
+        return m_player_time.load() + diff * m_rate.load();
     }
+private:
 
     std::thread m_thread;
     std::atomic<bool> m_is_executed;
     std::atomic<bool> m_is_destroyed;
     std::atomic<libvlc_time_t> m_player_time;
     std::atomic<libvlc_time_t> m_trigger_time;
-    std::atomic<float> m_rate;
+    std::atomic<float> m_rate = 1.0;
 
-    high_resolution_clock::time_point m_last_time;
+    std::atomic<high_resolution_clock::time_point> m_last_time;
 };
 
 class VideoWidget : public QWidget
@@ -114,9 +122,11 @@ public:
     bool is_playing() const;
     bool is_stopped() const;
     void set_time(int);
+    float get_rate() const;
     void set_rate(float);
 
     int get_time() const;
+    int get_accuracy_time() const;
     int get_length() const;
     bool at_end() const;
 

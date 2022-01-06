@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Widgets Sql Xml REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Concurrent REQUIRED)
 
 add_executable(ReeePlayer WIN32)
 	
@@ -21,6 +21,8 @@ target_sources(ReeePlayer PRIVATE
 	forms/player_window.ui
 	forms/spinbox.ui
 	forms/subtitles_view.ui
+    forms/waiting_dialog.ui
+    forms/jumpcutter_settings_dialog.ui
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -35,6 +37,9 @@ target_sources(ReeePlayer PRIVATE
 	src/widgets/library_tree_model.cpp
 	src/widgets/clips_view_model.cpp
 	src/widgets/subtitles_text_edit.cpp	
+	src/widgets/waiting_dialog.cpp	
+	src/widgets/waveform.cpp	
+    src/widgets/jumpcutter_settings_dialog.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -57,8 +62,7 @@ set_target_properties(ReeePlayer PROPERTIES
 
 target_link_libraries(ReeePlayer PRIVATE
 	Qt6::Widgets
-	Qt6::Sql
-	Qt6::Xml
+	Qt6::Concurrent
 	QSubtitles
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlc.lib
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlccore.lib

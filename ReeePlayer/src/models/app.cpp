@@ -9,7 +9,7 @@ App::App()
     {
         "--play-and-pause",
         "--intf=dummy",
-        "--no-spu"
+        "--no-spu",
     };
     m_vlc_inst = libvlc_new(3, vlc_args);
 
@@ -72,9 +72,9 @@ QSettings* App::get_settings()
     return m_settings.get();
 }
 
-QVariant App::get_setting(const QString& group, const QString& key) const
+QVariant App::get_setting(const QString& group, const QString& key, const QVariant& default_value) const
 {
-    return m_settings->value(group + "/" + key);
+    return m_settings->value(group + "/" + key, default_value);
 }
 
 void App::set_setting(const QString& group, const QString& key, const QVariant& value)

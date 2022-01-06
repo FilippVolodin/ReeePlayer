@@ -153,6 +153,22 @@ QSlider::sub-page:horizontal {
       </item>
      </layout>
     </item>
+    <item>
+     <widget class="Waveform" name="waveform" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -408,6 +424,48 @@ QSlider::sub-page:horizontal {
     <string>Space</string>
    </property>
   </action>
+  <action name="actJumpCutterSettings">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/settings</normaloff>:/MainWindow/settings</iconset>
+   </property>
+   <property name="text">
+    <string>JumpCutter Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>JumpCutter</string>
+   </property>
+  </action>
+  <action name="actShowWaveform">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/waveform</normaloff>:/MainWindow/waveform</iconset>
+   </property>
+   <property name="text">
+    <string>Waveform</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Waveform</string>
+   </property>
+  </action>
+  <action name="actJumpCutter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/jumpcutter</normaloff>:/MainWindow/jumpcutter</iconset>
+   </property>
+   <property name="text">
+    <string>JumpCutter</string>
+   </property>
+   <property name="toolTip">
+    <string>Activate JumpCutter</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -420,6 +478,12 @@ QSlider::sub-page:horizontal {
    <class>SubtitlesView</class>
    <extends>QWidget</extends>
    <header>subtitles_view.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Waveform</class>
+   <extends>QWidget</extends>
+   <header>waveform.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
