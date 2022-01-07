@@ -222,7 +222,7 @@ namespace qsubs::webvtt
             if (m_line.isEmpty())
             {
                 break_loop = true;
-                m_line = m_input.readLine();
+                // CHECK m_line = m_input.readLine();
             }
             else if (m_line.contains(ARROW))
             {
@@ -266,7 +266,9 @@ namespace qsubs::webvtt
                 if (!buffer.isEmpty())
                     buffer.append(QChar::LineFeed);
 
-                buffer.append(m_line);
+                // VTT spec doesn't contain this condition. Added for srt compatibility (skip index)
+                if(seen_arrow)
+                    buffer.append(m_line);
                 m_line = m_input.readLine();
             }
         }
