@@ -8,6 +8,7 @@
 #include "clips_view_model.h"
 #include "player_window.h"
 #include "waiting_dialog.h"
+#include "video_download_dialog.h"
 
 constexpr const char* MAIN_WINDOW_GEOMETRY_KEY = "main_window_geometry";
 constexpr const char* MAIN_WINDOW_STATE_KEY = "main_window_state";

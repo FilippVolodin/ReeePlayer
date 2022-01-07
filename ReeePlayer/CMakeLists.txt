@@ -40,6 +40,7 @@ target_sources(ReeePlayer PRIVATE
 	src/widgets/waiting_dialog.cpp	
 	src/widgets/waveform.cpp	
     src/widgets/jumpcutter_settings_dialog.cpp
+    src/widgets/video_download_dialog.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
