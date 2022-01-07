@@ -272,7 +272,10 @@ void PlayerWindow::setup_actions()
 
     connect(ui.actRepeatClip, &QAction::triggered,
         this, &PlayerWindow::on_actRepeatClip_triggered);
-}
+
+    connect(ui.waveform, &Waveform::mouse_release, [this](int time, QMouseEvent* event) {
+        m_ui_state->on_waveform_mouse_release(time, event); });
+};
 
 void PlayerWindow::setup_player_events()
 {
@@ -519,6 +522,8 @@ void PlayerWindow::on_slider_value_changed(int value)
         qDebug(">>> on_slider_value_changed: %d", value);
         ui.videoWidget->set_time(value);
         set_time(value);
+        ui.waveform->set_time(value);
+        ui.waveform->repaint();
     }
 }
 
@@ -526,6 +531,8 @@ void PlayerWindow::on_edt_loop_a_value_changed(int)
 {
     int a = get_loop_a();
     int b = get_loop_b();
+    if (m_jc)
+        ui.waveform->set_clip_a(a);
     ui.videoWidget->play(a, b, 1);
 }
 
@@ -533,6 +540,8 @@ void PlayerWindow::on_edt_loop_b_value_changed(int)
 {
     int a = get_loop_a();
     int b = get_loop_b();
+    if (m_jc)
+        ui.waveform->set_clip_b(b);
     ui.videoWidget->play(std::max(a, b - 1000), b, 1);
 }
 
@@ -704,12 +713,16 @@ void PlayerWindow::show_video()
     }
     catch(std::exception&)
     {
-
     }
+
     startTimer(20);
 
     ui.videoWidget->play();
     ui.videoWidget->set_rate(1.0);
+
+    int time = m_file->get_player_time();
+    if (time > 0)
+        ui.videoWidget->set_time(time);
 }
 
 void PlayerWindow::show_clip()
@@ -1114,6 +1127,7 @@ void WatchingState::activate()
         bool show_waveform = m_pw->m_app->get_setting("gui", "show_waveform", true).toBool();
         ui.actShowWaveform->setChecked(show_waveform);
         ui.waveform->setVisible(show_waveform);
+        ui.waveform->set_clip_mode(false);
 
         bool jc_enabled = m_pw->m_app->get_setting("jumpcutter", "enabled", true).toBool();
         ui.actJumpCutter->setChecked(jc_enabled);
@@ -1159,6 +1173,18 @@ void WatchingState::set_time(int)
     m_pw->update_cue(1);
 }
 
+void WatchingState::on_waveform_mouse_release(int time, QMouseEvent*)
+{
+    m_pw->ui.videoWidget->set_time(time);
+    if (!m_pw->ui.videoWidget->is_playing())
+    {
+        m_pw->set_slider_value(time);
+        m_pw->set_time(time);
+        m_pw->ui.waveform->set_time(time);
+        m_pw->ui.waveform->repaint();
+    }
+}
+
 void WatchingState::play()
 {
     if (m_pw->ui.videoWidget->at_end())
@@ -1197,9 +1223,6 @@ void AddingClipState::activate()
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
 
-    if (m_pw->m_jc)
-        ui.waveform->setVisible(true);
-
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
     {
         m_pw->m_subtitle_views[i]->set_editable(true);
@@ -1233,7 +1256,15 @@ void AddingClipState::activate()
     }
 
     if (m_pw->m_jc)
-        m_pw->m_jc->set_enabled(false);
+    {
+        ui.waveform->set_clip_mode(true);
+        ui.waveform->set_clip_a(a);
+        ui.waveform->set_clip_b(b);
+        ui.waveform->setVisible(true);
+    }
+
+    if (m_pw->m_jc)
+    m_pw->m_jc->set_enabled(false);
 
     m_pw->m_edt_loop_a->setValue(a);
     m_pw->m_edt_loop_b->setValue(b);
@@ -1272,6 +1303,18 @@ void AddingClipState::on_cancel_clip()
 void AddingClipState::on_player_timer_triggered(int)
 {
     m_pw->ui.videoWidget->pause();
+}
+
+void AddingClipState::on_waveform_mouse_release(int time, QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        m_pw->m_edt_loop_a->setValue(time, false);
+    }
+    else if (event->button() == Qt::RightButton)
+    {
+        m_pw->m_edt_loop_b->setValue(time, false);
+    }
 }
 
 WatchingClipState::WatchingClipState(PlayerWindow* pw) : ClipState(pw)

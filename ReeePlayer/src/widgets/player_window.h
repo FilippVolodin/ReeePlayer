@@ -42,6 +42,7 @@ public:
     virtual void on_remove_clip() {}
     virtual void on_time_changed(int) {};
     virtual void on_player_timer_triggered(int) {};
+    virtual void on_waveform_mouse_release(int time, QMouseEvent*) {};
 protected:
     PlayerWindow* m_pw;
 };
@@ -63,6 +64,7 @@ public:
     void on_time_changed(int) override;
     void on_player_timer_triggered(int) override;
     void set_time(int) override;
+    void on_waveform_mouse_release(int time, QMouseEvent*) override;
 };
 
 class ClipState : public UIState
@@ -82,6 +84,7 @@ public:
     void on_save_clip() override;
     void on_cancel_clip() override;
     void on_player_timer_triggered(int) override;
+    void on_waveform_mouse_release(int time, QMouseEvent*) override;
 };
 
 class WatchingClipState : public ClipState

@@ -17,6 +17,36 @@ void Waveform::set_time(int time)
     m_time = time;
 }
 
+bool Waveform::is_clip_mode(bool) const
+{
+    return m_clip_mode;
+}
+
+void Waveform::set_clip_mode(bool clip_mode)
+{
+    m_clip_mode = clip_mode;
+}
+
+int Waveform::get_clip_a() const
+{
+    return m_clip_a;
+}
+
+void Waveform::set_clip_a(int a)
+{
+    m_clip_a = a;
+}
+
+int Waveform::get_clip_b() const
+{
+    return m_clip_b;
+}
+
+void Waveform::set_clip_b(int b)
+{
+    m_clip_b = b;
+}
+
 void Waveform::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
@@ -32,15 +62,33 @@ void Waveform::paintEvent(QPaintEvent *)
         return;
 
     int length = volumes.size() * chunk_length_ms;
-    int time_window = std::min(length, 10000);
+
+    int time_window;
+
+    if (m_clip_mode)
+    {
+        int clip_len = m_clip_b - m_clip_a;
+        m_a = m_clip_a - clip_len / 4 - 1000;
+        m_b = m_clip_b + clip_len / 4 + 1000;
+        time_window = m_b - m_a;
+    }
+    else
+    {
+        time_window = std::min(length, 10000);
+        m_a = m_time - (time_window / 2);
+        m_b = m_time + (time_window / 2);
+    }
+
     int ch_time_window = time_window / chunk_length_ms;
+    int ch_a = m_a / chunk_length_ms;
+    int ch_b = m_b / chunk_length_ms;
 
-    int a = m_time - (time_window / 2);
-    int b = m_time + (time_window / 2);
-
-
-    int ch_a = a / chunk_length_ms;
-    int ch_b = b / chunk_length_ms;
+    if (m_clip_mode)
+    {
+        int clip_a_x = ((float)(m_clip_a - m_a) / time_window) * width();
+        int clip_b_x = ((float)(m_clip_b - m_a) / time_window) * width();
+        painter.fillRect(clip_a_x, 0, clip_b_x - clip_a_x, height(), Qt::green);
+    }
 
     QPen pen(Qt::blue);
     painter.setPen(pen);
@@ -57,22 +105,25 @@ void Waveform::paintEvent(QPaintEvent *)
 
     bool cur_interval_value = intervals[interval_begin];
 
-    for (int x0 = 0; x0 < width(); x0++)
+    if (!m_clip_mode)
     {
-        int ch = (float)x0 / width() * ch_time_window + ch_a;
-        if (ch < 0 || ch >= volumes.size())
-            continue;
-
-        if (intervals[ch] != cur_interval_value || x0 == width() - 1)
+        for (int x0 = 0; x0 < width(); x0++)
         {
-            if (!cur_interval_value)
+            int ch = (float)x0 / width() * ch_time_window + ch_a;
+            if (ch < 0 || ch >= volumes.size())
+                continue;
+
+            if (intervals[ch] != cur_interval_value || x0 == width() - 1)
             {
-                int zone_x0 = ((float)(interval_begin - ch_a) / ch_time_window) * width();
-                int zone_x1 = ((float)(ch - ch_a) / ch_time_window) * width();
-                painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), Qt::lightGray);
+                if (!cur_interval_value)
+                {
+                    int zone_x0 = ((float)(interval_begin - ch_a) / ch_time_window) * width();
+                    int zone_x1 = ((float)(ch - ch_a) / ch_time_window) * width();
+                    painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), Qt::lightGray);
+                }
+                cur_interval_value = intervals[ch];
+                interval_begin = ch;
             }
-            cur_interval_value = intervals[ch];
-            interval_begin = ch;
         }
     }
 
@@ -90,7 +141,14 @@ void Waveform::paintEvent(QPaintEvent *)
     pen.setColor(Qt::red);
     painter.setPen(pen);
 
-    float time_window_pos = (float)(m_time - a) / (b - a);
+    float time_window_pos = (float)(m_time - m_a) / (m_b - m_a);
     int time_x = time_window_pos * width();
     painter.drawLine(time_x, 0, time_x, height());
+}
+
+void Waveform::mouseReleaseEvent(QMouseEvent* event)
+{
+    int x = event->pos().x();
+    int time = (float)x / width() * (m_b - m_a) + m_a;
+    emit mouse_release(time, event);
 }
