@@ -306,17 +306,7 @@ void MainWindow::watch(File* file)
 
         future_watcher.setFuture(QtConcurrent::run([filename = file->get_path(), log]()
         {
-            QString temp_wav = create_wav(filename, log);
-            if (!temp_wav.isEmpty())
-            {
-                std::vector<uint8_t> volumes = read_wav(temp_wav, log);
-                QFileInfo fi(filename);
-                QString vol_filename = fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
-                
-                save_volumes(vol_filename, volumes);
-                QDir dir;
-                dir.remove(vol_filename);
-            }
+            create_vol_file(filename, log);
         }));
 
         wd.exec();

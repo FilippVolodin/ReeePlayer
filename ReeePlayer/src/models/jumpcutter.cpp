@@ -151,6 +151,19 @@ bool JumpCutter::current_interval_is_loud(int t) const
     return m_fragments[chunk];
 }
 
+void create_vol_file(const QString& media_filename, std::function<void(QString)> log)
+{
+    QString temp_wav = create_wav(media_filename, log);
+    if (!temp_wav.isEmpty())
+    {
+        std::vector<uint8_t> volumes = read_wav(temp_wav, log);
+        QFileInfo fi(media_filename);
+        QString vol_filename = fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
+
+        save_volumes(vol_filename, volumes);
+    }
+}
+
 QString create_wav(const QString& filename, std::function<void(QString)> log)
 {
     log("Start wav-file generation");

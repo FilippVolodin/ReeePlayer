@@ -51,6 +51,7 @@ private:
 };
 
 bool is_vol_exist(const QString&);
+void create_vol_file(const QString& media_filename, std::function<void(QString)> log);
 QString get_vol_file(const QString&);
 QString create_wav(const QString& filename, std::function<void(QString)> log);
 std::vector<uint8_t> read_wav(const QString& filename, std::function<void(QString)> log);
