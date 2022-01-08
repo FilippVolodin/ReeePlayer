@@ -1341,11 +1341,13 @@ void AddingClipState::on_waveform_mouse_release(int time, QMouseEvent* event)
 
     if (event->button() == Qt::LeftButton)
     {
-        m_pw->m_edt_loop_a->setValue(time, false);
+        if (time < b)
+            m_pw->m_edt_loop_a->setValue(time, false);
     }
     else if (event->button() == Qt::RightButton)
     {
-        m_pw->m_edt_loop_b->setValue(time, false);
+        if (time > a)
+            m_pw->m_edt_loop_b->setValue(time, false);
     }
 }
 
@@ -1354,15 +1356,19 @@ void AddingClipState::on_wheel_event(int time, QWheelEvent* event)
     int a = m_pw->get_loop_a();
     int b = m_pw->get_loop_b();
     SpinBox* sb;
+    int delta = event->angleDelta().y() > 0 ? -20 : 20;
     if (time < (a + b) / 2)
-        sb = m_pw->m_edt_loop_a;
+    {
+        int new_time = a + delta;
+        if (new_time < b)
+            m_pw->m_edt_loop_a->setValue(new_time, false);
+    }
     else
-        sb = m_pw->m_edt_loop_b;
-    
-    int cur = sb->value();
-
-    int delta = event->angleDelta().y() > 0 ? 20 : -20;
-    sb->setValue(cur - delta, false);
+    {
+        int new_time = b + delta;
+        if (new_time > a)
+            m_pw->m_edt_loop_b->setValue(new_time, false);
+    }
 }
 
 WatchingClipState::WatchingClipState(PlayerWindow* pw) : ClipState(pw)
