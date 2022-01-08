@@ -68,9 +68,31 @@ void VideoTreeView::show_context_menu(const QPoint& pos)
 {
     QMenu menu(tr("Context menu"), this);
 
-    QAction action1("Repeat selected", this);
-    connect(&action1, &QAction::triggered, this, &VideoTreeView::repeat_selected);
-    menu.addAction(&action1);
+    QAction repeat_action("Repeat selected", this);
+    connect(&repeat_action, &QAction::triggered, this, &VideoTreeView::repeat_selected);
+    menu.addAction(&repeat_action);
+
+    QAction* download_action = nullptr;
+    QModelIndexList list = selectionModel()->selectedIndexes();
+    if (list.size() == 1)
+    {
+        const QModelIndex& index = list.first();
+        LibraryTree* tree = static_cast<LibraryTree*>(model());
+        const LibraryItem* item = tree->get_item(index);
+        if (item->get_item_type() == ItemType::Folder)
+        {
+            download_action = new QAction(QString("Download to \"%1\"...").arg(item->get_name()), this);
+            connect(download_action, &QAction::triggered, this, &VideoTreeView::download);
+        }
+
+    }
+
+    if (download_action != nullptr)
+    {
+        menu.addSeparator();
+        menu.addAction(download_action);
+    }
 
     menu.exec(mapToGlobal(pos));
+
 }

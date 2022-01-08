@@ -11,6 +11,17 @@ class VideoDownloadDialog : public QDialog
 public:
     VideoDownloadDialog(QWidget *parent = Q_NULLPTR);
     ~VideoDownloadDialog();
+
+    QString get_dir() const;
+    void set_dir(const QString&);
+
+    QString get_subtitles() const;
+    void set_subtitles(const QString&);
+
+    int get_resolution() const;
+    void set_resolution(int);
+
+    bool accepted() const;
 protected:
 
     void closeEvent(QCloseEvent* event) override;
@@ -18,6 +29,7 @@ protected:
 private slots:
     void on_btnDownload_clicked();
     void on_btnCancel_clicked();
+    void on_btnSelectDir_clicked();
 
 private:
     void log(const QString&);
@@ -26,6 +38,7 @@ private:
 
     std::unique_ptr<QProcess> m_yt_dlp;
     bool m_processing = false;
+    bool m_accepted = false;
 };
 
 #endif

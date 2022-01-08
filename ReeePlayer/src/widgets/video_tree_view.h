@@ -15,6 +15,7 @@ signals:
     void dir_dropped(const QString& dir);
 
     void repeat_selected();
+    void download();
 protected:
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent *event) override;

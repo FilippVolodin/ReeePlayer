@@ -1,15 +1,50 @@
 #include "video_download_dialog.h"
 
-// TODO directory, save settings, update directory
-
 VideoDownloadDialog::VideoDownloadDialog(QWidget *parent)
     : QDialog(parent)
 {
     ui.setupUi(this);
+    this->setWindowTitle(tr("Download video"));
 }
 
 VideoDownloadDialog::~VideoDownloadDialog()
 {
+}
+
+QString VideoDownloadDialog::get_dir() const
+{
+    QDir dir(ui.edtDir->text());
+    return dir.absolutePath();
+}
+
+void VideoDownloadDialog::set_dir(const QString& dir)
+{
+    ui.edtDir->setText(dir);
+}
+
+QString VideoDownloadDialog::get_subtitles() const
+{
+    return ui.edtSubtitles->text();
+}
+
+void VideoDownloadDialog::set_subtitles(const QString& subs)
+{
+    ui.edtSubtitles->setText(subs);
+}
+
+int VideoDownloadDialog::get_resolution() const
+{
+    return ui.edtResolution->value();
+}
+
+void VideoDownloadDialog::set_resolution(int res)
+{
+    return ui.edtResolution->setValue(res);
+}
+
+bool VideoDownloadDialog::accepted() const
+{
+    return m_accepted;
 }
 
 void VideoDownloadDialog::closeEvent(QCloseEvent* event)
@@ -25,6 +60,17 @@ void VideoDownloadDialog::on_btnCancel_clicked()
     close();
 }
 
+void VideoDownloadDialog::on_btnSelectDir_clicked()
+{
+    QString dir = QFileDialog::getExistingDirectory(this,
+        tr("Select directory"),
+        ui.edtDir->text(),
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (!dir.isEmpty())
+        ui.edtDir->setText(dir);
+}
+
 void VideoDownloadDialog::log(const QString& str)
 {
     ui.edtReport->appendPlainText(str);
@@ -33,13 +79,32 @@ void VideoDownloadDialog::log(const QString& str)
 
 void VideoDownloadDialog::on_btnDownload_clicked()
 {
+    m_accepted = true;
+
+    if (ui.edtURLs->toPlainText().trimmed().isEmpty())
+    {
+        log(tr("Enter one or more URLs"));
+        return;
+    }
+
+    QDir dir(ui.edtDir->text());
+    if (!dir.exists())
+    {
+        bool res = dir.mkpath(".");
+        if (!res)
+        {
+            log(QString(tr("Can't create directory: %1").arg(ui.edtDir->text())));
+            return;
+        }
+    }
+
     QStringList args;
     args //<< "--skip-download"
         << "--sub-langs" << ui.edtSubtitles->text()
         << "--sub-format" << "vtt/srt"
         << "--write-subs"
-        << "-S" << QString("height:%d").arg(ui.edtResolution->value())
-        << "--paths" << "e:\\dev\\TestAudio";
+        << "-S" << QString("height:%1").arg(ui.edtResolution->value())
+        << "--paths" << ui.edtDir->text();
 
     QString urls = ui.edtURLs->toPlainText();
     QStringList url_list = urls.split(QRegularExpression("\r\n|\r|\n"), Qt::SkipEmptyParts);

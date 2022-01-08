@@ -138,6 +138,8 @@
    <addaction name="actReloadDir"/>
    <addaction name="separator"/>
    <addaction name="actRepeatClips"/>
+   <addaction name="separator"/>
+   <addaction name="actDownload"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actOpenDir">
@@ -182,6 +184,18 @@
    </property>
    <property name="toolTip">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actDownload">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/download</normaloff>:/MainWindow/download</iconset>
+   </property>
+   <property name="text">
+    <string>Download</string>
+   </property>
+   <property name="toolTip">
+    <string>Download Video</string>
    </property>
   </action>
  </widget>

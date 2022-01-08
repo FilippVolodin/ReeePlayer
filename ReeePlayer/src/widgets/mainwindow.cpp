@@ -39,6 +39,12 @@ MainWindow::MainWindow(App* app, QWidget *parent)
     connect(ui.videos, &VideoTreeView::repeat_selected,
         this, &MainWindow::on_repeat_selected_triggered);
 
+    connect(ui.videos, &VideoTreeView::download,
+        this, &MainWindow::on_videotree_download_triggered);
+
+    connect(ui.actDownload, &QAction::triggered,
+        this, &MainWindow::on_actDownload_triggered);
+
     connect(ui.videos, &QAbstractItemView::doubleClicked,
         this, &MainWindow::on_videos_doubleClicked);
 
@@ -142,8 +148,9 @@ void MainWindow::on_actOpenDir_triggered()
         tr("Select directory"),
         QString(),
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-    open_dir(dir);
+    
+    if (!dir.isEmpty())
+        open_dir(dir);
 }
 
 void MainWindow::on_actReloadDir_triggered()
@@ -172,6 +179,24 @@ void MainWindow::on_repeat_selected_triggered()
     }
 
     repeat(get_files(items));
+}
+
+void MainWindow::on_videotree_download_triggered()
+{
+    QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
+    if (list.size() == 1)
+    {
+        const LibraryItem* item = m_library_tree->get_item(list.first());
+        if (item->get_item_type() == ItemType::Folder)
+        {
+            download_to(item->get_dir_path());
+        }
+    }
+}
+
+void MainWindow::on_actDownload_triggered()
+{
+    download_to(m_app->get_library()->get_root_path());
 }
 
 void MainWindow::on_videos_itemClicked(QTreeWidgetItem* item, int /*column*/)
@@ -247,10 +272,12 @@ void MainWindow::set_default_ui(State state)
     case State::ProjectNotLoaded:
         ui.actReloadDir->setEnabled(false);
         ui.actRepeatClips->setEnabled(false);
+        ui.actDownload->setEnabled(false);
         break;
     case State::ProjectLoaded:
         ui.actReloadDir->setEnabled(true);
         ui.actRepeatClips->setEnabled(true);
+        ui.actDownload->setEnabled(true);
         ui.edtSearchedText->clear();
         break;
     }
@@ -340,5 +367,22 @@ void MainWindow::repeat(std::vector<File*> files)
     {
         QMessageBox::information(this, tr("Information"),
             tr("No clips to repeat"));
+    }
+}
+
+void MainWindow::download_to(const QString& dir)
+{
+    VideoDownloadDialog vdd;
+
+    vdd.set_dir(dir);
+    vdd.set_subtitles(m_app->get_setting("download", "subtitles", "en*, ru*").toString());
+    vdd.set_resolution(m_app->get_setting("download", "resolution", 720).toInt());
+
+    vdd.exec();
+    if (vdd.accepted())
+    {
+        m_app->set_setting("download", "subtitles", vdd.get_subtitles());
+        m_app->set_setting("download", "resolution", vdd.get_resolution());
+        open_dir(m_app->get_library()->get_root_path());
     }
 }
