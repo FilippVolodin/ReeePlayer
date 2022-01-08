@@ -24,9 +24,12 @@ public:
     void set_clip_b(int);
 signals:
     void mouse_release(int time, QMouseEvent*);
+    void wheel_event(int time, QWheelEvent* event);
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
+
 private:
     const JumpCutter* m_jc = nullptr;
     int m_time = 0;

@@ -127,6 +127,22 @@ void Waveform::paintEvent(QPaintEvent *)
         }
     }
 
+    pen.setColor(Qt::lightGray);
+    painter.setPen(pen);
+
+    int a_sec = std::min(length / 1000, std::max(0, m_a / 1000));
+    int b_sec = std::min(length / 1000, std::max(0, m_b / 1000));
+
+    for (int sec = a_sec; sec < b_sec; sec++)
+    {
+        float time_window_pos = (float)(sec * 1000 - m_a) / (m_b - m_a);
+        int time_x = time_window_pos * width();
+        painter.drawLine(time_x, 0, time_x, height());
+    }
+
+    pen.setColor(Qt::blue);
+    painter.setPen(pen);
+
     for (int x0 = 0; x0 < width(); x0++)
     {
         int ch = (float)x0 / width() * ch_time_window + ch_a;
@@ -138,12 +154,13 @@ void Waveform::paintEvent(QPaintEvent *)
         painter.drawLine(x0, y0, x0, y1);
     }
 
-    pen.setColor(Qt::red);
-    painter.setPen(pen);
+    //pen.setColor(Qt::red);
+    //painter.setPen(pen);
 
     float time_window_pos = (float)(m_time - m_a) / (m_b - m_a);
     int time_x = time_window_pos * width();
-    painter.drawLine(time_x, 0, time_x, height());
+    painter.fillRect(time_x - 1, 0, 3, height(), Qt::red);
+    //painter.drawLine(time_x, 0, time_x, height());
 }
 
 void Waveform::mouseReleaseEvent(QMouseEvent* event)
@@ -151,4 +168,11 @@ void Waveform::mouseReleaseEvent(QMouseEvent* event)
     int x = event->pos().x();
     int time = (float)x / width() * (m_b - m_a) + m_a;
     emit mouse_release(time, event);
+}
+
+void Waveform::wheelEvent(QWheelEvent* event)
+{
+    int x = event->position().x();
+    int time = (float)x / width() * (m_b - m_a) + m_a;
+    emit wheel_event(time, event);
 }

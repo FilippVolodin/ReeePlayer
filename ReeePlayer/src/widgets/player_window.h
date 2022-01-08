@@ -43,6 +43,7 @@ public:
     virtual void on_time_changed(int) {};
     virtual void on_player_timer_triggered(int) {};
     virtual void on_waveform_mouse_release(int time, QMouseEvent*) {};
+    virtual void on_wheel_event(int time, QWheelEvent*) {};
 protected:
     PlayerWindow* m_pw;
 };
@@ -85,6 +86,7 @@ public:
     void on_cancel_clip() override;
     void on_player_timer_triggered(int) override;
     void on_waveform_mouse_release(int time, QMouseEvent*) override;
+    void on_wheel_event(int time, QWheelEvent*) override;
 };
 
 class WatchingClipState : public ClipState

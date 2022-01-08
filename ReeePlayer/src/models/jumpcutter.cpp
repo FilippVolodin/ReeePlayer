@@ -34,8 +34,9 @@ void JumpCutter::read_volumes(const QString& filename)
     int32_t size;
     in >> version;
     in >> size;
-    std::vector<uint8_t> volumes;
-    volumes.reserve(size);
+    //std::vector<uint8_t> volumes;
+    m_max_volume.clear();
+    m_max_volume.reserve(size);
 
     const int window_size = 20;
     int sum = 0;
@@ -45,22 +46,22 @@ void JumpCutter::read_volumes(const QString& filename)
     {
         int8_t v;
         in >> v;
-        volumes.push_back(v);
+        m_max_volume.push_back(v);
     }
 
-    m_max_volume.clear();
-    m_max_volume.reserve(size);
+    //m_max_volume.clear();
+    //m_max_volume.reserve(size);
 
-    for (int chunk = 0; chunk < size; chunk++)
-    {
-        if (count >= window_size)
-            sum -= volumes[chunk - window_size];
-        sum += volumes[chunk];
-        int avg = sum / window_size;
-        count++;
+    //for (int chunk = 0; chunk < size; chunk++)
+    //{
+    //    if (count >= window_size)
+    //        sum -= volumes[chunk - window_size];
+    //    sum += volumes[chunk];
+    //    int avg = sum / window_size;
+    //    count++;
 
-        m_max_volume.push_back(avg);
-    }
+    //    m_max_volume.push_back(avg);
+    //}
 }
 
 void JumpCutter::fragment()
@@ -69,9 +70,19 @@ void JumpCutter::fragment()
     std::fill(m_fragments.begin(), m_fragments.end(), true);
     int last_loud_chunk = 0;
 
+    const int window_size = 20;
+    int sum = 0;
+    int count = 0;
+
     for (int chunk = 0; chunk < m_max_volume.size(); chunk++)
     {
-        int volume = m_max_volume[chunk];
+        if (count >= window_size)
+            sum -= m_max_volume[chunk - window_size];
+        sum += m_max_volume[chunk];
+        int volume = sum / window_size;
+        count++;
+
+        // int volume = m_max_volume[chunk];
         if (volume >= m_settings->get_volume_threshold() * 256 || chunk == m_max_volume.size() - 1)
         {
             int silent_length_ch = (chunk - last_loud_chunk - 1);

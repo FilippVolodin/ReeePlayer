@@ -223,6 +223,8 @@ void PlayerWindow::setup_actions()
     connect(ui.actAddClip, &QAction::triggered,
         this, &PlayerWindow::on_actAddClip_triggered);
 
+    ui.toolBar->addSeparator();
+
     ui.toolBar->addAction(ui.actShowWaveform);
     connect(ui.actShowWaveform, &QAction::triggered,
         this, &PlayerWindow::on_actShowWaveform_triggered);
@@ -275,6 +277,9 @@ void PlayerWindow::setup_actions()
 
     connect(ui.waveform, &Waveform::mouse_release, [this](int time, QMouseEvent* event) {
         m_ui_state->on_waveform_mouse_release(time, event); });
+
+    connect(ui.waveform, &Waveform::wheel_event, [this](int time, QWheelEvent* event) {
+        m_ui_state->on_wheel_event(time, event); });
 };
 
 void PlayerWindow::setup_player_events()
@@ -1146,10 +1151,10 @@ void WatchingState::activate()
         ui.waveform->setVisible(false);
     }
 
-    QPalette p = m_pw->palette();
-    QColor bg = m_pw->m_default_bg;
-    p.setColor(QPalette::Window, bg);
-    m_pw->setPalette(p);
+    //QPalette p = m_pw->palette();
+    //QColor bg = m_pw->m_default_bg;
+    //p.setColor(QPalette::Window, bg);
+    //m_pw->setPalette(p);
 }
 
 void WatchingState::on_close()
@@ -1229,10 +1234,10 @@ void AddingClipState::activate()
         m_pw->m_subtitle_views[i]->set_show_insert_buttons(true);
     }
 
-    QPalette p = m_pw->palette();
-    QColor bg = 0xFFCDD2;
-    p.setColor(QPalette::Window, bg);
-    m_pw->setPalette(p);
+    //QPalette p = m_pw->palette();
+    //QColor bg = 0xFFCDD2;
+    //p.setColor(QPalette::Window, bg);
+    //m_pw->setPalette(p);
 
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
     {
@@ -1307,6 +1312,33 @@ void AddingClipState::on_player_timer_triggered(int)
 
 void AddingClipState::on_waveform_mouse_release(int time, QMouseEvent* event)
 {
+    int a = m_pw->get_loop_a();
+    int b = m_pw->get_loop_b();
+
+    if (event->button() == Qt::MiddleButton)
+    {
+        m_pw->ui.videoWidget->play(a, b, 1);
+        return;
+    }
+
+    //SpinBox* sb;
+    //if (time < (a + b) / 2)
+    //    sb = m_pw->m_edt_loop_a;
+    //else
+    //    sb = m_pw->m_edt_loop_b;
+
+    //int cur = sb->value();
+
+    //if (event->button() == Qt::LeftButton)
+    //{
+    //    sb->setValue(time, false);
+    //}
+    //else if (event->button() == Qt::RightButton)
+    //{
+    //    int delta = (time < cur) ? -20 : 20;
+    //    sb->setValue(cur + delta, false);
+    //}
+
     if (event->button() == Qt::LeftButton)
     {
         m_pw->m_edt_loop_a->setValue(time, false);
@@ -1315,6 +1347,22 @@ void AddingClipState::on_waveform_mouse_release(int time, QMouseEvent* event)
     {
         m_pw->m_edt_loop_b->setValue(time, false);
     }
+}
+
+void AddingClipState::on_wheel_event(int time, QWheelEvent* event)
+{
+    int a = m_pw->get_loop_a();
+    int b = m_pw->get_loop_b();
+    SpinBox* sb;
+    if (time < (a + b) / 2)
+        sb = m_pw->m_edt_loop_a;
+    else
+        sb = m_pw->m_edt_loop_b;
+    
+    int cur = sb->value();
+
+    int delta = event->angleDelta().y() > 0 ? 20 : -20;
+    sb->setValue(cur - delta, false);
 }
 
 WatchingClipState::WatchingClipState(PlayerWindow* pw) : ClipState(pw)
