@@ -51,7 +51,7 @@ void Waveform::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 
-    painter.fillRect(0, 0, width(), height(), Qt::white);
+   // painter.fillRect(0, 0, width(), height(), /*QColor(0xD6, 0xD6, 0xD6)*/ palette().color(QWidget::backgroundRole()));
 
     if (m_jc == nullptr)
         return;
@@ -87,7 +87,7 @@ void Waveform::paintEvent(QPaintEvent *)
     {
         int clip_a_x = ((float)(m_clip_a - m_a) / time_window) * width();
         int clip_b_x = ((float)(m_clip_b - m_a) / time_window) * width();
-        painter.fillRect(clip_a_x, 0, clip_b_x - clip_a_x, height(), Qt::green);
+        painter.fillRect(clip_a_x, 0, clip_b_x - clip_a_x, height(), QColor(255, 201, 14));
     }
 
     QPen pen(Qt::blue);
@@ -127,7 +127,7 @@ void Waveform::paintEvent(QPaintEvent *)
         }
     }
 
-    pen.setColor(Qt::lightGray);
+    pen.setColor(Qt::gray);
     painter.setPen(pen);
 
     int a_sec = std::min(length / 1000, std::max(0, m_a / 1000));
