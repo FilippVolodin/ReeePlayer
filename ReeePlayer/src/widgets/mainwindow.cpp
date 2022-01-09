@@ -375,7 +375,7 @@ void MainWindow::download_to(const QString& dir)
     VideoDownloadDialog vdd;
 
     vdd.set_dir(dir);
-    vdd.set_subtitles(m_app->get_setting("download", "subtitles", "en*, ru*").toString());
+    vdd.set_subtitles(m_app->get_setting("download", "subtitles", "en.*, ru.*").toString());
     vdd.set_resolution(m_app->get_setting("download", "resolution", 720).toInt());
 
     vdd.exec();

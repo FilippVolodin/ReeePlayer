@@ -43,17 +43,7 @@
      <item>
       <widget class="QLineEdit" name="edtSubtitles">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Comma-separated list of languages (for full list search &quot;ISO 639-1&quot;):&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;b&gt;en&lt;/b&gt; (english)&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;ru&lt;/b&gt; (russian)&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;es&lt;/b&gt; (spanish)&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;it&lt;/b&gt; (italian)&lt;/li&gt;
-&lt;li&gt;&lt;b&gt;zh&lt;/b&gt; (chinese)&lt;/li&gt;
-&lt;li&gt;etc...&lt;/li&gt;
-&lt;/ul&gt;
-The asterisk symbol (*) sets the pattern e. g. &quot;&lt;b&gt;en*&lt;/b&gt;&quot; = &quot;&lt;b&gt;en-US, en-GB&lt;/b&gt;&quot;
-</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Comma-separated list of languages (for full list search &amp;quot;ISO 639-1&amp;quot;):&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;en&lt;/span&gt; (english)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ru&lt;/span&gt; (russian)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;es&lt;/span&gt; (spanish)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;it&lt;/span&gt; (italian)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;zh&lt;/span&gt; (chinese)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;etc...&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;The asterisk symbol (.*) sets the regex-pattern e. g. &amp;quot;&lt;span style=&quot; font-weight:700;&quot;&gt;en.*&lt;/span&gt;&amp;quot; = &amp;quot;&lt;span style=&quot; font-weight:700;&quot;&gt;en-US, en-GB&lt;/span&gt;&amp;quot; &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>en*,ru*</string>
