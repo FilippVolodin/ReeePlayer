@@ -2,7 +2,13 @@
 
 # ReeePlayer
 
-The ReeePlayer application is designed for spaced repetition of fragments (clips) of video and audio files with similar principle as in [Anki](https://en.wikipedia.org/wiki/Anki_(software)).
+The ReeePlayer application is designed for spaced repetition of fragments (clips) of video and audio files with similar principle as in [Anki](https://en.wikipedia.org/wiki/Anki_(software)) and has the next features:
+
+- Download mediafiles from different sites
+- Watch video and audio files with two subtitles (by now, only external)
+- Change the playback speed without changing the tempo
+- Skips silent parts in real time
+- Quickly select and save video clips with text
 
 ## Social Network Links
 
@@ -11,12 +17,12 @@ The ReeePlayer application is designed for spaced repetition of fragments (clips
 
 ## Guides in other languages
 
-- [Russian](doc/README.ru.md)   
+- [Russian](doc/README.ru.md)
 
 ## Download
 
-- [For Windows](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x64.zip)
-- [For Windows (x86)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x86.zip)
+- [For Windows (x64)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.2-win-x64.zip)
+- [For Windows (old version, x86)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x86.zip)
 
 ## Getting Started
 
@@ -48,9 +54,46 @@ When the counter reaches zero, you can still continue repeating. In this case, t
 
 ## Details
 
+### Prepare video files
+
+First of all, it is recommended to create a directory on your computer for media files that you plan to use for spaced repetition. For example, you can create `Video` directory on disk `C:` as shown below.
+
+![](doc/create_video_folder.png?raw=true)
+
+Then, for convenience, you can create subdirectories in the main directory for videos with different subjects. But this can also be done later at any time. If you already have video files, copy them into the directory (or the subdirectory) you have created.
+
+![](doc/copy_files.png?raw=true)
+
+Open ReeePlayer and push ![](doc/open_directory.png?raw=true). Navigate to main directory (e.g. `C:\Video`) and press `Select Folder`.
+
+![](doc/directory_example.png?raw=true)
+
+ReeePlayer uses [yt-dlp](https://github.com/yt-dlp/yt-dlp), so it is possible to download video from [different sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md). Press ![](doc/btn_download.png?raw=true).
+
+Copy one or more video-links into the URLs field.
+
+![](doc/download_window.png?raw=true)
+
+Enter subtitle languages, separated by commas. [Regular expression](https://en.wikipedia.org/wiki/Regular_expression) can be used. A few examples:
+
+- `en` (english without specifying country)
+- `en-us` (US-english)
+- `en-gb` (GB-english)
+- `en.*` (all available english)
+- `en.*,ru.*,es.*` (all available english, russian and spanish)
+- `.*` (all available subtitles)
+
+The preferred resolution field is needed to limit the size of the downloaded video. The common resolutions are: 360p, 480p, 720p, 1080p (the higher the value, the better the quality and larger the video size).
+
+Select directory and press `Download`.
+
+To save time on specifying the directory you can right-click the mouse on the directory in the main window
+
+![](doc/download_to.png?raw=true)
+
 ### Watching
 
-When you start watching a video file named `x.<ext>`, the application searches for subtitle files named `x<lang>.<srt or vtt>` in the same directory. Available subtitles can be selected from the ![](doc/subs_cmb.png?raw=true) dropdown list in both panels. 
+When you start watching a video file named `x.<ext>`, the application searches for subtitle files named `x<lang>.<srt or vtt>` in the same directory. Available subtitles can be selected from the dropdown list ![](doc/subs_cmb.png?raw=true) in both panels. 
 
 The input field ![](doc/sync_subs.png?raw=true) is for synchronizing subtitles with video using arrows or the mouse wheel.
 
@@ -60,9 +103,15 @@ Hotkeys:
 
 - `Space` - play/pause
 - `Left`, `Right` - rewind or forward for 2 seconds
-- `5`, `6`, `7`, `8`, `9`, `0` - playback rate: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 of normal
+- `3`, `4`, `5`, `6`, `7`, `8` - playback speed: 0.5, 0.75, 1, 1.25, 1.5, 2 of normal
 - `1`, `2` - show the current text of the first/second subtitles if they are hidden
 - `Enter` - add a clip
+
+You can skip the silent parts by pressing the button ![](doc/btn_jumpcutter.png?raw=true) on the taskbar. It is recommend to adjust the detection of silence fragments by pressing ![](doc/jumpcutter_settings.png?raw=true).
+
+ ![](doc/jumpcutter_window.png?raw=true)
+
+It is possible to fast rewind silent fragments with `Silence speed` field. But, unfortunately, it takes time (700-1000 ms) for the player to change the speed after fast-forwarding. To eliminate the negative effect, increase the value in the `Margin before` field to at least 700.
 
 ### Adding a clip
 
@@ -72,11 +121,12 @@ Hotkeys:
  
  If necessary, you can change them using:
 
+- Keys `Ctrl+Left`, `Ctrl+Right`, `Alt+Left`, `Alt+Right` (recommended)
 - Arrows on the toolbar
 - Scroll the mouse scroll wheel when you hover over the corresponding input field
-- Keys `Ctrl+Left`, `Ctrl+Right`, `Alt+Left`, `Alt+Left`. 
+- Use mouse over waveform as shown below
 
-The last method is the most preferable.
+ ![](doc/waveform_clip_edit.png?raw=true)
 
 If you want to complete the text of the clip with the previous or next cues from the subtitles, you can do so with the ![](doc/insert_cue.png?raw=true) buttons.
 

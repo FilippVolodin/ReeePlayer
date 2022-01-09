@@ -31,4 +31,7 @@
     <file alias="show_subtitle">Resources/show_subtitle.png</file>
     <file alias="show_subtitles">Resources/show_subtitles.png</file>
   </qresource>
+  <qresource prefix="/Images">
+    <file alias="jc_info">Resources/jc_info.png</file>
+  </qresource>
 </RCC>
