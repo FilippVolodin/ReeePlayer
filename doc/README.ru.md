@@ -15,7 +15,7 @@
 
 ## Скачать
 
-- [Для Windows (x64)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.2-win-x64.zip)
+- [Для Windows (x64)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.2/ReeePlayer-0.2-win-x64.zip)
 - [Для Windows (старая версия, x86)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x86.zip)
 
 ## Основы

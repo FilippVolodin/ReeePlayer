@@ -21,7 +21,7 @@ The ReeePlayer application is designed for spaced repetition of fragments (clips
 
 ## Download
 
-- [For Windows (x64)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.2-win-x64.zip)
+- [For Windows (x64)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.2/ReeePlayer-0.2-win-x64.zip)
 - [For Windows (old version, x86)](https://github.com/FilippVolodin/ReeePlayer/releases/download/v0.1/ReeePlayer-0.1-win-x86.zip)
 
 ## Getting Started
