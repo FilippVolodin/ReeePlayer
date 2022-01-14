@@ -13,6 +13,7 @@ class Library;
 class Session;
 class JumpCutter;
 class JumpCutterSettings;
+class IVideoWidget;
 
 namespace qsubs
 {
@@ -255,6 +256,8 @@ private:
     SubtitlesView* m_subtitle_views[NUM_SUBS_VIEWS];
     std::shared_ptr<const qsubs::ISubtitles> m_subtitles[NUM_SUBS_VIEWS];
     const qsubs::ICue* m_cues[NUM_SUBS_VIEWS];
+
+    IVideoWidget* m_video_widget;
 
     SpinBox* m_edt_loop_a;
     QAction* m_edt_loop_a_action;

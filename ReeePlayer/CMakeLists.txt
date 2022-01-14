@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Widgets Concurrent REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Widgets Concurrent WebEngineWidgets REQUIRED)
 
 add_executable(ReeePlayer WIN32)
 	
@@ -41,6 +41,7 @@ target_sources(ReeePlayer PRIVATE
 	src/widgets/waveform.cpp	
     src/widgets/jumpcutter_settings_dialog.cpp
     src/widgets/video_download_dialog.cpp
+    src/widgets/emitter.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -62,8 +63,11 @@ set_target_properties(ReeePlayer PROPERTIES
 )
 
 target_link_libraries(ReeePlayer PRIVATE
-	Qt6::Widgets
-	Qt6::Concurrent
+    Qt::Core
+    Qt::Gui
+	Qt::Widgets
+	Qt::Concurrent
+    Qt::WebEngineWidgets    
 	QSubtitles
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlc.lib
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlccore.lib

@@ -1,11 +1,112 @@
 #include "pch.h"
 #include "video_widget.h"
+#include "emitter.h"
 
 constexpr int MIN_INTERVAL = 100;
 
-VideoWidget::VideoWidget(QWidget* parent)
+using namespace std::chrono;
+
+class CallBackTimer
+{
+
+public:
+    CallBackTimer(int interval, std::function<void(void)> func)
+        :m_is_executed(false), m_is_destroyed(false)
+    {
+        m_thread = std::thread([this, interval, func]()
+            {
+                while (!m_is_destroyed.load(std::memory_order_acquire))
+                {
+                    if (m_is_executed.load(std::memory_order_acquire))
+                    {
+                        if (m_trigger_time != -1 && get_time() > m_trigger_time)
+                        {
+                            func();
+                            m_trigger_time = -1;
+                        }
+                    }
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(interval));
+                }
+            });
+
+    }
+
+    ~CallBackTimer() {
+        m_is_destroyed.store(true, std::memory_order_release);
+        if (m_thread.joinable())
+            m_thread.join();
+    }
+
+    void stop()
+    {
+        set_player_time(get_time());
+        m_is_executed.store(false, std::memory_order_release);
+    }
+
+    void start()
+    {
+        m_is_executed.store(true, std::memory_order_release);
+        m_last_time = high_resolution_clock::now();
+    }
+
+    bool is_running() const noexcept {
+        return (m_is_executed.load(std::memory_order_acquire) &&
+            m_thread.joinable());
+    }
+
+    libvlc_time_t get_player_time()
+    {
+        return m_player_time;
+    }
+
+    void set_player_time(libvlc_time_t player_time)
+    {
+        m_player_time.store(player_time, std::memory_order_release);
+
+        m_last_time = high_resolution_clock::now();
+    }
+
+    void set_trigger(libvlc_time_t trigger_time)
+    {
+        m_trigger_time = trigger_time;
+        m_is_executed.store(true, std::memory_order_release);
+    }
+
+    void set_rate(float rate)
+    {
+        set_player_time(get_time());
+        m_rate = rate;
+    }
+
+    libvlc_time_t get_time() const
+    {
+        if (!m_is_executed)
+            return m_player_time;
+
+        high_resolution_clock::time_point cur_time =
+            high_resolution_clock::now();
+
+        int diff = (cur_time - m_last_time.load()).count() / 1000000;
+        return m_player_time.load() + diff * m_rate.load();
+    }
+private:
+
+    std::thread m_thread;
+    std::atomic<bool> m_is_executed;
+    std::atomic<bool> m_is_destroyed;
+    std::atomic<libvlc_time_t> m_player_time;
+    std::atomic<libvlc_time_t> m_trigger_time;
+    std::atomic<float> m_rate = 1.0;
+
+    std::atomic<high_resolution_clock::time_point> m_last_time;
+};
+
+VideoWidget::VideoWidget(libvlc_instance_t* vlc_inst, QWidget* parent)
     : QWidget(parent)
 {
+    m_emitter = std::make_unique<Emitter>();
+    init(vlc_inst);
 }
 
 VideoWidget::~VideoWidget()
@@ -43,20 +144,20 @@ void VideoWidget::init(libvlc_instance_t* vlc_inst)
 
     libvlc_audio_set_volume(m_vlc_mp, 100);
 
-    connect(this, &VideoWidget::end_reached,
-        this, &VideoWidget::repeat);
+    //connect(this, &VideoWidget::end_reached,
+    //    this, &VideoWidget::repeat);
 
     m_timer = new CallBackTimer(10, [this, mp = m_vlc_mp]()
     {
-        emit this->timer_triggered(this->m_timer->get_time());
+        emit m_emitter->timer_triggered(this->m_timer->get_time());
     });
 
-    connect(this, &VideoWidget::playing, [this]()
+    connect(get_emitter(), &Emitter::playing, [this]()
     {
         this->m_timer->start();
     });
-    connect(this, &VideoWidget::paused, [t = m_timer]() {t->stop();  });
-    connect(this, &VideoWidget::stopped, [t = m_timer]() {t->stop();  });
+    connect(get_emitter(), &Emitter::paused, [t = m_timer]() {t->stop();  });
+    connect(get_emitter(), &Emitter::stopped, [t = m_timer]() {t->stop();  });
 }
 
 void VideoWidget::set_file_name(const QString& file_name, bool)
@@ -182,6 +283,16 @@ bool VideoWidget::at_end() const
     return get_time() + 1000 >= get_length();
 }
 
+QWidget* VideoWidget::get_widget()
+{
+    return this;
+}
+
+Emitter* VideoWidget::get_emitter()
+{
+    return m_emitter.get();
+}
+
 void VideoWidget::mouseReleaseEvent(QMouseEvent *)
 {
     this->setFocus();
@@ -203,11 +314,12 @@ void VideoWidget::repeat()
 void VideoWidget::libvlc_mp_callback(const libvlc_event_t* event, void* data)
 {
     VideoWidget* videoWidget = static_cast<VideoWidget *>(data);
+    Emitter* m_emitter = videoWidget->get_emitter();
     switch (event->type)
     {
     case libvlc_MediaPlayerOpening:
     {
-        emit videoWidget->opening();
+        emit m_emitter->opening();
         break;
     }
     case libvlc_MediaPlayerTimeChanged:
@@ -215,26 +327,26 @@ void VideoWidget::libvlc_mp_callback(const libvlc_event_t* event, void* data)
         libvlc_time_t time = event->u.media_player_time_changed.new_time;
         qDebug(">>> libvlc_MediaPlayerTimeChanged: %d", time);
         videoWidget->m_timer->set_player_time(time);
-        emit videoWidget->time_changed(time);
+        emit m_emitter->time_changed(time);
         break;
     }
     case libvlc_MediaPlayerPlaying:
         qDebug(">>> libvlc_MediaPlayerPlaying");
-        emit videoWidget->playing();
+        emit m_emitter->playing();
         break;
     case libvlc_MediaPlayerPaused:
     {
         qDebug(">>> libvlc_MediaPlayerPaused");
-        emit videoWidget->paused();
+        emit m_emitter->paused();
         break;
     }
     case libvlc_MediaPlayerStopped:
         qDebug(">>> libvlc_MediaPlayerStopped");
-        emit videoWidget->stopped();
+        emit m_emitter->stopped();
         break;
     case libvlc_MediaPlayerEndReached:
         qDebug(">>> libvlc_MediaPlayerEndReached");
-        emit videoWidget->end_reached();
+        emit m_emitter->end_reached();
         break;
     case libvlc_MediaPlayerLengthChanged:
     {
@@ -242,7 +354,7 @@ void VideoWidget::libvlc_mp_callback(const libvlc_event_t* event, void* data)
         int length = event->u.media_player_length_changed.new_length;
         videoWidget->m_length = length;
             
-        emit videoWidget->length_changed(length);
+        emit m_emitter->length_changed(length);
         break;
     }
     }

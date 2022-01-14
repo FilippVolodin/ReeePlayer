@@ -10,6 +10,8 @@
 #include "models/jumpcutter.h"
 #include "waveform.h"
 #include "jumpcutter_settings_dialog.h"
+#include "video_widget.h"
+#include "emitter.h"
 
 constexpr float PLAYBACK_RATES[] = { 0.5, 0.75, 1.0, 1.25, 1.5, 2.0 };
 static const QKeySequence PLAYBACK_KEYS[] =
@@ -92,7 +94,18 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 {
     ui.setupUi(this);
 
-    ui.videoWidget->init(app->get_vlc_instance());
+    VideoWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
+    auto sp = video_widget->sizePolicy();
+    sp.setVerticalStretch(5);
+    video_widget->setSizePolicy(sp);
+
+    QBoxLayout* lo = dynamic_cast<QBoxLayout*>(ui.centralwidget->layout());
+    if (lo != nullptr)
+        lo->insertWidget(0, video_widget);
+    else
+        lo->addWidget(video_widget);
+
+    m_video_widget = video_widget;
 
     setup_actions();
     setup_player_events();
@@ -147,9 +160,9 @@ void PlayerWindow::repeat(std::vector<File*>&& files)
 
 void PlayerWindow::save_player_time()
 {
-    int time = ui.videoWidget->get_time();
+    int time = m_video_widget->get_time();
     m_file->set_player_time(time);
-    m_file->set_length(ui.videoWidget->get_length());
+    m_file->set_length(m_video_widget->get_length());
     m_library->save();
 }
 
@@ -207,9 +220,9 @@ void PlayerWindow::closeEvent(QCloseEvent * event)
 
 void PlayerWindow::timerEvent(QTimerEvent* event)
 {
-    if (ui.videoWidget->is_playing())
+    if (m_video_widget->is_playing())
     {
-        int time = ui.videoWidget->get_accuracy_time();
+        int time = m_video_widget->get_accuracy_time();
         //jumpcutter(time);
         //qDebug("EEEEE %d", time);
         ui.waveform->set_time(time);
@@ -284,15 +297,15 @@ void PlayerWindow::setup_actions()
 
 void PlayerWindow::setup_player_events()
 {
-    connect(ui.videoWidget, &VideoWidget::time_changed,
+    connect(m_video_widget->get_emitter(), &Emitter::time_changed,
         this, &PlayerWindow::on_player_time_changed, Qt::QueuedConnection);
-    connect(ui.videoWidget, &VideoWidget::playing,
+    connect(m_video_widget->get_emitter(), &Emitter::playing,
         this, &PlayerWindow::on_player_playing);
-    connect(ui.videoWidget, &VideoWidget::paused,
+    connect(m_video_widget->get_emitter(), &Emitter::paused,
         this, &PlayerWindow::on_player_paused);
-    connect(ui.videoWidget, &VideoWidget::length_changed,
+    connect(m_video_widget->get_emitter(), &Emitter::length_changed,
         this, &PlayerWindow::set_duration);
-    connect(ui.videoWidget, &VideoWidget::timer_triggered,
+    connect(m_video_widget->get_emitter(), &Emitter::timer_triggered,
         this, &PlayerWindow::on_player_timer_triggered);
 }
 
@@ -415,7 +428,7 @@ void PlayerWindow::on_actPrevClip_triggered()
         update_clip_subtitles(m_clip);
         m_library->save();
 
-        ui.videoWidget->setFocus();
+        m_video_widget->get_widget()->setFocus();
 
         m_clip = m_session->get_prev_clip();
         show_clip();
@@ -432,7 +445,7 @@ void PlayerWindow::on_actNextClip_triggered()
     m_clip->set_rep_time(now());
     m_library->save();
 
-    ui.videoWidget->setFocus();
+    m_video_widget->get_widget()->setFocus();
 
     m_clip = m_session->get_next_clip();
     show_clip();
@@ -445,21 +458,21 @@ void PlayerWindow::on_actRemoveClip_triggered()
 
 void PlayerWindow::on_actPlayPause_triggered()
 {
-    if (ui.videoWidget->is_playing())
+    if (m_video_widget->is_playing())
     {
-        ui.videoWidget->pause();
+        m_video_widget->pause();
     }
     else
     {
-        if (ui.videoWidget->at_end())
-            ui.videoWidget->set_time(0);
-        ui.videoWidget->play();
+        if (m_video_widget->at_end())
+            m_video_widget->set_time(0);
+        m_video_widget->play();
     }
 }
 
 void PlayerWindow::on_actRepeatClip_triggered()
 {
-    ui.videoWidget->play(get_loop_a(), get_loop_b(), 1);
+    m_video_widget->play(get_loop_a(), get_loop_b(), 1);
 }
 
 void PlayerWindow::on_actJumpCutterSettings_triggered()
@@ -522,10 +535,10 @@ void PlayerWindow::on_player_timer_triggered(int64_t t)
 
 void PlayerWindow::on_slider_value_changed(int value)
 {
-    if (ui.videoWidget->get_time() != value)
+    if (m_video_widget->get_time() != value)
     {
         qDebug(">>> on_slider_value_changed: %d", value);
-        ui.videoWidget->set_time(value);
+        m_video_widget->set_time(value);
         set_time(value);
         ui.waveform->set_time(value);
         ui.waveform->repaint();
@@ -538,7 +551,7 @@ void PlayerWindow::on_edt_loop_a_value_changed(int)
     int b = get_loop_b();
     if (m_jc)
         ui.waveform->set_clip_a(a);
-    ui.videoWidget->play(a, b, 1);
+    m_video_widget->play(a, b, 1);
 }
 
 void PlayerWindow::on_edt_loop_b_value_changed(int)
@@ -547,7 +560,7 @@ void PlayerWindow::on_edt_loop_b_value_changed(int)
     int b = get_loop_b();
     if (m_jc)
         ui.waveform->set_clip_b(b);
-    ui.videoWidget->play(std::max(a, b - 1000), b, 1);
+    m_video_widget->play(std::max(a, b - 1000), b, 1);
 }
 
 void PlayerWindow::on_change_loop_shortcut_activated()
@@ -571,7 +584,7 @@ void PlayerWindow::on_change_loop_shortcut_activated()
 
 void PlayerWindow::on_escape_shortcut_activated()
 {
-    ui.videoWidget->setFocus();
+    m_video_widget->get_widget()->setFocus();
 }
 
 void PlayerWindow::on_show_subtitles_shortcut_activated(int index)
@@ -647,7 +660,7 @@ void PlayerWindow::set_duration(int duration)
 
 void PlayerWindow::set_time(int value)
 {
-    int l = ui.videoWidget->get_length();
+    int l = m_video_widget->get_length();
     ui.lblTime->setText(ms_to_time(value) + " / " + ms_to_time(l));
     m_ui_state->set_time(value);
 }
@@ -664,7 +677,7 @@ void PlayerWindow::show_video()
     QFileInfo fileinfo(filename);
 
     setWindowTitle(filename);
-    ui.videoWidget->set_file_name(filename, true);
+    m_video_widget->set_file_name(filename, true);
 
     SubsCollection subs = m_app->get_subtitles(filename);
 
@@ -722,12 +735,12 @@ void PlayerWindow::show_video()
 
     startTimer(20);
 
-    ui.videoWidget->play();
-    ui.videoWidget->set_rate(1.0);
+    m_video_widget->play();
+    m_video_widget->set_rate(1.0);
 
     int time = m_file->get_player_time();
     if (time > 0)
-        ui.videoWidget->set_time(time);
+        m_video_widget->set_time(time);
 }
 
 void PlayerWindow::show_clip()
@@ -735,7 +748,7 @@ void PlayerWindow::show_clip()
 
     if (m_clip == nullptr)
     {
-        ui.videoWidget->stop();
+        m_video_widget->stop();
         set_state(std::make_shared<VideoNotLoadedState>(this));
         QMessageBox::information(this, tr("Information"),
             tr("No clips to repeat"));
@@ -749,12 +762,12 @@ void PlayerWindow::show_clip()
     if (file != m_file)
     {
         m_file = file;
-        ui.videoWidget->set_file_name(filename, true);
+        m_video_widget->set_file_name(filename, true);
     }
 
     set_playback_rate(DEFAULT_PLAYBACK_RATE_INDEX);
 
-    ui.videoWidget->play(m_clip->get_begin(), m_clip->get_end(), 1);
+    m_video_widget->play(m_clip->get_begin(), m_clip->get_end(), 1);
 
     m_edt_loop_a->setValue(m_clip->get_begin());
     m_edt_loop_b->setValue(m_clip->get_end());
@@ -862,7 +875,7 @@ void PlayerWindow::set_playback_rate(int index, bool play)
 
     if (!m_jc || !m_jc->is_enabled())
     {
-        ui.videoWidget->set_rate(m_playback_rate);
+        m_video_widget->set_rate(m_playback_rate);
     }
 }
 
@@ -884,7 +897,7 @@ void PlayerWindow::set_subtitles(int index, const QString& filename)
 
 void PlayerWindow::update_cue(int index)
 {
-    int time = ui.videoWidget->get_time();
+    int time = m_video_widget->get_time();
     const qsubs::ISubtitles* subs = m_subtitles[index].get();
     const qsubs::ICue* cue = nullptr;
     if (subs != nullptr)
@@ -952,17 +965,17 @@ void PlayerWindow::rewind(int delta_ms)
     int new_time;
     if (m_jc)
     {
-        new_time = m_jc->rewind(ui.videoWidget->get_time(), delta_ms);
+        new_time = m_jc->rewind(m_video_widget->get_time(), delta_ms);
     }
     else
     {
-        new_time = ui.videoWidget->get_time() + delta_ms;
+        new_time = m_video_widget->get_time() + delta_ms;
     }
 
-    ui.videoWidget->set_time(new_time);
+    m_video_widget->set_time(new_time);
 
     // Callback on_player_time_changed doesn't work when player is paused
-    if (!ui.videoWidget->is_playing())
+    if (!m_video_widget->is_playing())
     {
         set_time(new_time);
         set_slider_value(new_time);
@@ -1020,26 +1033,26 @@ void PlayerWindow::jumpcutter(int t)
 
     if (m_jc->get_settings()->is_silence_skipping())
     {
-        ui.videoWidget->set_rate(m_playback_rate);
+        m_video_widget->set_rate(m_playback_rate);
         if (current_interval_is_loud)
         {
-            ui.videoWidget->set_timer(next_interval);
+            m_video_widget->set_timer(next_interval);
         }
         else
         {
-            ui.videoWidget->set_time(next_interval);
+            m_video_widget->set_time(next_interval);
         }
     }
     else
     {
-        ui.videoWidget->set_timer(next_interval);
+        m_video_widget->set_timer(next_interval);
         if (current_interval_is_loud)
         {
-            ui.videoWidget->set_rate(m_playback_rate);
+            m_video_widget->set_rate(m_playback_rate);
         }
         else
         {
-            ui.videoWidget->set_rate(m_jc->get_settings()->get_silence_speed());
+            m_video_widget->set_rate(m_jc->get_settings()->get_silence_speed());
         }
     }
 
@@ -1180,8 +1193,8 @@ void WatchingState::set_time(int)
 
 void WatchingState::on_waveform_mouse_release(int time, QMouseEvent*)
 {
-    m_pw->ui.videoWidget->set_time(time);
-    if (!m_pw->ui.videoWidget->is_playing())
+    m_pw->m_video_widget->set_time(time);
+    if (!m_pw->m_video_widget->is_playing())
     {
         m_pw->set_slider_value(time);
         m_pw->set_time(time);
@@ -1192,9 +1205,9 @@ void WatchingState::on_waveform_mouse_release(int time, QMouseEvent*)
 
 void WatchingState::play()
 {
-    if (m_pw->ui.videoWidget->at_end())
-        m_pw->ui.videoWidget->set_time(0);
-    m_pw->ui.videoWidget->play();
+    if (m_pw->m_video_widget->at_end())
+        m_pw->m_video_widget->set_time(0);
+    m_pw->m_video_widget->play();
 }
 
 
@@ -1246,10 +1259,10 @@ void AddingClipState::activate()
         m_pw->update_insert_button(i, 1);
     }
 
-    int time = ui.videoWidget->get_time();
+    int time = m_pw->m_video_widget->get_time();
 
     int a = std::max(0, time - 1000);
-    int b = std::min(ui.videoWidget->get_length(), time + 1000);
+    int b = std::min(m_pw->m_video_widget->get_length(), time + 1000);
     for (const qsubs::ICue* cue : m_pw->m_cues)
     {
         if (cue != nullptr)
@@ -1273,12 +1286,12 @@ void AddingClipState::activate()
 
     m_pw->m_edt_loop_a->setValue(a);
     m_pw->m_edt_loop_b->setValue(b);
-    ui.videoWidget->play(a, b, 1);
+    m_pw->m_video_widget->play(a, b, 1);
 }
 
 void AddingClipState::play()
 {
-    m_pw->ui.videoWidget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
+    m_pw->m_video_widget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
 }
 
 void AddingClipState::on_save_clip()
@@ -1286,8 +1299,8 @@ void AddingClipState::on_save_clip()
     m_pw->save_new_clip();
 
     Ui::PlayerWindow& ui = m_pw->ui;
-    ui.videoWidget->set_time(m_pw->get_loop_a());
-    ui.videoWidget->play();
+    m_pw->m_video_widget->set_time(m_pw->get_loop_a());
+    m_pw->m_video_widget->play();
 
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
         m_pw->m_subtitle_views[i]->next();
@@ -1297,7 +1310,7 @@ void AddingClipState::on_save_clip()
 
 void AddingClipState::on_cancel_clip()
 {
-    m_pw->ui.videoWidget->play();
+    m_pw->m_video_widget->play();
 
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
         m_pw->m_subtitle_views[i]->next();
@@ -1307,7 +1320,7 @@ void AddingClipState::on_cancel_clip()
 
 void AddingClipState::on_player_timer_triggered(int)
 {
-    m_pw->ui.videoWidget->pause();
+    m_pw->m_video_widget->pause();
 }
 
 void AddingClipState::on_waveform_mouse_release(int time, QMouseEvent* event)
@@ -1317,7 +1330,7 @@ void AddingClipState::on_waveform_mouse_release(int time, QMouseEvent* event)
 
     if (event->button() == Qt::MiddleButton)
     {
-        m_pw->ui.videoWidget->play(a, b, 1);
+        m_pw->m_video_widget->play(a, b, 1);
         return;
     }
 
@@ -1408,7 +1421,7 @@ void WatchingClipState::activate()
 
 void WatchingClipState::play()
 {
-    m_pw->ui.videoWidget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
+    m_pw->m_video_widget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
 }
 
 void WatchingClipState::on_save_clip()
@@ -1432,7 +1445,7 @@ void WatchingClipState::on_remove_clip()
 
 void WatchingClipState::on_player_timer_triggered(int)
 {
-    m_pw->ui.videoWidget->pause();
+    m_pw->m_video_widget->pause();
 }
 
 RepeatingClipState::RepeatingClipState(PlayerWindow* pw) : ClipState(pw)
@@ -1473,7 +1486,7 @@ void RepeatingClipState::activate()
 
 void RepeatingClipState::play()
 {
-    m_pw->ui.videoWidget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
+    m_pw->m_video_widget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
 }
 
 void RepeatingClipState::on_remove_clip()
@@ -1486,6 +1499,6 @@ void RepeatingClipState::on_remove_clip()
 
 void RepeatingClipState::on_player_timer_triggered(int)
 {
-    m_pw->ui.videoWidget->pause();
+    m_pw->m_video_widget->pause();
 }
 
