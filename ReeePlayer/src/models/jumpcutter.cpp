@@ -201,7 +201,8 @@ std::vector<uint8_t> read_wav(const QString& filename, std::function<void(QStrin
 {
     log("Start reading wav-file");
     AudioFile<float> audioFile;
-    if (!audioFile.load(filename.toStdString()))
+    std::string fname = filename.toStdString();
+    if (!audioFile.load(fname))
         return std::vector<uint8_t>();
 
     log("Start waveform generation");

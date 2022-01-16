@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <style>
+
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.video-container {
+  height: 100%;
+  position: relative;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  position: absolute;
+  //pointer-events: none;
+}
+        </style>
+    </head>
+<body>
+
+<div class="video-container">
+    <video id="vidObj" controls>
+    </video>   
+    </div>
+
+<script>
+
+var myVid = document.getElementById("vidObj");
+var source = document.createElement('source');
+myVid.appendChild(source);
+
+function play() {
+    myVid.play();
+}
+
+function seek_and_play(time) {
+    set_time(time);
+    myVid.addEventListener('seeked', function(){
+        myVid.play();
+    });
+}
+
+function pause() {
+    myVid.pause();
+}
+
+function paused() {
+    return myVid.paused();
+}
+
+function playing() {
+    return !!(myVid.currentTime > 0 && !myVid.paused && !myVid.ended && myVid.readyState > 2);
+}
+
+function get_rate() {
+    return myVid.playbackRate;
+}
+
+function set_rate(rate) {
+    myVid.playbackRate = rate;
+}
+
+function get_time() {
+    return myVid.currentTime;
+}
+
+function set_time(time) {
+    if (!isNaN(time))
+    {
+        myVid.currentTime = time;
+    }
+}
+
+function get_duration() {
+    return myVid.duration;
+}
+
+function set_source(filename) {
+    myVid.pause();
+    source.src = filename;
+    myVid.load();
+    myVid.addEventListener('loadeddata', function(){
+        myVid.play();
+    });
+}
+
+</script>
+
+</body>
+</html>

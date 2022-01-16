@@ -32,6 +32,7 @@ target_sources(ReeePlayer PRIVATE
 	src/widgets/spinbox.cpp
 	src/widgets/subtitles_view.cpp
 	src/widgets/video_widget.cpp
+    src/widgets/web_video_widget.cpp
 	src/widgets/subs_combobox.cpp
 	src/widgets/video_tree_view.cpp
 	src/widgets/library_tree_model.cpp

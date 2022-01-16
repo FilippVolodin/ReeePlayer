@@ -34,4 +34,7 @@
   <qresource prefix="/Images">
     <file alias="jc_info">Resources/jc_info.png</file>
   </qresource>
+  <qresource prefix="/">
+    <file>player.html</file>
+  </qresource>
 </RCC>

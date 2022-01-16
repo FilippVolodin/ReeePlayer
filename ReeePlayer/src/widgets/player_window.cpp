@@ -11,9 +11,10 @@
 #include "waveform.h"
 #include "jumpcutter_settings_dialog.h"
 #include "video_widget.h"
+#include "web_video_widget.h"
 #include "emitter.h"
 
-constexpr float PLAYBACK_RATES[] = { 0.5, 0.75, 1.0, 1.25, 1.5, 2.0 };
+constexpr float PLAYBACK_RATES[] = { 0.5, 0.75, 1.01, 1.25, 1.5, 2.0 };
 static const QKeySequence PLAYBACK_KEYS[] =
     { Qt::Key_3, Qt::Key_4, Qt::Key_5, Qt::Key_6, Qt::Key_7, Qt::Key_8 };
 constexpr int DEFAULT_PLAYBACK_RATE_INDEX = 2;
@@ -94,16 +95,18 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 {
     ui.setupUi(this);
 
-    VideoWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
-    auto sp = video_widget->sizePolicy();
+    //QWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
+    WebVideoWidget* video_widget = new WebVideoWidget(this);
+    QWidget* w = video_widget;
+    auto sp = w->sizePolicy();
     sp.setVerticalStretch(5);
-    video_widget->setSizePolicy(sp);
+    w->setSizePolicy(sp);
 
     QBoxLayout* lo = dynamic_cast<QBoxLayout*>(ui.centralwidget->layout());
     if (lo != nullptr)
-        lo->insertWidget(0, video_widget);
+        lo->insertWidget(0, w);
     else
-        lo->addWidget(video_widget);
+        lo->addWidget(w);
 
     m_video_widget = video_widget;
 
@@ -127,6 +130,7 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 
 PlayerWindow::~PlayerWindow()
 {
+    m_video_widget->prepare_to_destroy();
 }
 
 QMenu* PlayerWindow::createPopupMenu()
@@ -385,9 +389,12 @@ void PlayerWindow::setup_playback_rates()
     for (float r : PLAYBACK_RATES)
     {
         QPushButton* b = new QPushButton(this);
-        b->setText(QString::asprintf("%.2gx", r));
+        if (std::abs(r - 1) < 0.02)
+            b->setText("1");
+        else
+            b->setText(QString::asprintf("%.3g", r));
         b->setCheckable(true);
-        b->setMaximumWidth(40);
+        b->setMaximumWidth(30);
         b->setFocusPolicy(Qt::NoFocus);
         m_rate_btn_group->addButton(b);
         m_rate_btn_group->setId(b, id);
@@ -1029,7 +1036,7 @@ void PlayerWindow::jumpcutter(int t)
     if (next_interval - t < 300)
         return;
 
-    qDebug("JC: %d %d %d", t, current_interval_is_loud, next_interval);
+    //qDebug("JC: %d %d %d", t, current_interval_is_loud, next_interval);
 
     if (m_jc->get_settings()->is_silence_skipping())
     {

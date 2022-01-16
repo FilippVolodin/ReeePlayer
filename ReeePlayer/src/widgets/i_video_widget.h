@@ -25,6 +25,8 @@ public:
     virtual int get_length() const = 0;
     virtual bool at_end() const = 0;
 
+    virtual void prepare_to_destroy() = 0;
+
     virtual QWidget* get_widget() = 0;
     virtual Emitter* get_emitter() = 0;
 };

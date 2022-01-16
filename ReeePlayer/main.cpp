@@ -5,10 +5,19 @@
 
 int main(int argc, char *argv[])
 {
-    //read_wav();
-    //return 0;
+    char ARG_DISABLE_WEB_SECURITY[] = "--disable-web-security";
+    char ARG_AUTOPLAY_POLICY[] = "--autoplay-policy=no-user-gesture-required";
 
-    QApplication a(argc, argv);
+    int newArgc = argc + 2;
+    char** newArgv = new char* [newArgc];
+    for (int i = 0; i < argc; i++) {
+        newArgv[i] = argv[i];
+    }
+    newArgv[argc] = ARG_DISABLE_WEB_SECURITY;
+    newArgv[argc + 1] = ARG_AUTOPLAY_POLICY;
+    //newArgv[argc + 2] = nullptr;
+
+    QApplication a(newArgc, newArgv);
     App app;
     a.setQuitOnLastWindowClosed(false);
     MainWindow w(&app);

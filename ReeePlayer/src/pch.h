@@ -45,6 +45,7 @@
 #include <QTemporaryDir>
 #include <QFutureWatcher>
 #include <QtConcurrent>
+#include <QWebEngineView>
 
 #include <algorithm>
 #include <optional>
