@@ -34,12 +34,15 @@ public:
     void set_enabled(bool);
 
     void read_volumes(const QString& filename);
+    void read_vad(const QString& filename);
     void fragment();
     bool current_interval_is_loud(int t) const;
     int next_interval(int t) const;
+    int next_interval_in_chunks(int ch) const;
     int rewind(int, int) const;
     const std::vector<uint8_t>& get_max_volumes() const;
     const std::vector<bool>& get_intervals() const;
+    const std::vector<uint8_t>& get_voice_probs() const;
 
     std::shared_ptr<JumpCutterSettings> get_settings() const;
     void apply_settings(std::shared_ptr<JumpCutterSettings>);
@@ -47,6 +50,7 @@ private:
     bool m_enabled = true;
     std::vector<uint8_t> m_max_volume;
     std::vector<bool> m_fragments;
+    std::vector<uint8_t> m_probs;
     std::shared_ptr<JumpCutterSettings> m_settings;
 };
 

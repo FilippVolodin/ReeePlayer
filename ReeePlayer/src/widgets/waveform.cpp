@@ -2,6 +2,9 @@
 #include "models/jumpcutter.h"
 
 constexpr int chunk_length_ms = 10;
+constexpr int sampling_rate = 16000;
+constexpr int window_size_samples = 1536;
+constexpr int vad_chunk_length_ms = window_size_samples * 1000 / sampling_rate;
 
 Waveform::Waveform(QWidget* parent) : QWidget(parent)
 {
@@ -57,8 +60,9 @@ void Waveform::paintEvent(QPaintEvent *)
         return;
 
     const std::vector<uint8_t>& volumes = m_jc->get_max_volumes();
-    const std::vector<bool>& intervals = m_jc->get_intervals();
-    if (intervals.empty())
+    //const std::vector<bool>& intervals = m_jc->get_intervals();
+    const std::vector<uint8_t>& voice_probs = m_jc->get_voice_probs();
+    if (voice_probs.empty())
         return;
 
     int length = volumes.size() * chunk_length_ms;
@@ -83,6 +87,11 @@ void Waveform::paintEvent(QPaintEvent *)
     int ch_a = m_a / chunk_length_ms;
     int ch_b = m_b / chunk_length_ms;
 
+    int vad_ch_time_window = time_window / vad_chunk_length_ms;
+    int vad_ch_a = m_a / vad_chunk_length_ms;
+    double vad_ch_a_dbl = (double)m_a / vad_chunk_length_ms;
+    int vad_ch_b = m_b / vad_chunk_length_ms;
+
     if (m_clip_mode)
     {
         int clip_a_x = ((float)(m_clip_a - m_a) / time_window) * width();
@@ -100,31 +109,48 @@ void Waveform::paintEvent(QPaintEvent *)
     //    painter.drawLine(x0, y0, x0, y1);
     //}
     
-    int last_index = static_cast<int>(intervals.size() - 1);
-    int interval_begin = std::min(last_index, std::max(ch_a, 0));
-
-    bool cur_interval_value = intervals[interval_begin];
+    int vad_last_index = static_cast<int>(voice_probs.size() - 1);
+    //int vad_interval_begin = std::min(vad_last_index, std::max(vad_ch_a, 0.f));
+    //bool is_voice = voice_probs[vad_interval_begin] >= 128;
 
     if (!m_clip_mode)
     {
-        for (int x0 = 0; x0 < width(); x0++)
-        {
-            int ch = (float)x0 / width() * ch_time_window + ch_a;
-            if (ch < 0 || ch >= volumes.size())
-                continue;
+        int ch = vad_ch_a;
+        if (ch < 0)
+            ch = 0;
 
-            if (intervals[ch] != cur_interval_value || x0 == width() - 1)
+        while (ch < vad_ch_b && ch < voice_probs.size())
+        {
+            bool cur_is_voice = voice_probs[ch] >= 128;
+            int ch_next = m_jc->next_interval_in_chunks(ch);
+            if (!cur_is_voice)
             {
-                if (!cur_interval_value)
-                {
-                    int zone_x0 = ((float)(interval_begin - ch_a) / ch_time_window) * width();
-                    int zone_x1 = ((float)(ch - ch_a) / ch_time_window) * width();
-                    painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), Qt::lightGray);
-                }
-                cur_interval_value = intervals[ch];
-                interval_begin = ch;
+                int zone_x0 = ((ch - vad_ch_a_dbl) / vad_ch_time_window) * width();
+                int zone_x1 = ((ch_next - vad_ch_a_dbl) / vad_ch_time_window) * width();
+                painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), Qt::lightGray);
             }
+            ch = ch_next;
         }
+
+        //for (int x0 = 0; x0 < width(); x0++)
+        //{
+        //    int ch = (float)x0 / width() * vad_ch_time_window + vad_ch_a;
+        //    if (ch < 0 || ch >= voice_probs.size())
+        //        continue;
+
+        //    bool cur_is_voice = voice_probs[ch] >= 128;
+        //    if (cur_is_voice != is_voice || x0 == width() - 1)
+        //    {
+        //        if (!is_voice)
+        //        {
+        //            int zone_x0 = ((float)(vad_interval_begin - vad_ch_a) / vad_ch_time_window) * width();
+        //            int zone_x1 = ((float)(ch - vad_ch_a) / vad_ch_time_window) * width();
+        //            painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), Qt::lightGray);
+        //        }
+        //        is_voice = cur_is_voice;
+        //        vad_interval_begin = ch;
+        //    }
+        //}
     }
 
     pen.setColor(Qt::gray);

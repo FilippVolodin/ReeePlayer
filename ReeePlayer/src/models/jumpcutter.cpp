@@ -3,6 +3,9 @@
 
 constexpr int volume_threshold = 20;
 constexpr int chunk_length_ms = 10;
+constexpr int sampling_rate = 16000;
+constexpr int window_size_samples = 1536;
+constexpr int vad_chunk_length_ms = window_size_samples * 1000 / sampling_rate;
 constexpr int min_silent_length = 700;
 constexpr int VOL_VERSION = 0;
 
@@ -10,6 +13,9 @@ JumpCutter::JumpCutter(const QString& filename)
 {
     m_settings = std::make_shared<JumpCutterSettings>();
     read_volumes(filename);
+    QFileInfo info(filename);
+    QString vad_file = info.absolutePath() + "/" + info.completeBaseName() + ".vad";
+    read_vad(vad_file);
     fragment();
 }
 
@@ -64,6 +70,22 @@ void JumpCutter::read_volumes(const QString& filename)
     //}
 }
 
+void JumpCutter::read_vad(const QString& filename)
+{
+    QFile vad_file(filename);
+    if (!vad_file.open(QIODevice::ReadOnly))
+        throw std::exception("Can't load vad-file");
+
+    QDataStream in(&vad_file);
+    m_probs.clear();
+    while (!in.atEnd())
+    {
+        uint8_t p;
+        in >> p;
+        m_probs.push_back(p);
+    }
+}
+
 void JumpCutter::fragment()
 {
     m_fragments.resize(m_max_volume.size());
@@ -76,13 +98,13 @@ void JumpCutter::fragment()
 
     for (int chunk = 0; chunk < m_max_volume.size(); chunk++)
     {
-        if (count >= window_size)
-            sum -= m_max_volume[chunk - window_size];
-        sum += m_max_volume[chunk];
-        int volume = sum / window_size;
-        count++;
+        //if (count >= window_size)
+        //    sum -= m_max_volume[chunk - window_size];
+        //sum += m_max_volume[chunk];
+        //int volume = sum / window_size;
+        //count++;
 
-        // int volume = m_max_volume[chunk];
+        int volume = m_max_volume[chunk];
         if (volume >= m_settings->get_volume_threshold() * 256 || chunk == m_max_volume.size() - 1)
         {
             int silent_length_ch = (chunk - last_loud_chunk - 1);
@@ -105,13 +127,23 @@ void JumpCutter::fragment()
 
 int JumpCutter::next_interval(int t) const
 {
-    int chunk = t / chunk_length_ms;
-    if (chunk >= m_fragments.size())
-        return m_fragments.size() * chunk_length_ms;
+    return next_interval_in_chunks(t / vad_chunk_length_ms)* vad_chunk_length_ms;
+}
 
-    auto it = std::find(m_fragments.begin() + chunk, m_fragments.end(), !m_fragments[chunk]);
-    int chunks_diff = std::distance(m_fragments.begin(), it);
-    return chunks_diff * chunk_length_ms;
+int JumpCutter::next_interval_in_chunks(int chunk) const
+{
+    if (chunk >= m_probs.size())
+        return m_probs.size();
+
+    bool cur_is_voice = m_probs[chunk] > 128;
+    auto interval_changed = [cur_is_voice](uint8_t p)
+    {
+        return (p >= 128) != cur_is_voice;
+    };
+
+    auto it = std::find_if(m_probs.begin() + chunk, m_probs.end(), interval_changed);
+    int chunks_diff = std::distance(m_probs.begin(), it);
+    return chunks_diff;
 }
 
 int JumpCutter::rewind(int t0, int delta) const
@@ -143,6 +175,11 @@ const std::vector<bool>& JumpCutter::get_intervals() const
     return m_fragments;
 }
 
+const std::vector<uint8_t>& JumpCutter::get_voice_probs() const
+{
+    return m_probs;
+}
+
 std::shared_ptr<JumpCutterSettings> JumpCutter::get_settings() const
 {
     return m_settings;
@@ -156,10 +193,10 @@ void JumpCutter::apply_settings(std::shared_ptr<JumpCutterSettings> settings)
 
 bool JumpCutter::current_interval_is_loud(int t) const
 {
-    int chunk = t / chunk_length_ms;
-    if (chunk >= m_fragments.size())
-        return false;
-    return m_fragments[chunk];
+    int chunk = t / vad_chunk_length_ms;
+    if (chunk >= m_probs.size())
+        return true;
+    return m_probs[chunk] >= 128;
 }
 
 void create_vol_file(const QString& media_filename, std::function<void(QString)> log)
