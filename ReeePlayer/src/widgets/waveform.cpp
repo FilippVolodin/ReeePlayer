@@ -1,5 +1,6 @@
 #include "waveform.h"
 #include "models/jumpcutter.h"
+#include "models/vad.h"
 
 constexpr int chunk_length_ms = 10;
 constexpr int sampling_rate = 16000;
@@ -13,6 +14,11 @@ Waveform::Waveform(QWidget* parent) : QWidget(parent)
 void Waveform::set_jumpcutter(const JumpCutter* jc)
 {
     m_jc = jc;
+}
+
+void Waveform::set_vad(const VAD* vad)
+{
+    m_vad = vad;
 }
 
 void Waveform::set_time(int time)
@@ -61,9 +67,9 @@ void Waveform::paintEvent(QPaintEvent *)
 
     const std::vector<uint8_t>& volumes = m_jc->get_max_volumes();
     //const std::vector<bool>& intervals = m_jc->get_intervals();
-    const std::vector<uint8_t>& voice_probs = m_jc->get_voice_probs();
-    if (voice_probs.empty())
-        return;
+    //const std::vector<uint8_t>& voice_probs = m_jc->get_voice_probs();
+    //if (voice_probs.empty())
+    //    return;
 
     int length = volumes.size() * chunk_length_ms;
 
@@ -109,7 +115,7 @@ void Waveform::paintEvent(QPaintEvent *)
     //    painter.drawLine(x0, y0, x0, y1);
     //}
     
-    int vad_last_index = static_cast<int>(voice_probs.size() - 1);
+    //int vad_last_index = static_cast<int>(voice_probs.size() - 1);
     //int vad_interval_begin = std::min(vad_last_index, std::max(vad_ch_a, 0.f));
     //bool is_voice = voice_probs[vad_interval_begin] >= 128;
 
@@ -119,10 +125,10 @@ void Waveform::paintEvent(QPaintEvent *)
         if (ch < 0)
             ch = 0;
 
-        while (ch < vad_ch_b && ch < voice_probs.size())
+        while (ch < vad_ch_b && ch < m_vad->num_chunks())
         {
-            bool cur_is_voice = voice_probs[ch] >= 128;
-            int ch_next = m_jc->next_interval_in_chunks(ch);
+            bool cur_is_voice = m_vad->chunk_is_voice(ch);
+            int ch_next = m_vad->next_interval_in_chunks(ch);
             if (!cur_is_voice)
             {
                 int zone_x0 = ((ch - vad_ch_a_dbl) / vad_ch_time_window) * width();

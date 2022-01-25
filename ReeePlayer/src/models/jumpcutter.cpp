@@ -14,8 +14,8 @@ JumpCutter::JumpCutter(const QString& filename)
     m_settings = std::make_shared<JumpCutterSettings>();
     read_volumes(filename);
     QFileInfo info(filename);
-    QString vad_file = info.absolutePath() + "/" + info.completeBaseName() + ".vad";
-    read_vad(vad_file);
+    // QString vad_file = info.absolutePath() + "/" + info.completeBaseName() + ".vad";
+    // read_vad(vad_file);
     fragment();
 }
 
@@ -199,15 +199,11 @@ bool JumpCutter::current_interval_is_loud(int t) const
     return m_probs[chunk] >= 128;
 }
 
-void create_vol_file(const QString& media_filename, std::function<void(QString)> log)
+void create_vol_file(const QString& temp_wav, const QString& vol_filename, std::function<void(QString)> log)
 {
-    QString temp_wav = create_wav(media_filename, log);
     if (!temp_wav.isEmpty())
     {
         std::vector<uint8_t> volumes = read_wav(temp_wav, log);
-        QFileInfo fi(media_filename);
-        QString vol_filename = fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
-
         save_volumes(vol_filename, volumes);
     }
 }
@@ -217,7 +213,7 @@ QString create_wav(const QString& filename, std::function<void(QString)> log)
     log("Start wav-file generation");
     QString temp_wav = QDir::temp().absoluteFilePath("audio.wav");
     QStringList args;
-    args << "-y" << "-i" << filename << "-ar" << "5512" << "-ac" << "1" << "-vn" << "-hide_banner" << temp_wav;
+    args << "-y" << "-i" << filename << "-ar" << "16000" << "-ac" << "1" << "-vn" << "-hide_banner" << temp_wav;
 
     QProcess ffmpeg;
     ffmpeg.start("ffmpeg", args);

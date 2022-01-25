@@ -8,6 +8,7 @@
 #include "models/app.h"
 #include "spinbox.h"
 #include "models/jumpcutter.h"
+#include "models/vad.h"
 #include "waveform.h"
 #include "jumpcutter_settings_dialog.h"
 
@@ -143,6 +144,11 @@ void PlayerWindow::repeat(std::vector<File*>&& files)
     m_session = std::make_shared<Session>(m_app->get_library(), files);
     m_mode = Mode::Repeating;
     show();
+}
+
+void PlayerWindow::set_vad(std::shared_ptr<VAD> vad)
+{
+    m_vad = vad;
 }
 
 void PlayerWindow::save_player_time()
@@ -719,6 +725,7 @@ void PlayerWindow::show_video()
     catch(std::exception&)
     {
     }
+    ui.waveform->set_vad(m_vad.get());
 
     startTimer(20);
 
@@ -1010,8 +1017,8 @@ void PlayerWindow::jumpcutter(int t)
     if (!m_jc || !m_jc->is_enabled())
         return;
 
-    bool current_interval_is_loud = m_jc->current_interval_is_loud(t);
-    int next_interval = m_jc->next_interval(t);
+    bool current_interval_is_loud = m_vad->is_voice(t);
+    int next_interval = m_vad->next_interval(t);
 
     if (next_interval - t < 300)
         return;

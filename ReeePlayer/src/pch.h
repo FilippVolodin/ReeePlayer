@@ -45,6 +45,8 @@
 #include <QTemporaryDir>
 #include <QFutureWatcher>
 #include <QtConcurrent>
+#include <QTcpServer>
+#include <QTcpSocket>
 
 #include <algorithm>
 #include <optional>

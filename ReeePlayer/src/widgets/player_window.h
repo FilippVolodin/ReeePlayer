@@ -13,6 +13,7 @@ class Library;
 class Session;
 class JumpCutter;
 class JumpCutterSettings;
+class VAD;
 
 namespace qsubs
 {
@@ -137,6 +138,8 @@ public:
     void watch_clip(Clip* clip);
     void repeat(std::vector<File*>&& files);
 
+    void set_vad(std::shared_ptr<VAD>);
+
     void save_player_time();
 protected:
     void showEvent(QShowEvent *event);
@@ -235,6 +238,7 @@ private:
     Library* m_library;
     std::shared_ptr<Session> m_session;
     std::shared_ptr<JumpCutter> m_jc;
+    std::shared_ptr<VAD> m_vad;
     //std::shared_ptr<JumpCutterSettings> m_jc_settings;
 
     ClipInfoDialog* m_clip_info_dialog;

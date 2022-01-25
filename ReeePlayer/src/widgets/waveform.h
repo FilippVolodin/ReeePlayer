@@ -4,6 +4,7 @@
 #include <qwidget.h>
 
 class JumpCutter;
+class VAD;
 
 class Waveform : public QWidget
 {
@@ -12,6 +13,7 @@ class Waveform : public QWidget
 public:
     Waveform(QWidget* parent = Q_NULLPTR);
     void set_jumpcutter(const JumpCutter*);
+    void set_vad(const VAD*);
     void set_time(int);
     
     bool is_clip_mode(bool) const;
@@ -32,6 +34,7 @@ protected:
 
 private:
     const JumpCutter* m_jc = nullptr;
+    const VAD* m_vad = nullptr;
     int m_time = 0;
     int m_clip_a = 0;
     int m_clip_b = 0;

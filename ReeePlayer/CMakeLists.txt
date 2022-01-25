@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Widgets Concurrent REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Concurrent Network REQUIRED)
 
 add_executable(ReeePlayer WIN32)
 	
@@ -51,6 +51,7 @@ target_sources(ReeePlayer PRIVATE
 	src/models/library_item.cpp
 	src/models/session.cpp
 	src/models/repetition_model.cpp
+	src/models/vad.cpp
 )
 	
 target_include_directories(ReeePlayer PRIVATE include src)
@@ -64,6 +65,7 @@ set_target_properties(ReeePlayer PROPERTIES
 target_link_libraries(ReeePlayer PRIVATE
 	Qt6::Widgets
 	Qt6::Concurrent
+    Qt6::Network
 	QSubtitles
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlc.lib
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlccore.lib
