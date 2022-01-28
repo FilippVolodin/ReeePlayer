@@ -957,9 +957,9 @@ int PlayerWindow::get_loop_b() const
 void PlayerWindow::rewind(int delta_ms)
 {
     int new_time;
-    if (m_jc)
+    if (m_vad)
     {
-        new_time = m_jc->rewind(ui.videoWidget->get_time(), delta_ms);
+        new_time = m_vad->rewind(ui.videoWidget->get_time(), delta_ms);
     }
     else
     {

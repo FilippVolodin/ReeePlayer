@@ -324,10 +324,9 @@ void MainWindow::watch(File* file)
 {
     QString media_file = file->get_path();
     bool vol_exists = is_vol_exist(media_file);
-    bool vad_exists = is_vad_exist(media_file);
-    std::shared_ptr<VAD> vad;
+    std::shared_ptr<VAD> vad = std::make_shared<VAD>(get_vad_file(media_file));
 
-    if (!vol_exists || !vad_exists)
+    if (!vol_exists || !vad->is_ready())
     {
         QFutureWatcher<void> future_watcher;
         WaitingDialog wd;
@@ -357,7 +356,8 @@ void MainWindow::watch(File* file)
         //{
         //    VAD* vad = new VAD(temp_wav, get_vad_file(media_file));
         //}
-        vad = std::make_shared<VAD>(temp_wav, get_vad_file(media_file));
+        //vad = std::make_shared<VAD>(temp_wav, get_vad_file(media_file));
+        vad->run(temp_wav);
     }
 
     hide();

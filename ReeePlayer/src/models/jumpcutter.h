@@ -58,5 +58,5 @@ bool is_vol_exist(const QString&);
 void create_vol_file(const QString& temp_wav, const QString& vol_filename, std::function<void(QString)> log);
 QString get_vol_file(const QString&);
 QString create_wav(const QString& filename, std::function<void(QString)> log);
-std::vector<uint8_t> read_wav(const QString& filename, std::function<void(QString)> log);
+std::vector<uint8_t> read_wav(QString filename, std::function<void(QString)> log);
 void save_volumes(const QString& filename, const std::vector<uint8_t>&);

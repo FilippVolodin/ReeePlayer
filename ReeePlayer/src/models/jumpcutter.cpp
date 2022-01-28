@@ -230,11 +230,13 @@ QString create_wav(const QString& filename, std::function<void(QString)> log)
     return temp_wav;
 }
 
-std::vector<uint8_t> read_wav(const QString& filename, std::function<void(QString)> log)
+std::vector<uint8_t> read_wav(QString filename, std::function<void(QString)> log)
 {
     log("Start reading wav-file");
     AudioFile<float> audioFile;
-    if (!audioFile.load(filename.toStdString()))
+    char* g = filename.toLocal8Bit().data();
+    std::string fname = g;
+    if (!audioFile.load(fname))
         return std::vector<uint8_t>();
 
     log("Start waveform generation");
