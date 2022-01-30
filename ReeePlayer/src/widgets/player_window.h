@@ -190,6 +190,8 @@ private:
     void on_subtitles_insert_clicked(int index, int);
     void on_subs_file_changed(int index, int);
 
+    void on_vad_progress_updated(int, int);
+
     void set_slider_value(int value);
 
     void set_duration(int);

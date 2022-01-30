@@ -21,6 +21,10 @@ public:
     int num_chunks() const;
     int rewind(int t, int delta) const;
 
+signals:
+
+    void progress_updated(int, int);
+
 private slots:
     void new_conn();
     void ready_read();

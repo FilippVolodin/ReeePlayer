@@ -149,6 +149,7 @@ void PlayerWindow::repeat(std::vector<File*>&& files)
 void PlayerWindow::set_vad(std::shared_ptr<VAD> vad)
 {
     m_vad = vad;
+    connect(m_vad.get(), &VAD::progress_updated, this, &PlayerWindow::on_vad_progress_updated);
 }
 
 void PlayerWindow::save_player_time()
@@ -635,6 +636,17 @@ void PlayerWindow::on_subs_file_changed(int view_index, int file_index)
 
     set_subtitles(view_index, filename);
     save_subs_priority();
+}
+
+void PlayerWindow::on_vad_progress_updated(int ready_chunks, int total_chunks)
+{
+    if (ready_chunks < total_chunks)
+    {
+        int percent = ((float)ready_chunks / total_chunks) * 100;
+        statusBar()->showMessage(QString("VAD: %1%").arg(percent));
+    }
+    else
+        statusBar()->clearMessage();
 }
 
 void PlayerWindow::set_slider_value(int value)

@@ -167,6 +167,7 @@ void VAD::ready_read()
     }
 
     process_data();
+    emit progress_updated(m_vad_data.size(), m_total_num_chunks);
 
     if (is_ready())
     {
