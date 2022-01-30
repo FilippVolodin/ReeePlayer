@@ -4,6 +4,7 @@
 #include "models/library.h"
 #include "models/app.h"
 #include "models/jumpcutter.h"
+#include "models/vad.h"
 #include "library_tree_model.h"
 #include "clips_view_model.h"
 #include "player_window.h"
@@ -321,7 +322,11 @@ void MainWindow::save_size(const QString& key, QSize s) const
 
 void MainWindow::watch(File* file)
 {
-    if (!is_vol_exist(file->get_path()))
+    QString media_file = file->get_path();
+    bool vol_exists = is_vol_exist(media_file);
+    std::shared_ptr<VAD> vad = std::make_shared<VAD>(get_vad_file(media_file));
+
+    if (!vol_exists || !vad->is_ready())
     {
         QFutureWatcher<void> future_watcher;
         WaitingDialog wd;
@@ -331,19 +336,35 @@ void MainWindow::watch(File* file)
         };
 
         QObject::connect(&future_watcher, &QFutureWatcher<void>::finished, &wd, &QDialog::accept);
-
-        future_watcher.setFuture(QtConcurrent::run([filename = file->get_path(), log]()
+        QString temp_wav;
+        future_watcher.setFuture(QtConcurrent::run([&]()
         {
-            create_vol_file(filename, log);
+            temp_wav = create_wav(media_file, log);
+            if (!vol_exists && !temp_wav.isEmpty())
+            {
+                QFileInfo fi(file->get_path());
+                QString vol_filename = fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
+                create_vol_file(temp_wav, vol_filename, log);
+            }
         }));
 
         wd.exec();
 
         future_watcher.waitForFinished();
+        
+        //if (!vad_exists && !temp_wav.isEmpty())
+        //{
+        //    VAD* vad = new VAD(temp_wav, get_vad_file(media_file));
+        //}
+        //vad = std::make_shared<VAD>(temp_wav, get_vad_file(media_file));
+        vad->run(temp_wav);
     }
 
     hide();
-    getPlayerWindow()->watch(file);
+
+    PlayerWindow* pw = getPlayerWindow();
+    pw->set_vad(vad);
+    pw->watch(file);
 }
 
 void MainWindow::repeat(std::vector<File*> files)

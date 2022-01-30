@@ -46,6 +46,8 @@
 #include <QFutureWatcher>
 #include <QtConcurrent>
 #include <QWebEngineView>
+#include <QTcpServer>
+#include <QTcpSocket>
 
 #include <algorithm>
 #include <optional>

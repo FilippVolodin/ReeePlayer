@@ -8,6 +8,7 @@
 #include "models/app.h"
 #include "spinbox.h"
 #include "models/jumpcutter.h"
+#include "models/vad.h"
 #include "waveform.h"
 #include "jumpcutter_settings_dialog.h"
 #include "video_widget.h"
@@ -160,6 +161,12 @@ void PlayerWindow::repeat(std::vector<File*>&& files)
     m_session = std::make_shared<Session>(m_app->get_library(), files);
     m_mode = Mode::Repeating;
     show();
+}
+
+void PlayerWindow::set_vad(std::shared_ptr<VAD> vad)
+{
+    m_vad = vad;
+    connect(m_vad.get(), &VAD::progress_updated, this, &PlayerWindow::on_vad_progress_updated);
 }
 
 void PlayerWindow::save_player_time()
@@ -651,6 +658,17 @@ void PlayerWindow::on_subs_file_changed(int view_index, int file_index)
     save_subs_priority();
 }
 
+void PlayerWindow::on_vad_progress_updated(int ready_chunks, int total_chunks)
+{
+    if (ready_chunks < total_chunks)
+    {
+        int percent = ((float)ready_chunks / total_chunks) * 100;
+        statusBar()->showMessage(QString("VAD: %1%").arg(percent));
+    }
+    else
+        statusBar()->clearMessage();
+}
+
 void PlayerWindow::set_slider_value(int value)
 {
     ui.slider->blockSignals(true);
@@ -739,6 +757,7 @@ void PlayerWindow::show_video()
     catch(std::exception&)
     {
     }
+    ui.waveform->set_vad(m_vad.get());
 
     startTimer(20);
 
@@ -970,9 +989,9 @@ int PlayerWindow::get_loop_b() const
 void PlayerWindow::rewind(int delta_ms)
 {
     int new_time;
-    if (m_jc)
+    if (m_vad)
     {
-        new_time = m_jc->rewind(m_video_widget->get_time(), delta_ms);
+        new_time = m_vad->rewind(m_video_widget->get_time(), delta_ms);
     }
     else
     {
@@ -1030,8 +1049,8 @@ void PlayerWindow::jumpcutter(int t)
     if (!m_jc || !m_jc->is_enabled())
         return;
 
-    bool current_interval_is_loud = m_jc->current_interval_is_loud(t);
-    int next_interval = m_jc->next_interval(t);
+    bool current_interval_is_loud = m_vad->is_voice(t);
+    int next_interval = m_vad->next_interval(t);
 
     if (next_interval - t < 300)
         return;
