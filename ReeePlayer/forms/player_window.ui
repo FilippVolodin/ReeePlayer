@@ -135,7 +135,7 @@ QSlider::sub-page:horizontal {
      </layout>
     </item>
     <item>
-     <widget class="Waveform" name="waveform" native="true">
+     <widget class="WaveformView" name="waveform" native="true">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -456,9 +456,9 @@ QSlider::sub-page:horizontal {
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Waveform</class>
+   <class>WaveformView</class>
    <extends>QWidget</extends>
-   <header>waveform.h</header>
+   <header>waveform_view.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

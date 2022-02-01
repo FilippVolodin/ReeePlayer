@@ -779,7 +779,8 @@ void PlayerWindow::show_video()
     ui.waveform->set_vad(m_vad.get());
     
     load_jc_settings();
-    m_vad->apply_settings(get_vad_settings());
+    if (m_vad)
+        m_vad->apply_settings(get_vad_settings());
 
     startTimer(20);
 
