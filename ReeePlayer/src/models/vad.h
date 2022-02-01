@@ -1,6 +1,27 @@
 #ifndef VAD_H
 #define VAD_H
 
+class VADSettings
+{
+public:
+    uint8_t get_voice_prob() const;
+    void set_voice_prob(uint8_t);
+
+    int get_min_non_voice_interval() const;
+    void set_min_non_voice_interval(int);
+
+    int get_margin_before() const;
+    void set_margin_before(int);
+
+    int get_margin_after() const;
+    void set_margin_after(int);
+private:
+    uint8_t m_voice_prob = 128;
+    int m_min_non_voice_interval = 300;
+    int m_margin_before = 100;
+    int m_margin_after = 100;
+};
+
 class VAD : public QObject
 {
     Q_OBJECT
@@ -21,6 +42,7 @@ public:
     int num_chunks() const;
     int rewind(int t, int delta) const;
 
+    void apply_settings(VADSettings);
 signals:
 
     void progress_updated(int, int);
@@ -32,7 +54,9 @@ private:
     void load_data();
     void save_data();
     void process_data();
+    void reprocess_data();
 
+    VADSettings m_settings;
     QString m_vad_file;
     std::unique_ptr<QTcpServer> m_server;
     QTcpSocket* m_sock = nullptr;

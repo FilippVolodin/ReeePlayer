@@ -136,6 +136,12 @@ int VAD::rewind(int t, int delta) const
     return cur_chunk * vad_chunk_length_ms;
 }
 
+void VAD::apply_settings(VADSettings settings)
+{
+    m_settings = settings;
+    reprocess_data();
+}
+
 void VAD::ready_read()
 {
     int old_bytes_received = m_bytes_received;
@@ -224,6 +230,10 @@ void VAD::save_data()
 
 void VAD::process_data()
 {
+    const int min_interval_in_chunks = m_settings.get_min_non_voice_interval() / vad_chunk_length_ms;
+    const int margin_after_in_chunks = m_settings.get_margin_after() / vad_chunk_length_ms;
+    const int margin_before_in_chunks = m_settings.get_margin_before() / vad_chunk_length_ms;
+
     int processed_size = m_processed_vad_data.size();
     if (processed_size == m_vad_data.size())
         return;
@@ -236,7 +246,7 @@ void VAD::process_data()
     }
 
     // TODO Magic number
-    int start_chunk = std::max(0, processed_size - 50);
+    int start_chunk = std::max(0, processed_size - min_interval_in_chunks);
     int last_voice_chunk = start_chunk - 1;
     for (int chunk = start_chunk; chunk < m_vad_data.size(); chunk++)
     {
@@ -246,24 +256,32 @@ void VAD::process_data()
         //int volume = sum / window_size;
         //count++;
 
-        if (m_vad_data[chunk] >= 128 || chunk == m_vad_data.size() - 1)
+        if (m_vad_data[chunk] >= m_settings.get_voice_prob() || chunk == m_vad_data.size() - 1)
         {
             int silent_length_ch = (chunk - last_voice_chunk - 1);
             //int silent_length = (chunk - last_voice_chunk - 1) * chunk_length_ms;
-            int total_len_ch = 1 +
-                1 +
-                1;
+            int total_len_ch = min_interval_in_chunks +
+                margin_after_in_chunks +
+                margin_before_in_chunks;
 
             if (silent_length_ch > total_len_ch)
             {
                 //int margin_before_ch = m_settings->get_margin_before() / chunk_length_ms;
                 //int margin_after_ch = m_settings->get_margin_after() / chunk_length_ms;
 
-                std::fill(m_processed_vad_data.begin() + (last_voice_chunk + 1 + 1), m_processed_vad_data.begin() + chunk - 1, false);
+                std::fill(m_processed_vad_data.begin() + (last_voice_chunk + margin_after_in_chunks + 1),
+                    m_processed_vad_data.begin() + chunk - margin_before_in_chunks,
+                    false);
             }
             last_voice_chunk = chunk;
         }
     }
+}
+
+void VAD::reprocess_data()
+{
+    m_processed_vad_data.clear();
+    process_data();
 }
 
 bool is_vad_ready(const QString& filename)
@@ -299,4 +317,44 @@ QString get_vad_file(const QString& filename)
 {
     QFileInfo fi(filename);
     return fi.absolutePath() + "/" + fi.completeBaseName() + ".vad";
+}
+
+uint8_t VADSettings::get_voice_prob() const
+{
+    return m_voice_prob;
+}
+
+void VADSettings::set_voice_prob(uint8_t voice_prob)
+{
+    m_voice_prob = voice_prob;
+}
+
+int VADSettings::get_min_non_voice_interval() const
+{
+    return m_min_non_voice_interval;
+}
+
+void VADSettings::set_min_non_voice_interval(int min_non_voice_interval)
+{
+    m_min_non_voice_interval = min_non_voice_interval;
+}
+
+int VADSettings::get_margin_before() const
+{
+    return m_margin_before;
+}
+
+void VADSettings::set_margin_before(int margin_before)
+{
+    m_margin_before = margin_before;
+}
+
+int VADSettings::get_margin_after() const
+{
+    return m_margin_after;
+}
+
+void VADSettings::set_margin_after(int margin_after)
+{
+    m_margin_after = margin_after;
 }

@@ -7,21 +7,21 @@ bool is_speed_equal(float speed1, float speed2)
     return std::abs(speed1 - speed2) < 0.1;
 }
 
-constexpr float SILENCE_SPEEDS[] = { 0.0, 0.5, 1.0, 1.5, 2.0, 3.01, 5.0 };
+constexpr float SILENCE_SPEEDS[] = { 0.0, 0.5, 1.01, 1.5, 2.0, 3.0, 5.0 };
 
 JumpCutterSettingsDialog::JumpCutterSettingsDialog(QWidget *parent)
     : QDialog(parent)
 {
     ui.setupUi(this);
 
-    ui.cmbSilenceSpeed->clear();
+    ui.cmbNonVoiceSpeed->clear();
     std::for_each(std::begin(SILENCE_SPEEDS), std::end(SILENCE_SPEEDS),
         [this](float speed)
         {
             if (is_speed_equal(speed, 0.0))
-                ui.cmbSilenceSpeed->addItem("Skip silence", 0.0);
+                ui.cmbNonVoiceSpeed->addItem("Skip non-voice", 0.0);
             else
-                ui.cmbSilenceSpeed->addItem(QString::number(speed, 'f', 1), speed);
+                ui.cmbNonVoiceSpeed->addItem(QString::number(speed, 'f', 1), speed);
         }
     );
 }
@@ -33,17 +33,17 @@ JumpCutterSettingsDialog::~JumpCutterSettingsDialog()
 std::shared_ptr<JumpCutterSettings> JumpCutterSettingsDialog::get_settings() const
 {
     std::shared_ptr<JumpCutterSettings> settings = std::make_shared<JumpCutterSettings>();
-    settings->set_volume_threshold(ui.edtVolumeThreshold->value() * 0.01);
+    settings->set_volume_threshold(ui.edtVoiceProbTh->value() * 0.01);
     settings->set_min_silence_interval(ui.edtMinSilenceInterval->value());
     settings->set_margin_before(ui.edtMarginBefore->value());
     settings->set_margin_after(ui.edtMarginAfter->value());
-    settings->set_silence_speed(ui.cmbSilenceSpeed->currentData().toFloat());
+    settings->set_silence_speed(ui.cmbNonVoiceSpeed->currentData().toFloat());
     return settings;
 }
 
 void JumpCutterSettingsDialog::set_settings(std::shared_ptr<JumpCutterSettings> settings) const
 {
-    ui.edtVolumeThreshold->setValue(static_cast<int>(settings->get_volume_threshold() * 100));
+    ui.edtVoiceProbTh->setValue(static_cast<int>(settings->get_volume_threshold() * 100));
     ui.edtMinSilenceInterval->setValue(settings->get_min_silence_interval());
     ui.edtMarginBefore->setValue(settings->get_margin_before());
     ui.edtMarginAfter->setValue(settings->get_margin_after());
@@ -56,7 +56,7 @@ void JumpCutterSettingsDialog::set_settings(std::shared_ptr<JumpCutterSettings> 
     );
 
     if (it != std::end(SILENCE_SPEEDS))
-        ui.cmbSilenceSpeed->setCurrentIndex(std::distance(std::begin(SILENCE_SPEEDS), it));
+        ui.cmbNonVoiceSpeed->setCurrentIndex(std::distance(std::begin(SILENCE_SPEEDS), it));
     else
-        ui.cmbSilenceSpeed->setCurrentIndex(0);
+        ui.cmbNonVoiceSpeed->setCurrentIndex(0);
 }

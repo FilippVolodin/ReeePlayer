@@ -496,7 +496,14 @@ void PlayerWindow::on_actJumpCutterSettings_triggered()
     if (jc_dialog.exec() == QDialog::Accepted)
     {
         auto settings = jc_dialog.get_settings();
+        VADSettings vad_settings;
+        vad_settings.set_min_non_voice_interval(settings->get_min_silence_interval());
+        vad_settings.set_margin_after(settings->get_margin_after());
+        vad_settings.set_margin_before(settings->get_margin_before());
+        vad_settings.set_voice_prob(settings->get_volume_threshold() * 256);
+
         m_jc->apply_settings(settings);
+        m_vad->apply_settings(vad_settings);
     }
 }
 
