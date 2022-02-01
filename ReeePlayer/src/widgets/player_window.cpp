@@ -16,10 +16,30 @@
 #include "web_video_widget.h"
 #include "emitter.h"
 
-constexpr float PLAYBACK_RATES[] = { 0.5, 0.75, 1.01, 1.25, 1.5, 2.0 };
-static const QKeySequence PLAYBACK_KEYS[] =
-    { Qt::Key_3, Qt::Key_4, Qt::Key_5, Qt::Key_6, Qt::Key_7, Qt::Key_8 };
-constexpr int DEFAULT_PLAYBACK_RATE_INDEX = 2;
+struct PlaybackRateItem
+{
+    float rate;
+    const char* text;
+    QKeySequence key;
+};
+
+PlaybackRateItem PLAYBACK_ITEMS[] =
+{
+    {0.5,  "0.5", Qt::Key_5},
+    {0.6,  "0.6", Qt::Key_6},
+    {0.7,  "0.7", Qt::Key_7},
+    {0.8,  "0.8", Qt::Key_8},
+    {0.9,  "0.9", Qt::Key_9},
+    {1.0,  "1",   Qt::Key_0},
+    {1.25, "1.2", Qt::Key_Minus},
+    {1.5,  "1.5", Qt::Key_Equal},
+    {2.0,  "2.0", Qt::Key_Backspace},
+};
+
+//constexpr float PLAYBACK_RATES[] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1.01, 1.25, 1.5, 2.0 };
+//static const QKeySequence PLAYBACK_KEYS[] =
+//    { Qt::Key_5, Qt::Key_6, Qt::Key_7, Qt::Key_8, Qt::Key_9, Qt::Key_0, Qt::Key_Minus, Qt::Key_Equal, Qt::Key_Backspace };
+constexpr int DEFAULT_PLAYBACK_RATE_INDEX = 5;
 
 constexpr int NORMAL_LOOP_STEP = 100;
 constexpr int PRECISE_LOOP_STEP = 40;
@@ -380,9 +400,9 @@ void PlayerWindow::setup_shortcuts()
     }
 
     int id = 0;
-    for (float r : PLAYBACK_RATES)
+    for (const auto& item : PLAYBACK_ITEMS)
     {
-        QShortcut* shortcut = new QShortcut(PLAYBACK_KEYS[id], this);
+        QShortcut* shortcut = new QShortcut(item.key, this);
         connect(shortcut, &QShortcut::activated,
             [this, id] { set_playback_rate(id, true); });
         ++id;
@@ -394,13 +414,11 @@ void PlayerWindow::setup_playback_rates()
     m_rate_btn_group = new QButtonGroup(this);
     m_rate_btn_group->setExclusive(true);
     int id = 0;
-    for (float r : PLAYBACK_RATES)
+    for (const auto& item : PLAYBACK_ITEMS)
     {
         QPushButton* b = new QPushButton(this);
-        if (std::abs(r - 1) < 0.02)
-            b->setText("1");
-        else
-            b->setText(QString::asprintf("%.3g", r));
+        b->setText(item.text);
+        b->setToolTip(QString("Hotkey: %1").arg(item.key.toString()));
         b->setCheckable(true);
         b->setMaximumWidth(30);
         b->setFocusPolicy(Qt::NoFocus);
@@ -901,7 +919,7 @@ void PlayerWindow::set_playback_rate(int index, bool play)
         m_ui_state->play();
     }
 
-    m_playback_rate = PLAYBACK_RATES[index];
+    m_playback_rate = PLAYBACK_ITEMS[index].rate;
 
     if (!m_jc_settings || !m_jc_settings->is_enabled())
     {
