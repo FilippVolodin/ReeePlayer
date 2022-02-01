@@ -1360,6 +1360,8 @@ void AddingClipState::activate()
     //if (m_pw->m_jc)
     //    m_pw->m_jc->set_enabled(false);
 
+    m_pw->m_jc_settings->set_enabled(false);
+
     m_pw->m_edt_loop_a->setValue(a);
     m_pw->m_edt_loop_b->setValue(b);
     m_pw->m_video_widget->play(a, b, 1);
@@ -1545,6 +1547,8 @@ void RepeatingClipState::activate()
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
 
+    m_pw->m_video_widget->get_widget()->setFocus();
+    
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
     {
         m_pw->m_subtitle_views[i]->set_editable(true);
