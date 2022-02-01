@@ -52,7 +52,7 @@ bool VAD::run(const QString& wav_filename)
 
     m_vad_process = std::make_unique<QProcess>();
 
-    m_vad_process->start("E:\\dev\\VAD_ONNX\\dist\\vad\\vad.exe", args);
+    m_vad_process->start("vad/vad.exe", args);
     return m_vad_process->waitForStarted(10000);
 }
 
