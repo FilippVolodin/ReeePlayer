@@ -31,12 +31,15 @@ bool VAD::is_ready() const
     return m_total_num_chunks >= 0 && m_vad_data.size() == m_total_num_chunks;
 }
 
-void VAD::run(const QString& wav_filename)
+bool VAD::run(const QString& wav_filename)
 {
+    if (wav_filename.isEmpty())
+        return false;
+
     m_server = std::make_unique<QTcpServer>();
 
     if (!m_server->listen(QHostAddress::LocalHost, 12345))
-        return;
+        return false;
 
     connect(m_server.get(), &QTcpServer::newConnection, this, &VAD::new_conn);
     const int first_chunk = m_vad_data.size();
@@ -49,22 +52,8 @@ void VAD::run(const QString& wav_filename)
 
     m_vad_process = std::make_unique<QProcess>();
 
-    QObject::connect(m_vad_process.get(), &QProcess::errorOccurred,
-        [this]()
-        {
-            int t = 0;
-        }
-    );
-
-    QObject::connect(m_vad_process.get(), &QProcess::readyReadStandardError,
-        [this]()
-        {
-            QString msg = m_vad_process->readAllStandardError();
-            int temp = 0;
-        }
-    );
-
     m_vad_process->start("E:\\dev\\VAD_ONNX\\dist\\vad\\vad.exe", args);
+    return m_vad_process->waitForStarted(10000);
 }
 
 void VAD::stop()
@@ -136,7 +125,7 @@ int VAD::rewind(int t, int delta) const
     return cur_chunk * vad_chunk_length_ms;
 }
 
-void VAD::apply_settings(VADSettings settings)
+void VAD::apply_settings(std::shared_ptr<VADSettings> settings)
 {
     m_settings = settings;
     reprocess_data();
@@ -172,7 +161,9 @@ void VAD::ready_read()
             m_vad_data.push_back(b[i]);
     }
 
-    process_data();
+    if (m_settings)
+        process_data();
+
     emit progress_updated(m_vad_data.size(), m_total_num_chunks);
 
     if (is_ready())
@@ -211,7 +202,6 @@ void VAD::load_data()
         in >> p;
         m_vad_data.push_back(p);
     }
-    process_data();
 }
 
 void VAD::save_data()
@@ -230,9 +220,9 @@ void VAD::save_data()
 
 void VAD::process_data()
 {
-    const int min_interval_in_chunks = m_settings.get_min_non_voice_interval() / vad_chunk_length_ms;
-    const int margin_after_in_chunks = m_settings.get_margin_after() / vad_chunk_length_ms;
-    const int margin_before_in_chunks = m_settings.get_margin_before() / vad_chunk_length_ms;
+    const int min_interval_in_chunks = m_settings->get_min_non_voice_interval() / vad_chunk_length_ms;
+    const int margin_after_in_chunks = m_settings->get_margin_after() / vad_chunk_length_ms;
+    const int margin_before_in_chunks = m_settings->get_margin_before() / vad_chunk_length_ms;
 
     int processed_size = m_processed_vad_data.size();
     if (processed_size == m_vad_data.size())
@@ -256,7 +246,7 @@ void VAD::process_data()
         //int volume = sum / window_size;
         //count++;
 
-        if (m_vad_data[chunk] >= m_settings.get_voice_prob() || chunk == m_vad_data.size() - 1)
+        if (m_vad_data[chunk] >= m_settings->get_voice_prob() || chunk == m_vad_data.size() - 1)
         {
             int silent_length_ch = (chunk - last_voice_chunk - 1);
             //int silent_length = (chunk - last_voice_chunk - 1) * chunk_length_ms;

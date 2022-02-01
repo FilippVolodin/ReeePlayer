@@ -1,18 +1,18 @@
-#ifndef WAVEFORM_H
-#define WAVEFORM_H
+#ifndef WAVEFORM_VIEW_H
+#define WAVEFORM_VIEW_H
 
 #include <qwidget.h>
 
-class JumpCutter;
+class Waveform;
 class VAD;
 
-class Waveform : public QWidget
+class WaveformView : public QWidget
 {
     Q_OBJECT
 
 public:
-    Waveform(QWidget* parent = Q_NULLPTR);
-    void set_jumpcutter(const JumpCutter*);
+    WaveformView(QWidget* parent = Q_NULLPTR);
+    void set_waveform(const Waveform*);
     void set_vad(const VAD*);
     void set_time(int);
     
@@ -33,7 +33,7 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
 
 private:
-    const JumpCutter* m_jc = nullptr;
+    const Waveform* m_waveform = nullptr;
     const VAD* m_vad = nullptr;
     int m_time = 0;
     int m_clip_a = 0;

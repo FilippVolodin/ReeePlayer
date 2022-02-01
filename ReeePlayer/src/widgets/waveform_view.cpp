@@ -1,5 +1,5 @@
-#include "waveform.h"
-#include "models/jumpcutter.h"
+#include "waveform_view.h"
+#include "models/waveform.h"
 #include "models/vad.h"
 
 constexpr int chunk_length_ms = 10;
@@ -7,65 +7,65 @@ constexpr int sampling_rate = 16000;
 constexpr int window_size_samples = 1536;
 constexpr int vad_chunk_length_ms = window_size_samples * 1000 / sampling_rate;
 
-Waveform::Waveform(QWidget* parent) : QWidget(parent)
+WaveformView::WaveformView(QWidget* parent) : QWidget(parent)
 {
 }
 
-void Waveform::set_jumpcutter(const JumpCutter* jc)
+void WaveformView::set_waveform(const Waveform* waveform)
 {
-    m_jc = jc;
+    m_waveform = waveform;
 }
 
-void Waveform::set_vad(const VAD* vad)
+void WaveformView::set_vad(const VAD* vad)
 {
     m_vad = vad;
 }
 
-void Waveform::set_time(int time)
+void WaveformView::set_time(int time)
 {
     m_time = time;
 }
 
-bool Waveform::is_clip_mode(bool) const
+bool WaveformView::is_clip_mode(bool) const
 {
     return m_clip_mode;
 }
 
-void Waveform::set_clip_mode(bool clip_mode)
+void WaveformView::set_clip_mode(bool clip_mode)
 {
     m_clip_mode = clip_mode;
 }
 
-int Waveform::get_clip_a() const
+int WaveformView::get_clip_a() const
 {
     return m_clip_a;
 }
 
-void Waveform::set_clip_a(int a)
+void WaveformView::set_clip_a(int a)
 {
     m_clip_a = a;
 }
 
-int Waveform::get_clip_b() const
+int WaveformView::get_clip_b() const
 {
     return m_clip_b;
 }
 
-void Waveform::set_clip_b(int b)
+void WaveformView::set_clip_b(int b)
 {
     m_clip_b = b;
 }
 
-void Waveform::paintEvent(QPaintEvent *)
+void WaveformView::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 
    // painter.fillRect(0, 0, width(), height(), /*QColor(0xD6, 0xD6, 0xD6)*/ palette().color(QWidget::backgroundRole()));
 
-    if (m_jc == nullptr)
+    if (m_waveform == nullptr)
         return;
 
-    const std::vector<uint8_t>& volumes = m_jc->get_max_volumes();
+    const std::vector<uint8_t>& volumes = m_waveform->get_max_volumes();
     //const std::vector<bool>& intervals = m_jc->get_intervals();
     //const std::vector<uint8_t>& voice_probs = m_jc->get_voice_probs();
     //if (voice_probs.empty())
@@ -119,7 +119,7 @@ void Waveform::paintEvent(QPaintEvent *)
     //int vad_interval_begin = std::min(vad_last_index, std::max(vad_ch_a, 0.f));
     //bool is_voice = voice_probs[vad_interval_begin] >= 128;
 
-    if (!m_clip_mode)
+    if (!m_clip_mode && m_vad)
     {
         int ch = vad_ch_a;
         if (ch < 0)
@@ -195,14 +195,14 @@ void Waveform::paintEvent(QPaintEvent *)
     //painter.drawLine(time_x, 0, time_x, height());
 }
 
-void Waveform::mouseReleaseEvent(QMouseEvent* event)
+void WaveformView::mouseReleaseEvent(QMouseEvent* event)
 {
     int x = event->pos().x();
     int time = (float)x / width() * (m_b - m_a) + m_a;
     emit mouse_release(time, event);
 }
 
-void Waveform::wheelEvent(QWheelEvent* event)
+void WaveformView::wheelEvent(QWheelEvent* event)
 {
     int x = event->position().x();
     int time = (float)x / width() * (m_b - m_a) + m_a;

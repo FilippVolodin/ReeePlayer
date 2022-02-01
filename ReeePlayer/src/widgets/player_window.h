@@ -11,10 +11,11 @@ class ClipInfoDialog;
 class App;
 class Library;
 class Session;
-class JumpCutter;
+class Waveform;
 class JumpCutterSettings;
 class IVideoWidget;
 class VAD;
+class VADSettings;
 
 namespace qsubs
 {
@@ -232,6 +233,9 @@ private:
     void next_clip();
 
     void jumpcutter(int);
+    void load_jc_settings();
+    void save_jc_settings();
+    std::shared_ptr<VADSettings> get_vad_settings() const;
 
     Ui::PlayerWindow ui;
 
@@ -240,9 +244,9 @@ private:
     App* m_app;
     Library* m_library;
     std::shared_ptr<Session> m_session;
-    std::shared_ptr<JumpCutter> m_jc;
+    std::shared_ptr<Waveform> m_waveform;
     std::shared_ptr<VAD> m_vad;
-    //std::shared_ptr<JumpCutterSettings> m_jc_settings;
+    std::shared_ptr<JumpCutterSettings> m_jc_settings;
 
     ClipInfoDialog* m_clip_info_dialog;
 

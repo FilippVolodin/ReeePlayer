@@ -9,7 +9,8 @@
 #include "spinbox.h"
 #include "models/jumpcutter.h"
 #include "models/vad.h"
-#include "waveform.h"
+#include "models/waveform.h"
+#include "waveform_view.h"
 #include "jumpcutter_settings_dialog.h"
 #include "video_widget.h"
 #include "web_video_widget.h"
@@ -299,10 +300,10 @@ void PlayerWindow::setup_actions()
     connect(ui.actRepeatClip, &QAction::triggered,
         this, &PlayerWindow::on_actRepeatClip_triggered);
 
-    connect(ui.waveform, &Waveform::mouse_release, [this](int time, QMouseEvent* event) {
+    connect(ui.waveform, &WaveformView::mouse_release, [this](int time, QMouseEvent* event) {
         m_ui_state->on_waveform_mouse_release(time, event); });
 
-    connect(ui.waveform, &Waveform::wheel_event, [this](int time, QWheelEvent* event) {
+    connect(ui.waveform, &WaveformView::wheel_event, [this](int time, QWheelEvent* event) {
         m_ui_state->on_wheel_event(time, event); });
 };
 
@@ -492,18 +493,13 @@ void PlayerWindow::on_actRepeatClip_triggered()
 void PlayerWindow::on_actJumpCutterSettings_triggered()
 {
     JumpCutterSettingsDialog jc_dialog;
-    jc_dialog.set_settings(m_jc->get_settings());
+    jc_dialog.set_settings(m_jc_settings);
     if (jc_dialog.exec() == QDialog::Accepted)
     {
-        auto settings = jc_dialog.get_settings();
-        VADSettings vad_settings;
-        vad_settings.set_min_non_voice_interval(settings->get_min_silence_interval());
-        vad_settings.set_margin_after(settings->get_margin_after());
-        vad_settings.set_margin_before(settings->get_margin_before());
-        vad_settings.set_voice_prob(settings->get_volume_threshold() * 256);
-
-        m_jc->apply_settings(settings);
-        m_vad->apply_settings(vad_settings);
+        m_jc_settings = jc_dialog.get_settings();
+        save_jc_settings();
+        if (m_vad)
+            m_vad->apply_settings(get_vad_settings());
     }
 }
 
@@ -515,8 +511,8 @@ void PlayerWindow::on_actShowWaveform_triggered(bool value)
 
 void PlayerWindow::on_actJumpCutter_triggered(bool value)
 {
-    m_jc->set_enabled(value);
     m_app->set_setting("jumpcutter", "enabled", value);
+    m_jc_settings->set_enabled(value);
 }
 
 void PlayerWindow::on_btnMinus_clicked(bool)
@@ -570,8 +566,7 @@ void PlayerWindow::on_edt_loop_a_value_changed(int)
 {
     int a = get_loop_a();
     int b = get_loop_b();
-    if (m_jc)
-        ui.waveform->set_clip_a(a);
+    ui.waveform->set_clip_a(a);
     m_video_widget->play(a, b, 1);
 }
 
@@ -579,8 +574,7 @@ void PlayerWindow::on_edt_loop_b_value_changed(int)
 {
     int a = get_loop_a();
     int b = get_loop_b();
-    if (m_jc)
-        ui.waveform->set_clip_b(b);
+    ui.waveform->set_clip_b(b);
     m_video_widget->play(std::max(a, b - 1000), b, 1);
 }
 
@@ -758,13 +752,16 @@ void PlayerWindow::show_video()
 
     try
     {
-        m_jc = std::make_shared<JumpCutter>(get_vol_file(filename));
-        ui.waveform->set_jumpcutter(m_jc.get());
+        m_waveform = std::make_shared<Waveform>(get_vol_file(filename));
+        ui.waveform->set_waveform(m_waveform.get());
     }
     catch(std::exception&)
     {
     }
     ui.waveform->set_vad(m_vad.get());
+    
+    load_jc_settings();
+    m_vad->apply_settings(get_vad_settings());
 
     startTimer(20);
 
@@ -906,7 +903,7 @@ void PlayerWindow::set_playback_rate(int index, bool play)
 
     m_playback_rate = PLAYBACK_RATES[index];
 
-    if (!m_jc || !m_jc->is_enabled())
+    if (!m_jc_settings || !m_jc_settings->is_enabled())
     {
         m_video_widget->set_rate(m_playback_rate);
     }
@@ -1053,7 +1050,7 @@ void PlayerWindow::next_clip()
 
 void PlayerWindow::jumpcutter(int t)
 {
-    if (!m_jc || !m_jc->is_enabled())
+    if (!m_vad || !m_jc_settings || !m_jc_settings->is_enabled())
         return;
 
     bool current_interval_is_loud = m_vad->is_voice(t);
@@ -1062,9 +1059,7 @@ void PlayerWindow::jumpcutter(int t)
     if (next_interval - t < 300)
         return;
 
-    //qDebug("JC: %d %d %d", t, current_interval_is_loud, next_interval);
-
-    if (m_jc->get_settings()->is_silence_skipping())
+    if (m_jc_settings->is_non_voice_skipping())
     {
         m_video_widget->set_rate(m_playback_rate);
         if (current_interval_is_loud)
@@ -1085,10 +1080,39 @@ void PlayerWindow::jumpcutter(int t)
         }
         else
         {
-            m_video_widget->set_rate(m_jc->get_settings()->get_silence_speed());
+            m_video_widget->set_rate(m_jc_settings->get_non_voice_speed());
         }
     }
 
+}
+
+void PlayerWindow::load_jc_settings()
+{
+    m_jc_settings = std::make_shared<JumpCutterSettings>();
+    m_jc_settings->set_voice_prob_th(m_app->get_setting("jumpcutter", "voice_prob_th", 0.5).toFloat());
+    m_jc_settings->set_non_voice_speed(m_app->get_setting("jumpcutter", "non_voice_speed", 2.0).toFloat());
+    m_jc_settings->set_min_non_voice_interval(m_app->get_setting("jumpcutter", "min_non_voice_interval", 500).toInt());
+    m_jc_settings->set_margin_before(m_app->get_setting("jumpcutter", "margin_before", 100).toFloat());
+    m_jc_settings->set_margin_after(m_app->get_setting("jumpcutter", "margin_after", 100).toFloat());
+}
+
+void PlayerWindow::save_jc_settings()
+{
+    m_app->set_setting("jumpcutter", "voice_prob_th", m_jc_settings->get_voice_prob_th());
+    m_app->set_setting("jumpcutter", "non_voice_speed", m_jc_settings->get_non_voice_speed());
+    m_app->set_setting("jumpcutter", "min_non_voice_interval", m_jc_settings->get_min_non_voice_interval());
+    m_app->set_setting("jumpcutter", "margin_before", m_jc_settings->get_margin_before());
+    m_app->set_setting("jumpcutter", "margin_after", m_jc_settings->get_margin_after());
+}
+
+std::shared_ptr<VADSettings> PlayerWindow::get_vad_settings() const
+{
+    std::shared_ptr<VADSettings> vad_settings = std::make_shared<VADSettings>();
+    vad_settings->set_min_non_voice_interval(m_jc_settings->get_min_non_voice_interval());
+    vad_settings->set_margin_after(m_jc_settings->get_margin_after());
+    vad_settings->set_margin_before(m_jc_settings->get_margin_before());
+    vad_settings->set_voice_prob(m_jc_settings->get_voice_prob_th() * 256);
+    return vad_settings;
 }
 
 UIState::UIState(PlayerWindow* pw) : m_pw(pw)
@@ -1173,28 +1197,31 @@ void WatchingState::activate()
 
     ui.actAddClip->setVisible(true);
 
-    if (m_pw->m_jc)
+    if (m_pw->m_waveform)
     {
         bool show_waveform = m_pw->m_app->get_setting("gui", "show_waveform", true).toBool();
         ui.actShowWaveform->setChecked(show_waveform);
         ui.waveform->setVisible(show_waveform);
         ui.waveform->set_clip_mode(false);
-
-        bool jc_enabled = m_pw->m_app->get_setting("jumpcutter", "enabled", true).toBool();
-        ui.actJumpCutter->setChecked(jc_enabled);
-        m_pw->m_jc->set_enabled(jc_enabled);
     }
     else
     {
         ui.actShowWaveform->setEnabled(false);
         ui.actShowWaveform->setChecked(false);
+        ui.waveform->setVisible(false);
+    }
 
+    if (m_pw->m_vad)
+    {
+        bool jc_enabled = m_pw->m_app->get_setting("jumpcutter", "enabled", true).toBool();
+        ui.actJumpCutter->setChecked(jc_enabled);
+        m_pw->m_jc_settings->set_enabled(jc_enabled);
+    }
+    else
+    {
         ui.actJumpCutter->setEnabled(false);
         ui.actJumpCutter->setChecked(false);
-
-        ui.actJumpCutterSettings->setEnabled(false);
-
-        ui.waveform->setVisible(false);
+        m_pw->m_jc_settings->set_enabled(false);
     }
 
     //QPalette p = m_pw->palette();
@@ -1306,16 +1333,13 @@ void AddingClipState::activate()
         }
     }
 
-    if (m_pw->m_jc)
-    {
-        ui.waveform->set_clip_mode(true);
-        ui.waveform->set_clip_a(a);
-        ui.waveform->set_clip_b(b);
-        ui.waveform->setVisible(true);
-    }
+    ui.waveform->set_clip_mode(true);
+    ui.waveform->set_clip_a(a);
+    ui.waveform->set_clip_b(b);
+    ui.waveform->setVisible(true);
 
-    if (m_pw->m_jc)
-    m_pw->m_jc->set_enabled(false);
+    //if (m_pw->m_jc)
+    //    m_pw->m_jc->set_enabled(false);
 
     m_pw->m_edt_loop_a->setValue(a);
     m_pw->m_edt_loop_b->setValue(b);

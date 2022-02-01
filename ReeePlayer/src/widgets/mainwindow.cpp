@@ -357,7 +357,8 @@ void MainWindow::watch(File* file)
         //    VAD* vad = new VAD(temp_wav, get_vad_file(media_file));
         //}
         //vad = std::make_shared<VAD>(temp_wav, get_vad_file(media_file));
-        vad->run(temp_wav);
+        if (!vad->run(temp_wav))
+            vad.reset();
     }
 
     hide();

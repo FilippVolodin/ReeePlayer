@@ -32,7 +32,7 @@ public:
 
     bool is_ready() const;
 
-    void run(const QString& wav_file);
+    bool run(const QString& wav_file);
     void stop();
 
     int next_interval(int t) const;
@@ -42,7 +42,7 @@ public:
     int num_chunks() const;
     int rewind(int t, int delta) const;
 
-    void apply_settings(VADSettings);
+    void apply_settings(std::shared_ptr<VADSettings>);
 signals:
 
     void progress_updated(int, int);
@@ -56,7 +56,7 @@ private:
     void process_data();
     void reprocess_data();
 
-    VADSettings m_settings;
+    std::shared_ptr<VADSettings> m_settings;
     QString m_vad_file;
     std::unique_ptr<QTcpServer> m_server;
     QTcpSocket* m_sock = nullptr;

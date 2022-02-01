@@ -11,22 +11,12 @@ constexpr int VOL_VERSION = 0;
 
 JumpCutter::JumpCutter(const QString& filename)
 {
-    m_settings = std::make_shared<JumpCutterSettings>();
+    //m_settings = std::make_shared<JumpCutterSettings>();
     read_volumes(filename);
-    QFileInfo info(filename);
+    //QFileInfo info(filename);
     // QString vad_file = info.absolutePath() + "/" + info.completeBaseName() + ".vad";
     // read_vad(vad_file);
-    fragment();
-}
-
-bool JumpCutter::is_enabled() const
-{
-    return m_enabled;
-}
-
-void JumpCutter::set_enabled(bool enabled)
-{
-    m_enabled = enabled;
+    //fragment();
 }
 
 void JumpCutter::read_volumes(const QString& filename)
@@ -70,134 +60,129 @@ void JumpCutter::read_volumes(const QString& filename)
     //}
 }
 
-void JumpCutter::read_vad(const QString& filename)
-{
-    QFile vad_file(filename);
-    if (!vad_file.open(QIODevice::ReadOnly))
-        throw std::exception("Can't load vad-file");
+//void JumpCutter::read_vad(const QString& filename)
+//{
+//    QFile vad_file(filename);
+//    if (!vad_file.open(QIODevice::ReadOnly))
+//        throw std::exception("Can't load vad-file");
+//
+//    QDataStream in(&vad_file);
+//    m_probs.clear();
+//    while (!in.atEnd())
+//    {
+//        uint8_t p;
+//        in >> p;
+//        m_probs.push_back(p);
+//    }
+//}
 
-    QDataStream in(&vad_file);
-    m_probs.clear();
-    while (!in.atEnd())
-    {
-        uint8_t p;
-        in >> p;
-        m_probs.push_back(p);
-    }
-}
+//void JumpCutter::fragment()
+//{
+//    m_fragments.resize(m_max_volume.size());
+//    std::fill(m_fragments.begin(), m_fragments.end(), true);
+//    int last_loud_chunk = 0;
+//
+//    const int window_size = 20;
+//    int sum = 0;
+//    int count = 0;
+//
+//    for (int chunk = 0; chunk < m_max_volume.size(); chunk++)
+//    {
+//        //if (count >= window_size)
+//        //    sum -= m_max_volume[chunk - window_size];
+//        //sum += m_max_volume[chunk];
+//        //int volume = sum / window_size;
+//        //count++;
+//
+//        int volume = m_max_volume[chunk];
+//        if (volume >= m_settings->get_volume_threshold() * 256 || chunk == m_max_volume.size() - 1)
+//        {
+//            int silent_length_ch = (chunk - last_loud_chunk - 1);
+//            int silent_length = (chunk - last_loud_chunk - 1) * chunk_length_ms;
+//            int total_len = m_settings->get_min_silence_interval() +
+//                m_settings->get_margin_before() +
+//                m_settings->get_margin_after();
+//
+//            if (silent_length > total_len)
+//            {
+//                int margin_before_ch = m_settings->get_margin_before() / chunk_length_ms;
+//                int margin_after_ch = m_settings->get_margin_after() / chunk_length_ms;
+//
+//                std::fill(m_fragments.begin() + last_loud_chunk + margin_after_ch, m_fragments.begin() + chunk - 1 - margin_before_ch, false);
+//            }
+//            last_loud_chunk = chunk;
+//        }
+//    }
+//}
 
-void JumpCutter::fragment()
-{
-    m_fragments.resize(m_max_volume.size());
-    std::fill(m_fragments.begin(), m_fragments.end(), true);
-    int last_loud_chunk = 0;
+//int JumpCutter::next_interval(int t) const
+//{
+//    return next_interval_in_chunks(t / vad_chunk_length_ms)* vad_chunk_length_ms;
+//}
 
-    const int window_size = 20;
-    int sum = 0;
-    int count = 0;
-
-    for (int chunk = 0; chunk < m_max_volume.size(); chunk++)
-    {
-        //if (count >= window_size)
-        //    sum -= m_max_volume[chunk - window_size];
-        //sum += m_max_volume[chunk];
-        //int volume = sum / window_size;
-        //count++;
-
-        int volume = m_max_volume[chunk];
-        if (volume >= m_settings->get_volume_threshold() * 256 || chunk == m_max_volume.size() - 1)
-        {
-            int silent_length_ch = (chunk - last_loud_chunk - 1);
-            int silent_length = (chunk - last_loud_chunk - 1) * chunk_length_ms;
-            int total_len = m_settings->get_min_silence_interval() +
-                m_settings->get_margin_before() +
-                m_settings->get_margin_after();
-
-            if (silent_length > total_len)
-            {
-                int margin_before_ch = m_settings->get_margin_before() / chunk_length_ms;
-                int margin_after_ch = m_settings->get_margin_after() / chunk_length_ms;
-
-                std::fill(m_fragments.begin() + last_loud_chunk + margin_after_ch, m_fragments.begin() + chunk - 1 - margin_before_ch, false);
-            }
-            last_loud_chunk = chunk;
-        }
-    }
-}
-
-int JumpCutter::next_interval(int t) const
-{
-    return next_interval_in_chunks(t / vad_chunk_length_ms)* vad_chunk_length_ms;
-}
-
-int JumpCutter::next_interval_in_chunks(int chunk) const
-{
-    if (chunk >= m_probs.size())
-        return m_probs.size();
-
-    bool cur_is_voice = m_probs[chunk] > 128;
-    auto interval_changed = [cur_is_voice](uint8_t p)
-    {
-        return (p >= 128) != cur_is_voice;
-    };
-
-    auto it = std::find_if(m_probs.begin() + chunk, m_probs.end(), interval_changed);
-    int chunks_diff = std::distance(m_probs.begin(), it);
-    return chunks_diff;
-}
-
-int JumpCutter::rewind(int t0, int delta) const
-{
-    int chunk = t0 / chunk_length_ms;
-    if (chunk >= m_fragments.size())
-        chunk = m_fragments.size() - 1;
-
-    int chunks_delta = std::abs(delta / chunk_length_ms);
-    int cd = 0;
-    int sign = delta > 0 ? 1 : -1;
-    int cur_chunk = chunk;
-    for (int c = chunk; c >= 0 && c < m_fragments.size() && cd < chunks_delta; c += sign)
-    {
-        if (m_fragments[c])
-            ++cd;
-        cur_chunk = c;
-    }
-    return cur_chunk * chunk_length_ms;
-}
+//int JumpCutter::next_interval_in_chunks(int chunk) const
+//{
+//    if (chunk >= m_probs.size())
+//        return m_probs.size();
+//
+//    bool cur_is_voice = m_probs[chunk] > 128;
+//    auto interval_changed = [cur_is_voice](uint8_t p)
+//    {
+//        return (p >= 128) != cur_is_voice;
+//    };
+//
+//    auto it = std::find_if(m_probs.begin() + chunk, m_probs.end(), interval_changed);
+//    int chunks_diff = std::distance(m_probs.begin(), it);
+//    return chunks_diff;
+//}
+//
+//int JumpCutter::rewind(int t0, int delta) const
+//{
+//    int chunk = t0 / chunk_length_ms;
+//    if (chunk >= m_fragments.size())
+//        chunk = m_fragments.size() - 1;
+//
+//    int chunks_delta = std::abs(delta / chunk_length_ms);
+//    int cd = 0;
+//    int sign = delta > 0 ? 1 : -1;
+//    int cur_chunk = chunk;
+//    for (int c = chunk; c >= 0 && c < m_fragments.size() && cd < chunks_delta; c += sign)
+//    {
+//        if (m_fragments[c])
+//            ++cd;
+//        cur_chunk = c;
+//    }
+//    return cur_chunk * chunk_length_ms;
+//}
 
 const std::vector<uint8_t>& JumpCutter::get_max_volumes() const
 {
     return m_max_volume;
 }
 
-const std::vector<bool>& JumpCutter::get_intervals() const
-{
-    return m_fragments;
-}
+//const std::vector<bool>& JumpCutter::get_intervals() const
+//{
+//    return m_fragments;
+//}
+//
+//const std::vector<uint8_t>& JumpCutter::get_voice_probs() const
+//{
+//    return m_probs;
+//}
 
-const std::vector<uint8_t>& JumpCutter::get_voice_probs() const
-{
-    return m_probs;
-}
+//void JumpCutter::apply_settings(std::shared_ptr<JumpCutterSettings> settings)
+//{
+//    m_settings = settings;
+//    fragment();
+//}
 
-std::shared_ptr<JumpCutterSettings> JumpCutter::get_settings() const
-{
-    return m_settings;
-}
-
-void JumpCutter::apply_settings(std::shared_ptr<JumpCutterSettings> settings)
-{
-    m_settings = settings;
-    fragment();
-}
-
-bool JumpCutter::current_interval_is_loud(int t) const
-{
-    int chunk = t / vad_chunk_length_ms;
-    if (chunk >= m_probs.size())
-        return true;
-    return m_probs[chunk] >= 128;
-}
+//bool JumpCutter::current_interval_is_loud(int t) const
+//{
+//    int chunk = t / vad_chunk_length_ms;
+//    if (chunk >= m_probs.size())
+//        return true;
+//    return m_probs[chunk] >= 128;
+//}
 
 void create_vol_file(const QString& temp_wav, const QString& vol_filename, std::function<void(QString)> log)
 {
@@ -302,39 +287,49 @@ QString get_vol_file(const QString& filename)
     return fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
 }
 
-float JumpCutterSettings::get_volume_threshold() const
+bool JumpCutterSettings::is_enabled() const
 {
-    return m_volume_threshold;
+    return m_enabled;
 }
 
-void JumpCutterSettings::set_volume_threshold(float volume_threshold)
+void JumpCutterSettings::set_enabled(bool enabled)
 {
-    m_volume_threshold = volume_threshold;
+    m_enabled = enabled;
 }
 
-float JumpCutterSettings::get_silence_speed() const
+float JumpCutterSettings::get_voice_prob_th() const
 {
-    return m_silence_speed;
+    return m_voice_prob_th;
 }
 
-void JumpCutterSettings::set_silence_speed(float silence_speed)
+void JumpCutterSettings::set_voice_prob_th(float voice_prob_th)
 {
-    m_silence_speed = silence_speed;
+    m_voice_prob_th = voice_prob_th;
 }
 
-bool JumpCutterSettings::is_silence_skipping() const
+float JumpCutterSettings::get_non_voice_speed() const
 {
-    return std::abs(m_silence_speed) < 0.1;
+    return m_non_voice_speed;
 }
 
-int JumpCutterSettings::get_min_silence_interval() const
+void JumpCutterSettings::set_non_voice_speed(float silence_speed)
 {
-    return m_min_silence_interval;
+    m_non_voice_speed = silence_speed;
 }
 
-void JumpCutterSettings::set_min_silence_interval(int min_silence_interval)
+bool JumpCutterSettings::is_non_voice_skipping() const
 {
-    m_min_silence_interval = min_silence_interval;
+    return std::abs(m_non_voice_speed) < 0.1;
+}
+
+int JumpCutterSettings::get_min_non_voice_interval() const
+{
+    return m_min_non_voice_interval;
+}
+
+void JumpCutterSettings::set_min_non_voice_interval(int min_silence_interval)
+{
+    m_min_non_voice_interval = min_silence_interval;
 }
 
 int JumpCutterSettings::get_margin_before() const

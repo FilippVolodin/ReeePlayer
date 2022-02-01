@@ -39,7 +39,7 @@ target_sources(ReeePlayer PRIVATE
 	src/widgets/clips_view_model.cpp
 	src/widgets/subtitles_text_edit.cpp	
 	src/widgets/waiting_dialog.cpp	
-	src/widgets/waveform.cpp	
+	src/widgets/waveform_view.cpp	
     src/widgets/jumpcutter_settings_dialog.cpp
     src/widgets/video_download_dialog.cpp
     src/widgets/emitter.cpp
@@ -54,6 +54,7 @@ target_sources(ReeePlayer PRIVATE
 	src/models/session.cpp
 	src/models/repetition_model.cpp
 	src/models/vad.cpp
+	src/models/waveform.cpp	
 )
 	
 target_include_directories(ReeePlayer PRIVATE include src)
