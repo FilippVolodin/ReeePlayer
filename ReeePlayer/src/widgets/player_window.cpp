@@ -1020,7 +1020,7 @@ int PlayerWindow::get_loop_b() const
 void PlayerWindow::rewind(int delta_ms)
 {
     int new_time;
-    if (m_vad)
+    if (m_vad && m_jc_settings->is_enabled() && m_jc_settings->is_non_voice_skipping())
     {
         new_time = m_vad->rewind(m_video_widget->get_time(), delta_ms);
     }
