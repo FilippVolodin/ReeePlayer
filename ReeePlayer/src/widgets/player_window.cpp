@@ -117,7 +117,7 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 {
     ui.setupUi(this);
 
-    //QWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
+    //VideoWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
     WebVideoWidget* video_widget = new WebVideoWidget(this);
     QWidget* w = video_widget;
     auto sp = w->sizePolicy();

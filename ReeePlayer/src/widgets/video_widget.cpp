@@ -263,9 +263,13 @@ void VideoWidget::set_rate(float rate)
     }
 }
 
-void VideoWidget::set_volume(int)
+void VideoWidget::set_volume(int volume)
 {
-
+    if (volume != m_volume)
+    {
+        libvlc_audio_set_volume(m_vlc_mp, volume);
+        m_volume = volume;
+    }
 }
 
 int VideoWidget::get_time() const
@@ -286,6 +290,10 @@ int VideoWidget::get_length() const
 bool VideoWidget::at_end() const
 {
     return get_time() + 1000 >= get_length();
+}
+
+void VideoWidget::prepare_to_destroy()
+{
 }
 
 QWidget* VideoWidget::get_widget()

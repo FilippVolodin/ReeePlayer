@@ -31,6 +31,8 @@ public:
     int get_length() const override;
     bool at_end() const override;
 
+    void prepare_to_destroy() override;
+
     QWidget* get_widget() override;
     Emitter* get_emitter() override;
 
@@ -49,6 +51,8 @@ private:
     libvlc_event_manager_t* m_vlc_mp_events = nullptr;
 
     QString m_file_name;
+
+    int m_volume = 100;
 
     int m_start_time = 0;
     int m_stop_time = 0;
