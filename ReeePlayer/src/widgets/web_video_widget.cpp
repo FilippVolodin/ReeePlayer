@@ -88,6 +88,15 @@ void WebVideoWidget::set_rate(float rate)
     }
 }
 
+void WebVideoWidget::set_volume(int volume)
+{
+    if (m_volume != volume)
+    {
+        m_volume = volume;
+        page()->runJavaScript(QString("set_volume(%1);").arg(m_volume * 0.01));
+    }
+}
+
 int WebVideoWidget::get_time() const
 {
     return m_time;

@@ -24,6 +24,7 @@ public:
     void set_time(int) override;
     float get_rate() const override;
     void set_rate(float) override;
+    void set_volume(int) override;
 
     int get_time() const override;
     int get_accuracy_time() const override;

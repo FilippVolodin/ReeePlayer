@@ -263,6 +263,11 @@ void VideoWidget::set_rate(float rate)
     }
 }
 
+void VideoWidget::set_volume(int)
+{
+
+}
+
 int VideoWidget::get_time() const
 {
     return libvlc_media_player_get_time(m_vlc_mp);

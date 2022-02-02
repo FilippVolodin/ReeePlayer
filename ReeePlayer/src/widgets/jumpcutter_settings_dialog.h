@@ -16,6 +16,14 @@ public:
 
     std::shared_ptr<JumpCutterSettings> get_settings() const;
     void set_settings(std::shared_ptr<JumpCutterSettings>) const;
+
+signals:
+    void applied();
+
+private slots:
+    void on_nonVoiceVolumeSlider_valueChanged(int value);
+    void on_btnApply_clicked();
+    void on_btnClose_clicked();
 private:
     Ui::JumpCutterSettingsDialog ui;
 };

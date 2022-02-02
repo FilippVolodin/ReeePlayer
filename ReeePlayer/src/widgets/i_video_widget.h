@@ -19,6 +19,7 @@ public:
     virtual void set_time(int) = 0;
     virtual float get_rate() const = 0;
     virtual void set_rate(float) = 0;
+    virtual void set_volume(int) = 0;
 
     virtual int get_time() const = 0;
     virtual int get_accuracy_time() const = 0;

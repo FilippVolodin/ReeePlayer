@@ -34,6 +34,7 @@ std::shared_ptr<JumpCutterSettings> JumpCutterSettingsDialog::get_settings() con
 {
     std::shared_ptr<JumpCutterSettings> settings = std::make_shared<JumpCutterSettings>();
     settings->set_voice_prob_th(ui.edtVoiceProbTh->value() * 0.01);
+    settings->set_non_voice_volume(ui.nonVoiceVolumeSlider->value());
     settings->set_min_non_voice_interval(ui.edtMinSilenceInterval->value());
     settings->set_margin_before(ui.edtMarginBefore->value());
     settings->set_margin_after(ui.edtMarginAfter->value());
@@ -44,6 +45,8 @@ std::shared_ptr<JumpCutterSettings> JumpCutterSettingsDialog::get_settings() con
 void JumpCutterSettingsDialog::set_settings(std::shared_ptr<JumpCutterSettings> settings) const
 {
     ui.edtVoiceProbTh->setValue(static_cast<int>(settings->get_voice_prob_th() * 100));
+    ui.nonVoiceVolumeSlider->setValue(settings->get_non_voice_volume());
+    ui.lblNonVoiceVolume->setText(QString("%1%").arg(settings->get_non_voice_volume(), 3));
     ui.edtMinSilenceInterval->setValue(settings->get_min_non_voice_interval());
     ui.edtMarginBefore->setValue(settings->get_margin_before());
     ui.edtMarginAfter->setValue(settings->get_margin_after());
@@ -59,4 +62,19 @@ void JumpCutterSettingsDialog::set_settings(std::shared_ptr<JumpCutterSettings> 
         ui.cmbNonVoiceSpeed->setCurrentIndex(std::distance(std::begin(SILENCE_SPEEDS), it));
     else
         ui.cmbNonVoiceSpeed->setCurrentIndex(0);
+}
+
+void JumpCutterSettingsDialog::on_btnApply_clicked()
+{
+    emit applied();
+}
+
+void JumpCutterSettingsDialog::on_btnClose_clicked()
+{
+    close();
+}
+
+void JumpCutterSettingsDialog::on_nonVoiceVolumeSlider_valueChanged(int value)
+{
+    ui.lblNonVoiceVolume->setText(QString("%1%").arg(value, 3));
 }

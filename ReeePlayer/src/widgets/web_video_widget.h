@@ -40,6 +40,7 @@ public:
     void set_time(int) override;
     float get_rate() const override;
     void set_rate(float) override;
+    void set_volume(int);
 
     int get_time() const override;
     int get_accuracy_time() const override;
@@ -62,6 +63,7 @@ private:
     int m_duration = 0;
     int m_trigger_time = -1;
     float m_rate = 1.0;
+    int m_volume = 100;
     int m_last_emitted_time = 0.0;
     //float m_cur_rate = 1.0;
     RunningScriptsCounter m_counter;

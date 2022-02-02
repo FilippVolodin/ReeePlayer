@@ -510,15 +510,7 @@ void PlayerWindow::on_actRepeatClip_triggered()
 
 void PlayerWindow::on_actJumpCutterSettings_triggered()
 {
-    JumpCutterSettingsDialog jc_dialog;
-    jc_dialog.set_settings(m_jc_settings);
-    if (jc_dialog.exec() == QDialog::Accepted)
-    {
-        m_jc_settings = jc_dialog.get_settings();
-        save_jc_settings();
-        if (m_vad)
-            m_vad->apply_settings(get_vad_settings());
-    }
+    m_jc_dialog->show();
 }
 
 void PlayerWindow::on_actShowWaveform_triggered(bool value)
@@ -532,7 +524,10 @@ void PlayerWindow::on_actJumpCutter_triggered(bool value)
     m_app->set_setting("jumpcutter", "enabled", value);
     m_jc_settings->set_enabled(value);
     if (!value)
+    {
         m_video_widget->set_rate(m_playback_rate);
+        m_video_widget->set_volume(100);
+    }
 }
 
 void PlayerWindow::on_btnMinus_clicked(bool)
@@ -769,7 +764,7 @@ void PlayerWindow::show_video()
 
         cmb->blockSignals(false);
     }
-
+    
     try
     {
         m_waveform = std::make_shared<Waveform>(get_vol_file(filename));
@@ -783,6 +778,17 @@ void PlayerWindow::show_video()
     load_jc_settings();
     if (m_vad)
         m_vad->apply_settings(get_vad_settings());
+
+    m_jc_dialog = new JumpCutterSettingsDialog(this);
+    m_jc_dialog->set_settings(m_jc_settings);
+    connect(m_jc_dialog, &JumpCutterSettingsDialog::applied,
+        [this]()
+        {
+            m_jc_settings = m_jc_dialog->get_settings();
+            save_jc_settings();
+            if (m_vad)
+                m_vad->apply_settings(get_vad_settings());
+        });
 
     startTimer(25);
 
@@ -1083,6 +1089,7 @@ void PlayerWindow::jumpcutter(int t)
     if (m_jc_settings->is_non_voice_skipping())
     {
         m_video_widget->set_rate(m_playback_rate);
+        m_video_widget->set_volume(100);
         if (current_interval_is_loud)
         {
             m_video_widget->set_timer(next_interval);
@@ -1098,10 +1105,12 @@ void PlayerWindow::jumpcutter(int t)
         if (current_interval_is_loud)
         {
             m_video_widget->set_rate(m_playback_rate);
+            m_video_widget->set_volume(100);
         }
         else
         {
             m_video_widget->set_rate(m_jc_settings->get_non_voice_speed());
+            m_video_widget->set_volume(m_jc_settings->get_non_voice_volume());
         }
     }
 
@@ -1111,6 +1120,7 @@ void PlayerWindow::load_jc_settings()
 {
     m_jc_settings = std::make_shared<JumpCutterSettings>();
     m_jc_settings->set_voice_prob_th(m_app->get_setting("jumpcutter", "voice_prob_th", 0.5).toFloat());
+    m_jc_settings->set_non_voice_volume(m_app->get_setting("jumpcutter", "non_voice_volume", 100).toFloat());
     m_jc_settings->set_non_voice_speed(m_app->get_setting("jumpcutter", "non_voice_speed", 2.0).toFloat());
     m_jc_settings->set_min_non_voice_interval(m_app->get_setting("jumpcutter", "min_non_voice_interval", 500).toInt());
     m_jc_settings->set_margin_before(m_app->get_setting("jumpcutter", "margin_before", 100).toFloat());
@@ -1120,6 +1130,7 @@ void PlayerWindow::load_jc_settings()
 void PlayerWindow::save_jc_settings()
 {
     m_app->set_setting("jumpcutter", "voice_prob_th", m_jc_settings->get_voice_prob_th());
+    m_app->set_setting("jumpcutter", "non_voice_volume", m_jc_settings->get_non_voice_volume());
     m_app->set_setting("jumpcutter", "non_voice_speed", m_jc_settings->get_non_voice_speed());
     m_app->set_setting("jumpcutter", "min_non_voice_interval", m_jc_settings->get_min_non_voice_interval());
     m_app->set_setting("jumpcutter", "margin_before", m_jc_settings->get_margin_before());

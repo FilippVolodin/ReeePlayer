@@ -297,6 +297,16 @@ void JumpCutterSettings::set_enabled(bool enabled)
     m_enabled = enabled;
 }
 
+int JumpCutterSettings::get_non_voice_volume() const
+{
+    return m_non_voice_volume;
+}
+
+void JumpCutterSettings::set_non_voice_volume(int non_voice_volume)
+{
+    m_non_voice_volume = non_voice_volume;
+}
+
 float JumpCutterSettings::get_voice_prob_th() const
 {
     return m_voice_prob_th;

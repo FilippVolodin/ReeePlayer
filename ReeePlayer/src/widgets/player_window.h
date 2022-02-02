@@ -16,6 +16,7 @@ class JumpCutterSettings;
 class IVideoWidget;
 class VAD;
 class VADSettings;
+class JumpCutterSettingsDialog;
 
 namespace qsubs
 {
@@ -249,6 +250,7 @@ private:
     std::shared_ptr<JumpCutterSettings> m_jc_settings;
 
     ClipInfoDialog* m_clip_info_dialog;
+    JumpCutterSettingsDialog* m_jc_dialog;
 
     Mode m_mode;
 
