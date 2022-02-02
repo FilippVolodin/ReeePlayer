@@ -101,6 +101,13 @@ bool VAD::chunk_is_voice(int chunk) const
     return m_processed_vad_data[chunk];
 }
 
+uint8_t VAD::chunk_prob(int ch) const
+{
+    if (ch < 0 || ch >= m_vad_data.size())
+        return 0;
+    return m_vad_data[ch];
+}
+
 int VAD::num_chunks() const
 {
     return m_vad_data.size();

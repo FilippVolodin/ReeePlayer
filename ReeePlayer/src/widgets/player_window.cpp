@@ -531,6 +531,8 @@ void PlayerWindow::on_actJumpCutter_triggered(bool value)
 {
     m_app->set_setting("jumpcutter", "enabled", value);
     m_jc_settings->set_enabled(value);
+    if (!value)
+        m_video_widget->set_rate(m_playback_rate);
 }
 
 void PlayerWindow::on_btnMinus_clicked(bool)
@@ -782,7 +784,7 @@ void PlayerWindow::show_video()
     if (m_vad)
         m_vad->apply_settings(get_vad_settings());
 
-    startTimer(20);
+    startTimer(25);
 
     m_video_widget->play();
     m_video_widget->set_rate(1.0);
@@ -1309,6 +1311,7 @@ void AddingClipState::activate()
 
     Ui::PlayerWindow& ui = m_pw->ui;
 
+    m_pw->m_jc_settings->set_enabled(false);
     m_pw->set_playback_rate(DEFAULT_PLAYBACK_RATE_INDEX);
 
     ui.actRepeatClip->setVisible(true);
@@ -1359,8 +1362,6 @@ void AddingClipState::activate()
 
     //if (m_pw->m_jc)
     //    m_pw->m_jc->set_enabled(false);
-
-    m_pw->m_jc_settings->set_enabled(false);
 
     m_pw->m_edt_loop_a->setValue(a);
     m_pw->m_edt_loop_b->setValue(b);

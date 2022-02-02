@@ -39,6 +39,7 @@ public:
     int next_interval_in_chunks(int ch) const;
     bool is_voice(int t) const;
     bool chunk_is_voice(int ch) const;
+    uint8_t chunk_prob(int ch) const;
     int num_chunks() const;
     int rewind(int t, int delta) const;
 
