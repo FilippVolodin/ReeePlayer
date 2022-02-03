@@ -117,9 +117,23 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 {
     ui.setupUi(this);
 
-    //VideoWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
-    WebVideoWidget* video_widget = new WebVideoWidget(this);
-    QWidget* w = video_widget;
+    PLAYER_ENGINE player_engine = (PLAYER_ENGINE) app->get_setting("main", "player", (int)PLAYER_ENGINE::Web).toInt();
+
+    QWidget* w;
+
+    if (player_engine == PLAYER_ENGINE::VLC)
+    {
+        VideoWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
+        m_video_widget = video_widget;
+        w = video_widget;
+    }
+    else
+    {
+        WebVideoWidget* video_widget = new WebVideoWidget(this);
+        m_video_widget = video_widget;
+        w = video_widget;
+    }
+
     auto sp = w->sizePolicy();
     sp.setVerticalStretch(5);
     w->setSizePolicy(sp);
@@ -129,8 +143,6 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
         lo->insertWidget(0, w);
     else
         lo->addWidget(w);
-
-    m_video_widget = video_widget;
 
     setup_actions();
     setup_player_events();

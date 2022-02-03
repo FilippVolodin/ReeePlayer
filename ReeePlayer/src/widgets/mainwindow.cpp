@@ -23,6 +23,25 @@ MainWindow::MainWindow(App* app, QWidget *parent)
 {
     ui.setupUi(this);
 
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    ui.mainToolBar->addWidget(spacer);
+
+    QLabel* lblPlayer = new QLabel("Player: ", this);
+    ui.mainToolBar->addWidget(lblPlayer);
+
+    QComboBox* cbPlayer = new QComboBox(this);
+    cbPlayer->addItem("VLC");
+    cbPlayer->addItem("Web");
+    int player_engine_id = app->get_setting("main", "player", (int)PLAYER_ENGINE::Web).toInt();
+    cbPlayer->setCurrentIndex(player_engine_id);
+    connect(cbPlayer, &QComboBox::currentIndexChanged,
+        [app](int index)
+        {
+            app->set_setting("main", "player", index);
+        });
+    ui.mainToolBar->addWidget(cbPlayer);
+
     connect(ui.actOpenDir, &QAction::triggered,
         this, &MainWindow::on_actOpenDir_triggered);
     connect(ui.videos, &VideoTreeView::dir_dropped,
@@ -352,11 +371,6 @@ void MainWindow::watch(File* file)
 
         future_watcher.waitForFinished();
         
-        //if (!vad_exists && !temp_wav.isEmpty())
-        //{
-        //    VAD* vad = new VAD(temp_wav, get_vad_file(media_file));
-        //}
-        //vad = std::make_shared<VAD>(temp_wav, get_vad_file(media_file));
         if (!vad->run(temp_wav))
             vad.reset();
     }

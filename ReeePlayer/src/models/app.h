@@ -12,6 +12,8 @@ struct SubsCollection
     std::vector<int> indices;
 };
 
+enum class PLAYER_ENGINE { VLC = 0, Web = 1 };
+
 class App
 {
 public:
