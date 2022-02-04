@@ -9,8 +9,7 @@ constexpr int vad_chunk_length_ms = window_size_samples * 1000 / sampling_rate;
 
 constexpr QColor WAVEFORM_COLOR(0x08, 0x6F, 0xA1);
 constexpr QColor VAD_COLOR(153, 217, 234);
-constexpr QColor CLIP_COLOR(255, 201, 14, 128);
-
+constexpr QColor CLIP_COLOR(255, 201, 14, 160);
 
 WaveformView::WaveformView(QWidget* parent) : QWidget(parent)
 {
@@ -108,6 +107,10 @@ void WaveformView::paintEvent(QPaintEvent *)
         if (ch < 0)
             ch = 0;
 
+        QBrush brush = painter.brush();
+        brush.setStyle(Qt::SolidPattern);
+        brush.setColor(Qt::lightGray);
+
         while (ch < vad_ch_b && ch < m_vad->num_chunks())
         {
             bool cur_is_voice = m_vad->chunk_is_voice(ch);
@@ -116,15 +119,13 @@ void WaveformView::paintEvent(QPaintEvent *)
             {
                 int zone_x0 = ((double)ch / vad_ch_time_window) * width() - global_x;
                 int zone_x1 = ((double)ch_next / vad_ch_time_window) * width() - global_x;
-                painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), Qt::lightGray);
+                painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), brush);
             }
             ch = ch_next;
         }
 
-        pen.setColor(Qt::red);
-        painter.setPen(pen);
-
-        QBrush brush = painter.brush();
+        brush.setColor(VAD_COLOR.darker(110));
+        //painter.setBrush(brush);
 
         int prev_y = height();
         for (int ch = vad_ch_a; ch <= vad_ch_b; ch++)
@@ -132,7 +133,7 @@ void WaveformView::paintEvent(QPaintEvent *)
             int x0 = ((double)ch / vad_ch_time_window) * width() - global_x;
             int x1 = ((double)(ch + 1) / vad_ch_time_window) * width() - global_x;
             int y = height() * (1.0 - (float)m_vad->chunk_prob(ch) / 256);
-            painter.fillRect(x0, y, x1 - x0, height(), VAD_COLOR);
+            painter.fillRect(x0, y, x1 - x0, height(), brush);
             prev_y = y;
         }
     }
@@ -146,28 +147,26 @@ void WaveformView::paintEvent(QPaintEvent *)
         brush.setStyle(Qt::SolidPattern);
         brush.setColor(CLIP_COLOR);
         painter.setBrush(brush);
+        //painter.setCompositionMode(QPainter::CompositionMode_Difference);
 
         int clip_a_x = ((float)(m_clip_a - m_a) / time_window) * width();
         int clip_b_x = ((float)(m_clip_b - m_a) / time_window) * width();
         painter.fillRect(clip_a_x, 0, clip_b_x - clip_a_x, height(), brush);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     }
 
-    pen.setColor(WAVEFORM_COLOR);
-    painter.setPen(pen);
-
-    for (int x0 = 0; x0 != width(); x0++)
+    for (int x0 = 0; x0 < width(); x0 += 3)
     {
-        if (x0 % 3 == 0)
-            continue;
-
         int x = global_x + x0;
         int ch = (double)x / width() * ch_time_window;
-        if (ch < 0 || ch >= volumes.size())
+        if (ch < 0 || ch + 2 >= volumes.size())
             continue;
 
-        int y0 = height() * (1.0 - (float)volumes[ch] / 256);
+        uint8_t max = *std::max(volumes.begin() + ch, volumes.begin() + ch + 3);
+
+        int y0 = height() * (1.0 - (float)max / 256);
         int y1 = height();
-        painter.drawLine(x0, y0, x0, y1);
+        painter.fillRect(x0, y0, 2, y1 - y0, WAVEFORM_COLOR);
     }
 
     pen.setColor(Qt::gray);

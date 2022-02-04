@@ -594,6 +594,7 @@ void PlayerWindow::on_edt_loop_a_value_changed(int)
     int a = get_loop_a();
     int b = get_loop_b();
     ui.waveform->set_clip_a(a);
+    ui.waveform->repaint();
     m_video_widget->play(a, b, 1);
 }
 
@@ -602,6 +603,7 @@ void PlayerWindow::on_edt_loop_b_value_changed(int)
     int a = get_loop_a();
     int b = get_loop_b();
     ui.waveform->set_clip_b(b);
+    ui.waveform->repaint();
     m_video_widget->play(std::max(a, b - 1000), b, 1);
 }
 

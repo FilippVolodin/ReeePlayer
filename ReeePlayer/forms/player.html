@@ -49,9 +49,7 @@ function play() {
 
 function seek_and_play(time) {
     set_time(time);
-    myVid.addEventListener('seeked', function(){
-        myVid.play();
-    });
+    myVid.play();
 }
 
 function pause() {
