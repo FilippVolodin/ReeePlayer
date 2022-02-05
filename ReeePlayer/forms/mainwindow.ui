@@ -116,7 +116,14 @@
     <addaction name="separator"/>
     <addaction name="actExit"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actShowAboutWindow"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="iconSize">
@@ -196,6 +203,14 @@
    </property>
    <property name="toolTip">
     <string>Download Video</string>
+   </property>
+  </action>
+  <action name="actShowAboutWindow">
+   <property name="text">
+    <string>About ReeePlayer</string>
+   </property>
+   <property name="toolTip">
+    <string>About ReeePlayer</string>
    </property>
   </action>
  </widget>

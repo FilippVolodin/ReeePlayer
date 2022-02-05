@@ -23,6 +23,7 @@ target_sources(ReeePlayer PRIVATE
 	forms/subtitles_view.ui
     forms/waiting_dialog.ui
     forms/jumpcutter_settings_dialog.ui
+    forms/about_window.ui
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -43,6 +44,7 @@ target_sources(ReeePlayer PRIVATE
     src/widgets/jumpcutter_settings_dialog.cpp
     src/widgets/video_download_dialog.cpp
     src/widgets/emitter.cpp
+    src/widgets/about_window.cpp
 )
 
 target_sources(ReeePlayer PRIVATE

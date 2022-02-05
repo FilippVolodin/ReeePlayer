@@ -28,6 +28,8 @@ private:
     void on_actOpenDir_triggered();
     void on_actReloadDir_triggered();
 
+    void on_actShowAboutWindow_triggered();
+
     void on_actRepeatClips_triggered();
     void on_repeat_selected_triggered();
     void on_videotree_download_triggered();

@@ -10,6 +10,7 @@
 #include "player_window.h"
 #include "waiting_dialog.h"
 #include "video_download_dialog.h"
+#include "about_window.h"
 
 constexpr const char* MAIN_WINDOW_GEOMETRY_KEY = "main_window_geometry";
 constexpr const char* MAIN_WINDOW_STATE_KEY = "main_window_state";
@@ -46,6 +47,9 @@ MainWindow::MainWindow(App* app, QWidget *parent)
         this, &MainWindow::on_actOpenDir_triggered);
     connect(ui.videos, &VideoTreeView::dir_dropped,
         this, &MainWindow::open_dir);
+
+    connect(ui.actShowAboutWindow, &QAction::triggered,
+        this, &MainWindow::on_actShowAboutWindow_triggered);
 
     connect(ui.actReloadDir, &QAction::triggered,
         this, &MainWindow::on_actReloadDir_triggered);
@@ -176,6 +180,11 @@ void MainWindow::on_actOpenDir_triggered()
 void MainWindow::on_actReloadDir_triggered()
 {
     open_dir(m_app->get_library()->get_root_path());
+}
+
+void MainWindow::on_actShowAboutWindow_triggered()
+{
+    AboutWindow().exec();
 }
 
 void MainWindow::on_actRepeatClips_triggered()
