@@ -197,8 +197,21 @@ namespace qsubs::webvtt
                 return l->get_start_time() < r->get_start_time();
             });
 
+        QRegularExpression br_re("<br\\s*\\/>");
+        QRegularExpression tag_re("<[^>]*>");
+
         for (int i = 0; i < m_subtitles->m_cues.size(); ++i)
+        {
             m_subtitles->m_cues[i]->set_index(i);
+
+            // HACK
+            QString text = m_subtitles->m_cues[i]->get_text();
+            text.replace(br_re, "\r\n");
+            text.remove(tag_re);
+            m_subtitles->m_cues[i]->set_text(text);
+
+            //std::shared_ptr<NodeObjects> node_objects = parse_cue_text(m_subtitles->m_cues[i]->get_text());
+        }
 
         return m_subtitles;
     }
