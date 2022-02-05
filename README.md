@@ -7,7 +7,7 @@ The ReeePlayer application is designed for spaced repetition of fragments (clips
 - Download mediafiles from different sites
 - Watch video and audio files with two subtitles (by now, only external)
 - Change the playback speed without changing the tempo
-- Skips silent parts in real time
+- Skip, fast forward and volume down non-voice parts in real time
 - Quickly select and save video clips with text
 
 ## Social Network Links
@@ -91,6 +91,12 @@ To save time on specifying the directory you can right-click the mouse on the di
 
 ![](doc/download_to.png?raw=true)
 
+### Select video engine
+
+ReeePlayer supports 2 video player engines: VLC and Web (Chromium). VLC supports more formats and rewinds faster, but Web changes the playback speed more smoothly. Try them both.
+
+![](doc/video_engine.png?raw=true)
+
 ### Watching
 
 When you start watching a video file named `x.<ext>`, the application searches for subtitle files named `x<lang>.<srt or vtt>` in the same directory. Available subtitles can be selected from the dropdown list ![](doc/subs_cmb.png?raw=true) in both panels. 
@@ -103,15 +109,17 @@ Hotkeys:
 
 - `Space` - play/pause
 - `Left`, `Right` - rewind or forward for 2 seconds
-- `3`, `4`, `5`, `6`, `7`, `8` - playback speed: 0.5, 0.75, 1, 1.25, 1.5, 2 of normal
+- `5`, `6`, `7`, `8`, `9`, `0`, `-`, `=`, `Backspace` - playback speed: 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0 of normal
 - `1`, `2` - show the current text of the first/second subtitles if they are hidden
 - `Enter` - add a clip
 
-You can skip the silent parts by pressing the button ![](doc/btn_jumpcutter.png?raw=true) on the taskbar. It is recommend to adjust the detection of silence fragments by pressing ![](doc/jumpcutter_settings.png?raw=true).
+You can skip or fast forward the non-voice parts by pressing the button ![](doc/btn_jumpcutter.png?raw=true) on the taskbar. It is recommend to adjust the voice detection by pressing ![](doc/jumpcutter_settings.png?raw=true).
 
  ![](doc/jumpcutter_window.png?raw=true)
 
-It is possible to fast rewind silent fragments with `Silence speed` field. But, unfortunately, it takes time (700-1000 ms) for the player to change the speed after fast-forwarding. To eliminate the negative effect, increase the value in the `Margin before` field to at least 700.
+ ![](doc/VAD_diagram.png?raw=true)
+
+Unfortunately, it takes time (~300-500 ms) for the player to change the speed after fast-forwarding. To eliminate the negative effect, increase the value in the `Margin before`.
 
 ### Adding a clip
 
@@ -182,3 +190,7 @@ cmake --build . --config Release
 
 - Icons by [Icons8.com](http://Icons8.com)
 - The footage shown in this guide is from [OverSimplified](https://www.youtube.com/c/OverSimplified/videos) channel
+- Voice Activity Detector based on [silero-vad model](https://github.com/snakers4/silero-vad)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) for download videos
+- [ffmpeg](https://www.ffmpeg.org/) for generate wav-files
+- [Wav-file reader](https://github.com/adamstark/AudioFile)
