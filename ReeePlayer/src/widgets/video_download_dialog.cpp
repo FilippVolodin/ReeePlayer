@@ -4,6 +4,7 @@ VideoDownloadDialog::VideoDownloadDialog(QWidget *parent)
     : QDialog(parent)
 {
     ui.setupUi(this);
+    ui.btnStop->setEnabled(false);
     this->setWindowTitle(tr("Download video"));
 }
 
@@ -55,7 +56,16 @@ void VideoDownloadDialog::closeEvent(QCloseEvent* event)
         event->accept();
 }
 
-void VideoDownloadDialog::on_btnCancel_clicked()
+void VideoDownloadDialog::on_btnStop_clicked()
+{
+    if (m_yt_dlp && m_yt_dlp->state() == QProcess::Running)
+    {
+        QString cmd = QString("TASKKILL /f /t /PID %1").arg(m_yt_dlp->processId());
+        WinExec(cmd.toLocal8Bit().data(), SW_HIDE);
+    }
+}
+
+void VideoDownloadDialog::on_btnClose_clicked()
 {
     close();
 }
@@ -111,7 +121,8 @@ void VideoDownloadDialog::on_btnDownload_clicked()
     args.append(url_list);
 
     ui.btnDownload->setEnabled(false);
-    ui.btnCancel->setEnabled(false);
+    ui.btnStop->setEnabled(true);
+    ui.btnClose->setEnabled(false);
     m_processing = true;
 
     m_yt_dlp = std::make_unique<QProcess>();
@@ -122,7 +133,8 @@ void VideoDownloadDialog::on_btnDownload_clicked()
         {
             log("Error Occurred");
             ui.btnDownload->setEnabled(true);
-            ui.btnCancel->setEnabled(true);
+            ui.btnStop->setEnabled(false);
+            ui.btnClose->setEnabled(true);
             m_processing = false;
         }
     );
@@ -146,7 +158,8 @@ void VideoDownloadDialog::on_btnDownload_clicked()
         {
             log("Finished");
             ui.btnDownload->setEnabled(true);
-            ui.btnCancel->setEnabled(true);
+            ui.btnStop->setEnabled(false);
+            ui.btnClose->setEnabled(true);
             m_processing = false;
         }
     );

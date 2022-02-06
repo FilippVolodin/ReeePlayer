@@ -28,7 +28,8 @@ protected:
 
 private slots:
     void on_btnDownload_clicked();
-    void on_btnCancel_clicked();
+    void on_btnStop_clicked();
+    void on_btnClose_clicked();
     void on_btnSelectDir_clicked();
 
 private:
