@@ -19,9 +19,14 @@ int main(int argc, char *argv[])
 
     QApplication a(newArgc, newArgv);
     App app;
+
     a.setQuitOnLastWindowClosed(false);
     MainWindow w(&app);
 
     w.show();
+
+    QString filename = QDir::temp().filePath("ReeePlayer.starting");
+    QFile::remove(filename);
+
     return a.exec();
 }
