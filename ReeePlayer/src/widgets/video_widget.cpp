@@ -171,6 +171,13 @@ void VideoWidget::set_file_name(const QString& file_name, bool)
     qDebug(">>> file: %s", qPrintable(file));
     libvlc_media_t* vlc_media =
         libvlc_media_new_path(m_vlc_inst, file.toUtf8().data());
+
+    libvlc_event_manager_t* media_events = libvlc_media_event_manager(vlc_media);
+    libvlc_event_attach(media_events, libvlc_MediaParsedChanged,
+        libvlc_mp_callback, this);
+    libvlc_event_attach(media_events, libvlc_MediaMetaChanged,
+        libvlc_mp_callback, this);
+
     libvlc_media_player_set_media(m_vlc_mp, vlc_media);
     libvlc_media_parse(vlc_media);
     libvlc_media_release(vlc_media);
@@ -292,6 +299,12 @@ bool VideoWidget::at_end() const
     return get_time() + 1000 >= get_length();
 }
 
+void VideoWidget::set_audio_track(int track_index)
+{
+    int res = libvlc_audio_set_track(m_vlc_mp, track_index);
+    int temp = 0;
+}
+
 void VideoWidget::prepare_to_destroy()
 {
 }
@@ -368,6 +381,18 @@ void VideoWidget::libvlc_mp_callback(const libvlc_event_t* event, void* data)
         videoWidget->m_length = length;
             
         emit m_emitter->length_changed(length);
+        videoWidget->set_audio_track(2);
+        qDebug(">>> libvlc_audio_get_track_count %d", libvlc_audio_get_track_count(videoWidget->m_vlc_mp));
+        break;
+    }
+    case libvlc_MediaParsedChanged:
+    {
+        qDebug(">>> libvlc_MediaParsedChanged");
+        break;
+    }
+    case libvlc_MediaMetaChanged:
+    {
+        qDebug(">>> libvlc_MediaMetaChanged");
         break;
     }
     }

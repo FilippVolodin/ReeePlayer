@@ -100,6 +100,13 @@ function set_source(filename) {
     });
 }
 
+function set_audio_track(track_index){
+    for (var i = 0; i < myVid.audioTracks.length; i += 1) {
+        myVid.audioTracks[i].enabled = false;
+    }    
+    myVid.audioTracks[track_index].enabled = true;
+}
+
 </script>
 
 </body>

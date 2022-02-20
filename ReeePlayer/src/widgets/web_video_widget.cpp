@@ -117,6 +117,11 @@ bool WebVideoWidget::at_end() const
     return false;
 }
 
+void WebVideoWidget::set_audio_track(int track_index)
+{
+    page()->runJavaScript(QString("set_audio_track(%1);").arg(track_index));
+}
+
 void WebVideoWidget::prepare_to_destroy()
 {
     if (m_counter.count() != 0)

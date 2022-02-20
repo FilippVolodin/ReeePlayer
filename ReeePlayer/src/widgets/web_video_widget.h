@@ -47,6 +47,8 @@ public:
     int get_length() const override;
     bool at_end() const override;
 
+    void set_audio_track(int) override;
+
     void prepare_to_destroy() override;
 
     QWidget* get_widget() override;
