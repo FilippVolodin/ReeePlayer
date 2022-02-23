@@ -201,7 +201,7 @@ QString create_wav(const QString& filename, std::function<void(QString)> log)
     args << "-y" << "-i" << filename << "-ar" << "16000" << "-ac" << "1" << "-vn" << "-hide_banner" << temp_wav;
 
     QProcess ffmpeg;
-    ffmpeg.start("ffmpeg", args);
+    ffmpeg.start("ffmpeg/ffmpeg", args);
     if (!ffmpeg.waitForStarted(-1))
         return QString();
 
