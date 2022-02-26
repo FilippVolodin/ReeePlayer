@@ -72,6 +72,10 @@ void VideoTreeView::show_context_menu(const QPoint& pos)
     connect(&repeat_action, &QAction::triggered, this, &VideoTreeView::repeat_selected);
     menu.addAction(&repeat_action);
 
+    QAction stats_action("Stats on selected", this);
+    connect(&stats_action, &QAction::triggered, this, &VideoTreeView::stats_on_selected);
+    menu.addAction(&stats_action);
+
     QAction* download_action = nullptr;
     QModelIndexList list = selectionModel()->selectedIndexes();
     if (list.size() == 1)

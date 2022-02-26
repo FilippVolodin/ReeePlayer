@@ -34,6 +34,9 @@ private:
     void on_repeat_selected_triggered();
     void on_videotree_download_triggered();
 
+    void on_actShowStats_triggered();
+    void on_stats_on_selected_triggered();
+
     void on_actDownload_triggered();
 
     void on_videos_itemClicked(QTreeWidgetItem *item, int column);
@@ -58,6 +61,8 @@ private:
     void watch(File* file);
     void repeat(std::vector<File*>);
     void download_to(const QString& dir);
+
+    std::vector<File*> get_selected_files() const;
 
     Ui::MainWindowClass ui;
     

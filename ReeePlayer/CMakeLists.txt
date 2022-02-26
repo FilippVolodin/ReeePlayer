@@ -45,6 +45,8 @@ target_sources(ReeePlayer PRIVATE
     src/widgets/video_download_dialog.cpp
     src/widgets/emitter.cpp
     src/widgets/about_window.cpp
+    src/widgets/calendar_heatmap_widget.cpp
+    src/widgets/stats_window.cpp
 )
 
 target_sources(ReeePlayer PRIVATE

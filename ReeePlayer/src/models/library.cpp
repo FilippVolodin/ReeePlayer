@@ -262,7 +262,7 @@ LibraryItem* Library::scan_folder(const QString& path, bool is_root)
     }
 }
 
-std::vector<File*> get_files(std::vector<const LibraryItem*>& items)
+std::vector<File*> get_files(const  std::vector<const LibraryItem*>& items)
 {
     std::set<const LibraryItem*> items_set(items.begin(), items.end());
 

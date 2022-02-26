@@ -23,6 +23,7 @@ public:
     ~Session();
 
     bool has_prev_clip() const;
+    bool has_next_clip() const;
     Clip* get_prev_clip();
     Clip* get_next_clip();
     void remove_clip(Clip*);

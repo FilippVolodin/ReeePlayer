@@ -33,6 +33,11 @@ bool Session::has_prev_clip() const
     return m_showing_clip_index > 0;
 }
 
+bool Session::has_next_clip() const
+{
+    return m_showing_clip_index + 1 < m_showed_clips.size();
+}
+
 Clip* Session::get_prev_clip()
 {
     if (!has_prev_clip())

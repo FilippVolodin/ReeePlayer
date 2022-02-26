@@ -43,7 +43,7 @@ private:
     bool m_block_notifications = false;
 };
 
-std::vector<File*> get_files(std::vector<const LibraryItem*>&);
+std::vector<File*> get_files(const std::vector<const LibraryItem*>&);
 void get_expanded(LibraryItem* item, std::map<QString, bool>& map);
 
 #endif // !LIBRARY_H

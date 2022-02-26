@@ -238,6 +238,9 @@ private:
     void save_jc_settings();
     std::shared_ptr<VADSettings> get_vad_settings() const;
 
+    std::pair<int, int> get_num_todays_added_clips() const;
+    int get_num_todays_repeated_clips() const;
+
     Ui::PlayerWindow ui;
 
     bool m_showed = false;
@@ -264,6 +267,10 @@ private:
 
     float m_playback_rate = 1.0;
 
+    int m_num_added_clips = 0;
+    int m_num_added_clips_for_file = 0;
+    int m_num_repeated_clips = 0;
+
     std::vector<QString> m_subtitle_files;
     SubtitlesView* m_subtitle_views[NUM_SUBS_VIEWS];
     std::shared_ptr<const qsubs::ISubtitles> m_subtitles[NUM_SUBS_VIEWS];
@@ -281,6 +288,9 @@ private:
     QShortcut* m_escape_shortcut;
     QShortcut* m_show_subtitles0_shortcut;
     QShortcut* m_show_subtitles1_shortcut;
+
+    QLabel* m_lbl_clip_stats;
+    QLabel* m_lbl_info;
 
     QColor m_default_bg;
 

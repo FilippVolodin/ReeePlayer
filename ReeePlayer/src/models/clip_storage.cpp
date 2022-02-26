@@ -9,9 +9,6 @@ void Clip::set_file(File* file)
 
 Clip::Clip()
 {
-    using namespace std::chrono;
-    time_t cur_time = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
-    set_adding_time(cur_time);
 }
 
 const File* Clip::get_file() const

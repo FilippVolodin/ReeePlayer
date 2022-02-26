@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/MainWindow">
+    <file alias="stats">Resources/stats.png</file>
     <file alias="download">Resources/download.png</file>
     <file alias="jumpcutter">Resources/jumpcutter.png</file>
     <file alias="settings">Resources/settings.png</file>

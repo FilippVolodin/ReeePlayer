@@ -122,7 +122,16 @@
     </property>
     <addaction name="actShowAboutWindow"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actShowStats"/>
+    <addaction name="separator"/>
+    <addaction name="actDownload"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -146,6 +155,7 @@
    <addaction name="separator"/>
    <addaction name="actRepeatClips"/>
    <addaction name="separator"/>
+   <addaction name="actShowStats"/>
    <addaction name="actDownload"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -211,6 +221,18 @@
    </property>
    <property name="toolTip">
     <string>About ReeePlayer</string>
+   </property>
+  </action>
+  <action name="actShowStats">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/stats</normaloff>:/MainWindow/stats</iconset>
+   </property>
+   <property name="text">
+    <string>Show Stats</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Stats</string>
    </property>
   </action>
  </widget>

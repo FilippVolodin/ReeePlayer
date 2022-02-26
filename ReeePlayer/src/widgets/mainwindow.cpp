@@ -11,6 +11,7 @@
 #include "waiting_dialog.h"
 #include "video_download_dialog.h"
 #include "about_window.h"
+#include "stats_window.h"
 
 constexpr const char* MAIN_WINDOW_GEOMETRY_KEY = "main_window_geometry";
 constexpr const char* MAIN_WINDOW_STATE_KEY = "main_window_state";
@@ -62,6 +63,12 @@ MainWindow::MainWindow(App* app, QWidget *parent)
 
     connect(ui.videos, &VideoTreeView::repeat_selected,
         this, &MainWindow::on_repeat_selected_triggered);
+
+    connect(ui.actShowStats, &QAction::triggered,
+        this, &MainWindow::on_actShowStats_triggered);
+
+    connect(ui.videos, &VideoTreeView::stats_on_selected,
+        this, &MainWindow::on_stats_on_selected_triggered);
 
     connect(ui.videos, &VideoTreeView::download,
         this, &MainWindow::on_videotree_download_triggered);
@@ -189,25 +196,13 @@ void MainWindow::on_actShowAboutWindow_triggered()
 
 void MainWindow::on_actRepeatClips_triggered()
 {
-    LibraryItem* root =
-        m_library_tree->get_item(ui.videos->rootIndex());
-    
-    std::vector<const LibraryItem*> items = { root };
-    repeat(get_files(items));
+    LibraryItem* root = m_library_tree->get_item(ui.videos->rootIndex());
+    repeat(get_files({ root }));
 }
 
 void MainWindow::on_repeat_selected_triggered()
 {
-    QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
-    std::vector<const LibraryItem*> items;
-    items.reserve(list.size());
-    for (const QModelIndex& index : list)
-    {
-        const LibraryItem* item = m_library_tree->get_item(index);
-        items.push_back(item);
-    }
-
-    repeat(get_files(items));
+    repeat(get_selected_files());
 }
 
 void MainWindow::on_videotree_download_triggered()
@@ -221,6 +216,21 @@ void MainWindow::on_videotree_download_triggered()
             download_to(item->get_dir_path());
         }
     }
+}
+
+void MainWindow::on_actShowStats_triggered()
+{
+    const LibraryItem* root = m_library_tree->get_item(ui.videos->rootIndex());
+    std::vector<File*> files = get_files({ root });
+
+    StatsWindow* w = new StatsWindow(files, this);
+    w->show();
+}
+
+void MainWindow::on_stats_on_selected_triggered()
+{
+    StatsWindow* w = new StatsWindow(get_selected_files(), this);
+    w->show();
 }
 
 void MainWindow::on_actDownload_triggered()
@@ -430,4 +440,18 @@ void MainWindow::download_to(const QString& dir)
         m_app->set_setting("download", "resolution", vdd.get_resolution());
         open_dir(m_app->get_library()->get_root_path());
     }
+}
+
+std::vector<File*> MainWindow::get_selected_files() const
+{
+    QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
+    std::vector<const LibraryItem*> items;
+    items.reserve(list.size());
+    for (const QModelIndex& index : list)
+    {
+        const LibraryItem* item = m_library_tree->get_item(index);
+        items.push_back(item);
+    }
+
+    return get_files(items);
 }
