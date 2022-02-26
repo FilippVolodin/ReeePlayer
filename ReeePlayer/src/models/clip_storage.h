@@ -9,11 +9,13 @@ class Clip
     friend File;
 
     File* m_file = nullptr;
-    std::time_t m_begin;
-    std::time_t m_end;
+    std::time_t m_begin = 0;
+    std::time_t m_end = 0;
     std::vector<QString> m_subtitles;
     float m_level = 0.0f;
+    std::time_t m_added = 0;
     std::time_t m_rep_time = 0;
+    std::vector<std::time_t> m_repeats;
 
     void set_file(File*);
 public:
@@ -27,8 +29,15 @@ public:
     std::time_t get_end() const;
     void set_end(std::time_t);
 
+    std::time_t get_adding_time() const;
+    void set_adding_time(std::time_t);
+
     std::time_t get_rep_time() const;
     void set_rep_time(std::time_t);
+
+    void add_repeat(std::time_t);
+    const std::vector<std::time_t>& get_repeats() const;
+    void set_repeats(std::vector<std::time_t>);
 
     float get_level() const;
     void set_level(float);

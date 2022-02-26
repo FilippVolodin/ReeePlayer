@@ -484,10 +484,9 @@ void PlayerWindow::on_actNextClip_triggered()
 {
     update_clip_interval(m_clip);
     update_clip_subtitles(m_clip);
-    m_library->save();
-
     m_clip->set_level(m_next_level);
-    m_clip->set_rep_time(now());
+    int64_t cur_time = now();
+    m_clip->add_repeat(cur_time);
     m_library->save();
 
     m_video_widget->get_widget()->setFocus();

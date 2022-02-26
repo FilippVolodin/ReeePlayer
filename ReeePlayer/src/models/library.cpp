@@ -72,6 +72,8 @@ File* Library::load_file(const QString& path)
             QString text1;
             QString text2;
             QJsonObject json_clip = json_clips[i].toObject();
+            if (json_clip.contains("added") && json_clip["added"].isDouble())
+                clip->set_adding_time(json_clip["added"].toInt());
             if (json_clip.contains("begin") && json_clip["begin"].isDouble())
                 clip->set_begin(json_clip["begin"].toInt());
             if (json_clip.contains("end") && json_clip["end"].isDouble())
@@ -80,6 +82,18 @@ File* Library::load_file(const QString& path)
                 clip->set_level(json_clip["level"].toDouble());
             if (json_clip.contains("repeated") && json_clip["repeated"].isDouble())
                 clip->set_rep_time(json_clip["repeated"].toInteger());
+            if (json_clip.contains("repeats") && json_clip["repeats"].isArray())
+            {
+                QJsonArray repeats_arr = json_clip["repeats"].toArray();
+                std::vector<std::time_t> repeats;
+                repeats.reserve(repeats_arr.size());
+                for (QJsonValue value : repeats_arr)
+                {
+                    if (value.isDouble())
+                        repeats.push_back(value.toDouble());
+                }
+                clip->set_repeats(std::move(repeats));
+            }
             if (json_clip.contains("text1") && json_clip["text1"].isString())
                 text1 = json_clip["text1"].toString();
             if (json_clip.contains("text2") && json_clip["text2"].isString())
@@ -101,11 +115,19 @@ void Library::save_file(const File* file) const
 
     for (const Clip* clip : file->get_clips())
     {
+        const std::vector<std::time_t>& repeats = clip->get_repeats();
+        QJsonArray repeats_arr;
+        std::copy(repeats.begin(), repeats.end(), std::back_inserter(repeats_arr));
+
         QJsonObject json_clip;
+        if(clip->get_adding_time() != 0)
+            json_clip["added"] = clip->get_adding_time();
         json_clip["begin"] = clip->get_begin();
         json_clip["end"] = clip->get_end();
         json_clip["level"] = clip->get_level();
         json_clip["repeated"] = clip->get_rep_time();
+        if (!repeats_arr.isEmpty())
+            json_clip["repeats"] = repeats_arr;
         json_clip["text1"] = clip->get_subtitle(0);
         json_clip["text2"] = clip->get_subtitle(1);
         json_clips.append(json_clip);

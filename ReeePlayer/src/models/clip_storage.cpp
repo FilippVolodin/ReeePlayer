@@ -9,6 +9,9 @@ void Clip::set_file(File* file)
 
 Clip::Clip()
 {
+    using namespace std::chrono;
+    time_t cur_time = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+    set_adding_time(cur_time);
 }
 
 const File* Clip::get_file() const
@@ -51,6 +54,21 @@ void Clip::set_end(std::time_t end)
     }
 }
 
+std::time_t Clip::get_adding_time() const
+{
+    return m_added;
+}
+
+void Clip::set_adding_time(std::time_t time)
+{
+    if (time != m_added)
+    {
+        m_added = time;
+        if (m_file)
+            m_file->get_library()->clip_changed(this);
+    }
+}
+
 std::time_t Clip::get_rep_time() const
 {
     return m_rep_time;
@@ -64,6 +82,24 @@ void Clip::set_rep_time(std::time_t rep_time)
         if (m_file)
             m_file->get_library()->clip_changed(this);
     }
+}
+
+void Clip::add_repeat(std::time_t time)
+{
+    m_repeats.push_back(time);
+    m_rep_time = time;
+    if (m_file)
+        m_file->get_library()->clip_changed(this);
+}
+
+const std::vector<std::time_t>& Clip::get_repeats() const
+{
+    return m_repeats;
+}
+
+void Clip::set_repeats(std::vector<std::time_t> repeats)
+{
+    m_repeats = std::move(repeats);
 }
 
 float Clip::get_level() const
