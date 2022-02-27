@@ -76,6 +76,9 @@ MainWindow::MainWindow(App* app, QWidget *parent)
     connect(ui.actDownload, &QAction::triggered,
         this, &MainWindow::on_actDownload_triggered);
 
+    connect(ui.actCreateBackup, &QAction::triggered,
+        this, &MainWindow::on_actCreateBackup_triggered);
+
     connect(ui.videos, &QAbstractItemView::doubleClicked,
         this, &MainWindow::on_videos_doubleClicked);
 
@@ -236,6 +239,44 @@ void MainWindow::on_stats_on_selected_triggered()
 void MainWindow::on_actDownload_triggered()
 {
     download_to(m_app->get_library()->get_root_path());
+}
+
+void MainWindow::on_actCreateBackup_triggered()
+{
+    QString root = m_app->get_library()->get_root_path();
+    QDir root_dir(root);
+
+    QDateTime cur = QDateTime::currentDateTime();
+    QString backup_file = QString("%1_%2.%3").
+        arg(root_dir.dirName()).
+        arg(cur.toString("yyyy_MM_dd_hh_mm_ss")).
+        arg("zip");
+
+    QString backup_path = root_dir.filePath(backup_file);
+    QString caption = "Save Backup File As...";
+    QString filter = "Zip files (*.zip);;All files (*)";
+    backup_path = QFileDialog::getSaveFileName(this, caption, backup_path, filter);
+    if (!backup_path.isEmpty())
+    {
+        QStringList args;
+        args << "a" << backup_path << "-ir!*.json";
+
+        QProcess zip;
+        zip.setWorkingDirectory(root);
+        zip.start("7za", args);
+        bool err = false;
+        if (!zip.waitForStarted())
+            err = true;
+
+        if(!err && !zip.waitForFinished(-1))
+            err = true;
+
+        err = err || (zip.exitCode() != 0);
+        if (!err)
+            QMessageBox::information(this, "Info", QString("Backup file created\n%1").arg(backup_path));
+        else
+            QMessageBox::information(this, "Info", QString("Error while creating backup file"));
+    }
 }
 
 void MainWindow::on_videos_itemClicked(QTreeWidgetItem* item, int /*column*/)

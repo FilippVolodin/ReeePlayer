@@ -129,6 +129,8 @@
     <addaction name="actShowStats"/>
     <addaction name="separator"/>
     <addaction name="actDownload"/>
+    <addaction name="separator"/>
+    <addaction name="actCreateBackup"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -233,6 +235,18 @@
    </property>
    <property name="toolTip">
     <string>Show Stats</string>
+   </property>
+  </action>
+  <action name="actCreateBackup">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/backup</normaloff>:/MainWindow/backup</iconset>
+   </property>
+   <property name="text">
+    <string>Create Backup</string>
+   </property>
+   <property name="toolTip">
+    <string>Create Backup</string>
    </property>
   </action>
  </widget>

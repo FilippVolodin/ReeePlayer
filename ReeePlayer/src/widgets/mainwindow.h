@@ -39,6 +39,8 @@ private:
 
     void on_actDownload_triggered();
 
+    void on_actCreateBackup_triggered();
+
     void on_videos_itemClicked(QTreeWidgetItem *item, int column);
     void on_videos_doubleClicked(const QModelIndex &index);
     void on_tblClips_doubleClicked(const QModelIndex &index);
