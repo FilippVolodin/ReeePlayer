@@ -447,6 +447,25 @@ QSlider::sub-page:horizontal {
     <string>Activate JumpCutter</string>
    </property>
   </action>
+  <action name="actAddToFavorite">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/fav_off</normaloff>
+     <normalon>:/MainWindow/fav_on</normalon>:/MainWindow/fav_off</iconset>
+   </property>
+   <property name="text">
+    <string>Add To Favorite</string>
+   </property>
+   <property name="toolTip">
+    <string>Add To Favorite</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

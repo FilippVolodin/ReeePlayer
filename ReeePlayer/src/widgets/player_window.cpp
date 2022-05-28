@@ -279,8 +279,6 @@ void PlayerWindow::timerEvent(QTimerEvent* event)
     if (m_video_widget->is_playing())
     {
         int time = m_video_widget->get_accuracy_time();
-        //jumpcutter(time);
-        //qDebug("EEEEE %d", time);
         ui.waveform->set_time(time);
         ui.waveform->repaint();
     }
@@ -337,6 +335,10 @@ void PlayerWindow::setup_actions()
     ui.toolBar->addAction(ui.actRemoveClip);
     connect(ui.actRemoveClip, &QAction::triggered,
         this, &PlayerWindow::on_actRemoveClip_triggered);
+
+    ui.toolBar->addAction(ui.actAddToFavorite);
+    connect(ui.actAddToFavorite, &QAction::triggered,
+        this, &PlayerWindow::on_actAddToFavorite_triggered);
 
     connect(ui.actPlayPause, &QAction::triggered,
         this, &PlayerWindow::on_actPlayPause_triggered);
@@ -558,6 +560,15 @@ void PlayerWindow::on_actJumpCutter_triggered(bool value)
     {
         m_video_widget->set_rate(m_playback_rate);
         m_video_widget->set_volume(100);
+    }
+}
+
+void PlayerWindow::on_actAddToFavorite_triggered(bool checked)
+{
+    if (m_clip != nullptr)
+    {
+        m_clip->set_favorite(checked);
+        m_library->save();
     }
 }
 
@@ -867,6 +878,8 @@ void PlayerWindow::show_clip()
     m_edt_loop_a->setValue(m_clip->get_begin());
     m_edt_loop_b->setValue(m_clip->get_end());
 
+    ui.actAddToFavorite->setChecked(m_clip->is_favorite());
+
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
     {
         m_subtitle_views[i]->next();
@@ -1085,6 +1098,7 @@ void PlayerWindow::save_new_clip()
     new_clip->set_adding_time(now());
     update_clip_interval(new_clip);
     update_clip_subtitles(new_clip);
+    new_clip->set_favorite(ui.actAddToFavorite->isChecked());
     m_file->add_clip(new_clip);
     m_library->save();
 
@@ -1097,6 +1111,7 @@ void PlayerWindow::save_current_clip()
 {
     update_clip_interval(m_clip);
     update_clip_subtitles(m_clip);
+    m_clip->set_favorite(ui.actAddToFavorite->isChecked());
     m_library->save();
 }
 
@@ -1281,6 +1296,7 @@ void UIState::activate()
     ui.actShowWaveform->setVisible(false);
     ui.actJumpCutter->setVisible(false);
     ui.actJumpCutterSettings->setVisible(false);
+    ui.actAddToFavorite->setVisible(false);
 
     ui.waveform->setVisible(false);
 
@@ -1422,6 +1438,8 @@ void AddingClipState::activate()
 
     ui.actSaveClip->setVisible(true);
     ui.actCancelClip->setVisible(true);
+
+    ui.actAddToFavorite->setVisible(true);
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
@@ -1582,6 +1600,8 @@ void WatchingClipState::activate()
     ui.actSaveClip->setVisible(true);
     ui.actCancelClip->setVisible(true);
 
+    ui.actAddToFavorite->setVisible(true);
+
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
 
@@ -1647,6 +1667,8 @@ void RepeatingClipState::activate()
     ui.actRemoveClip->setVisible(true);
     ui.actPrevClip->setVisible(true);
     ui.actNextClip->setVisible(true);
+
+    ui.actAddToFavorite->setVisible(true);
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);

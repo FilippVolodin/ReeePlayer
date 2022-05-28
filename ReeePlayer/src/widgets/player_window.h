@@ -169,6 +169,7 @@ private:
     void on_actJumpCutterSettings_triggered();
     void on_actShowWaveform_triggered(bool);
     void on_actJumpCutter_triggered(bool);
+    void on_actAddToFavorite_triggered(bool);
 
     void on_btnMinus_clicked(bool);
     void on_btnPlus_clicked(bool);

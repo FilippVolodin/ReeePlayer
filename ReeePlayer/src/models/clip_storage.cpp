@@ -134,6 +134,21 @@ void Clip::set_subtitles(std::vector<QString>&& subtitles)
     }
 }
 
+bool Clip::is_favorite() const
+{
+    return m_is_favorite;
+}
+
+void Clip::set_favorite(bool favorite)
+{
+    if (favorite != m_is_favorite)
+    {
+        m_is_favorite = favorite;
+        if (m_file)
+            m_file->get_library()->clip_changed(this);
+    }
+}
+
 File::File(Library* library, const QString& path)
     : m_library(library), m_path(path)
 {

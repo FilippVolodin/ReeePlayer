@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/MainWindow">
+    <file alias="fav_off">Resources/fav_off.png</file>
+    <file alias="fav_on">Resources/fav_on.png</file>
     <file alias="backup">Resources/backup.png</file>
     <file alias="stats">Resources/stats.png</file>
     <file alias="download">Resources/download.png</file>

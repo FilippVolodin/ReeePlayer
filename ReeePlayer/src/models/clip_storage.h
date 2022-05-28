@@ -16,6 +16,7 @@ class Clip
     std::time_t m_added = 0;
     std::time_t m_rep_time = 0;
     std::vector<std::time_t> m_repeats;
+    bool m_is_favorite = false;
 
     void set_file(File*);
 public:
@@ -45,6 +46,9 @@ public:
     QString get_subtitle(int index) const;
     const std::vector<QString>& get_subtitles() const;
     void set_subtitles(std::vector<QString>&&);
+
+    bool is_favorite() const;
+    void set_favorite(bool);
 };
 
 struct ClipCmp

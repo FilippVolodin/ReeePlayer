@@ -80,6 +80,8 @@ File* Library::load_file(const QString& path)
                 clip->set_end(json_clip["end"].toInt());
             if (json_clip.contains("level") && json_clip["level"].isDouble())
                 clip->set_level(json_clip["level"].toDouble());
+            if (json_clip.contains("favorite") && json_clip["favorite"].isBool())
+                clip->set_favorite(json_clip["favorite"].toBool());
             if (json_clip.contains("repeated") && json_clip["repeated"].isDouble())
                 clip->set_rep_time(json_clip["repeated"].toInteger());
             if (json_clip.contains("repeats") && json_clip["repeats"].isArray())
@@ -125,6 +127,8 @@ void Library::save_file(const File* file) const
         json_clip["begin"] = clip->get_begin();
         json_clip["end"] = clip->get_end();
         json_clip["level"] = clip->get_level();
+        if (clip->is_favorite())
+            json_clip["favorite"] = clip->is_favorite();
         json_clip["repeated"] = clip->get_rep_time();
         if (!repeats_arr.isEmpty())
             json_clip["repeats"] = repeats_arr;
