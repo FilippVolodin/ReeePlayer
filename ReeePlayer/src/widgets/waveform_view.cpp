@@ -99,7 +99,8 @@ void WaveformView::paintEvent(QPaintEvent *)
     QPen pen = painter.pen();
 
     int global_x = ((double)m_a / time_window) * width();
-    global_x -= global_x % 3;
+    const int rem = global_x % 3;
+    global_x -= rem;
 
     if (m_vad)
     {
@@ -119,7 +120,7 @@ void WaveformView::paintEvent(QPaintEvent *)
             {
                 int zone_x0 = ((double)ch / vad_ch_time_window) * width() - global_x;
                 int zone_x1 = ((double)ch_next / vad_ch_time_window) * width() - global_x;
-                painter.fillRect(zone_x0, 0, zone_x1 - zone_x0, height(), brush);
+                painter.fillRect(zone_x0 - rem, 0, zone_x1 - zone_x0, height(), brush);
             }
             ch = ch_next;
         }
@@ -133,7 +134,7 @@ void WaveformView::paintEvent(QPaintEvent *)
             int x0 = ((double)ch / vad_ch_time_window) * width() - global_x;
             int x1 = ((double)(ch + 1) / vad_ch_time_window) * width() - global_x;
             int y = height() * (1.0 - (float)m_vad->chunk_prob(ch) / 256);
-            painter.fillRect(x0, y, x1 - x0, height(), brush);
+            painter.fillRect(x0 - rem, y, x1 - x0, height(), brush);
             prev_y = y;
         }
     }
@@ -147,7 +148,6 @@ void WaveformView::paintEvent(QPaintEvent *)
         brush.setStyle(Qt::SolidPattern);
         brush.setColor(CLIP_COLOR);
         painter.setBrush(brush);
-        //painter.setCompositionMode(QPainter::CompositionMode_Difference);
 
         int clip_a_x = ((float)(m_clip_a - m_a) / time_window) * width();
         int clip_b_x = ((float)(m_clip_b - m_a) / time_window) * width();
@@ -166,7 +166,7 @@ void WaveformView::paintEvent(QPaintEvent *)
 
         int y0 = height() * (1.0 - (float)max / 256);
         int y1 = height();
-        painter.fillRect(x0, y0, 2, y1 - y0, WAVEFORM_COLOR);
+        painter.fillRect(x0 - rem, y0, 2, y1 - y0, WAVEFORM_COLOR);
     }
 
     pen.setColor(Qt::gray);
@@ -179,7 +179,7 @@ void WaveformView::paintEvent(QPaintEvent *)
     {
         int time_x = (double)(sec * 1000) / time_window * width();
         time_x -= global_x;
-        painter.drawLine(time_x, 0, time_x, height());
+        painter.drawLine(time_x - rem, 0, time_x - rem, height());
     }
 
     float time_window_pos = (float)(m_time - m_a) / (m_b - m_a);
