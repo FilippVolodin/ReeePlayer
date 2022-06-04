@@ -22,6 +22,7 @@ public:
     int num_children() const;
 
     File* get_file();
+    const File* get_file() const;
     QString get_name() const;
     QString get_dir_path() const;
 
@@ -51,7 +52,7 @@ public:
     void remove_childs(int row, int count);
 
     void get_clips(std::vector<Clip*>&);
-    void find_clips(QStringView str, int max_clips, std::vector<Clip*>&);
+    void find_clips(QStringView str, int max_clips, bool fav, std::vector<Clip*>&) const;
 private:
     void get_ids(std::vector<int>&) const;
 

@@ -24,6 +24,7 @@ target_sources(ReeePlayer PRIVATE
     forms/waiting_dialog.ui
     forms/jumpcutter_settings_dialog.ui
     forms/about_window.ui
+    forms/search_dialog.ui
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -47,6 +48,7 @@ target_sources(ReeePlayer PRIVATE
     src/widgets/about_window.cpp
     src/widgets/calendar_heatmap_widget.cpp
     src/widgets/stats_window.cpp
+    src/widgets/search_dialog.cpp
 )
 
 target_sources(ReeePlayer PRIVATE

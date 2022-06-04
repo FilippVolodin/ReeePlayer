@@ -84,6 +84,11 @@ File* LibraryItem::get_file()
     return m_file;
 }
 
+const File* LibraryItem::get_file() const
+{
+    return m_file;
+}
+
 QString LibraryItem::get_name() const
 {
     return m_name;
@@ -302,9 +307,9 @@ void LibraryItem::get_clips(std::vector<Clip*>& clips)
     }
 }
 
-void LibraryItem::find_clips(QStringView str, int max_clips, std::vector<Clip*>& clips)
+void LibraryItem::find_clips(QStringView str, int max_clips, bool fav, std::vector<Clip*>& clips) const
 {
-    if (clips.size() >= max_clips)
+    if (max_clips != 0 && clips.size() >= max_clips)
         return;
 
     if (get_item_type() == ItemType::File)
@@ -315,6 +320,9 @@ void LibraryItem::find_clips(QStringView str, int max_clips, std::vector<Clip*>&
             const std::vector<QString>& texts = clip->get_subtitles();
             for (const QString& text : texts)
             {
+                if (fav && !clip->is_favorite())
+                    continue;
+
                 if (str.isEmpty() || text.contains(str, Qt::CaseInsensitive))
                 {
                     clips.push_back(clip);
@@ -322,7 +330,7 @@ void LibraryItem::find_clips(QStringView str, int max_clips, std::vector<Clip*>&
                 }
             }
 
-            if (clips.size() >= max_clips)
+            if (max_clips != 0 && clips.size() >= max_clips)
                 break;
         }
     }
@@ -330,8 +338,8 @@ void LibraryItem::find_clips(QStringView str, int max_clips, std::vector<Clip*>&
     {
         for (LibraryItem* item : m_child_items)
         {
-            item->find_clips(str, max_clips, clips);
-            if (clips.size() >= max_clips)
+            item->find_clips(str, max_clips, fav, clips);
+            if (max_clips != 0 && clips.size() >= max_clips)
                 break;
         }
     }

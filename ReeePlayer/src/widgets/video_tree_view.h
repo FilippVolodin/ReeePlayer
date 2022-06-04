@@ -16,10 +16,13 @@ signals:
 
     void repeat_selected();
     void stats_on_selected();
+    void search_in_selected();
     void download();
+    void selection_changed();
 protected:
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent *event) override;
+    void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 private:
 
     void expand_folder(const QModelIndex & index);

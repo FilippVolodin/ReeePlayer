@@ -47,6 +47,12 @@ void VideoTreeView::dropEvent(QDropEvent* event)
     }
 }
 
+void VideoTreeView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+{
+    emit selection_changed();
+    QTreeView::selectionChanged(selected, deselected);
+}
+
 void VideoTreeView::expand_folder(const QModelIndex & index)
 {
     LibraryTree* m = static_cast<LibraryTree*>(model());
@@ -69,12 +75,19 @@ void VideoTreeView::show_context_menu(const QPoint& pos)
     QMenu menu(tr("Context menu"), this);
 
     QAction repeat_action("Repeat selected", this);
+    repeat_action.setIcon(QIcon(":/MainWindow/repeat_clips"));
     connect(&repeat_action, &QAction::triggered, this, &VideoTreeView::repeat_selected);
     menu.addAction(&repeat_action);
 
     QAction stats_action("Stats on selected", this);
+    stats_action.setIcon(QIcon(":/MainWindow/stats"));
     connect(&stats_action, &QAction::triggered, this, &VideoTreeView::stats_on_selected);
     menu.addAction(&stats_action);
+
+    QAction search_action("Search in selected", this);
+    search_action.setIcon(QIcon(":/MainWindow/search"));
+    connect(&search_action, &QAction::triggered, this, &VideoTreeView::search_in_selected);
+    menu.addAction(&search_action);
 
     QAction* download_action = nullptr;
     QModelIndexList list = selectionModel()->selectedIndexes();
@@ -86,6 +99,7 @@ void VideoTreeView::show_context_menu(const QPoint& pos)
         if (item->get_item_type() == ItemType::Folder)
         {
             download_action = new QAction(QString("Download to \"%1\"...").arg(item->get_name()), this);
+            download_action->setIcon(QIcon(":/MainWindow/download"));
             connect(download_action, &QAction::triggered, this, &VideoTreeView::download);
         }
 

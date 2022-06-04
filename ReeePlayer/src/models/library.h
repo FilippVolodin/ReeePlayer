@@ -21,7 +21,7 @@ public:
     void save();
 
     std::vector<Clip*> get_all_clips() const;
-    std::vector<Clip*> find_clips(QStringView, int max) const;
+    //std::vector<Clip*> find_clips(QStringView, int max = 0) const;
 
     LibraryItem* get_root() const;
     QString get_root_path() const;
@@ -44,6 +44,7 @@ private:
 };
 
 std::vector<File*> get_files(const std::vector<const LibraryItem*>&);
+std::vector<const LibraryItem*> get_disjoint_items(const std::vector<const LibraryItem*>& items);
 void get_expanded(LibraryItem* item, std::map<QString, bool>& map);
 
 #endif // !LIBRARY_H

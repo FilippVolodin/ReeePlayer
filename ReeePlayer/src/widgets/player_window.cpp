@@ -36,6 +36,8 @@ PlaybackRateItem PLAYBACK_ITEMS[] =
     {2.0,  "2.0", Qt::Key_BracketRight},
 };
 
+
+
 //constexpr float PLAYBACK_RATES[] = { 0.5, 0.6, 0.7, 0.8, 0.9, 1.01, 1.25, 1.5, 2.0 };
 //static const QKeySequence PLAYBACK_KEYS[] =
 //    { Qt::Key_5, Qt::Key_6, Qt::Key_7, Qt::Key_8, Qt::Key_9, Qt::Key_0, Qt::Key_Minus, Qt::Key_Equal, Qt::Key_Backspace };
@@ -44,8 +46,8 @@ constexpr int DEFAULT_PLAYBACK_RATE_INDEX = 5;
 constexpr int NORMAL_LOOP_STEP = 100;
 constexpr int PRECISE_LOOP_STEP = 40;
 
+constexpr const char* PLAYER_WINDOW_GEOMETRY_KEY = "player_window_geometry";
 constexpr const char* WINDOW_STATE_KEY = "player_window_state";
-
 constexpr const char* SHOW_SUBTITLES_KEY = "show_subtitles_%1_%2";
 
 struct LC
@@ -116,6 +118,9 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
     : QMainWindow(parent), m_app(app)
 {
     ui.setupUi(this);
+
+    QByteArray g = m_app->get_setting("gui", PLAYER_WINDOW_GEOMETRY_KEY).toByteArray();
+    restoreGeometry(g);
 
     PLAYER_ENGINE player_engine = (PLAYER_ENGINE) app->get_setting("main", "player", (int)PLAYER_ENGINE::Web).toInt();
 
@@ -270,6 +275,7 @@ void PlayerWindow::closeEvent(QCloseEvent * event)
     m_ui_state->on_close();
 
     m_app->set_setting("gui", WINDOW_STATE_KEY, saveState());
+    m_app->set_setting("gui", PLAYER_WINDOW_GEOMETRY_KEY, saveGeometry());
 
     QWidget::closeEvent(event);
 }

@@ -164,6 +164,11 @@ Library* File::get_library()
     return m_library;
 }
 
+const Library* File::get_library() const
+{
+    return m_library;
+}
+
 QString File::get_path() const
 {
     return m_path;

@@ -76,21 +76,20 @@
          <number>0</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLineEdit" name="edtSearchedText"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnFindClips">
-            <property name="text">
-             <string>Find Clips</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QTableView" name="tblClips"/>
+         <widget class="QTableView" name="tblClips">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <attribute name="horizontalHeaderMinimumSectionSize">
+           <number>20</number>
+          </attribute>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -127,6 +126,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actShowStats"/>
+    <addaction name="actSearchClips"/>
     <addaction name="separator"/>
     <addaction name="actDownload"/>
     <addaction name="separator"/>
@@ -158,6 +158,7 @@
    <addaction name="actRepeatClips"/>
    <addaction name="separator"/>
    <addaction name="actShowStats"/>
+   <addaction name="actSearchClips"/>
    <addaction name="actDownload"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -247,6 +248,18 @@
    </property>
    <property name="toolTip">
     <string>Create Backup</string>
+   </property>
+  </action>
+  <action name="actSearchClips">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/search</normaloff>:/MainWindow/search</iconset>
+   </property>
+   <property name="text">
+    <string>Search Clips</string>
+   </property>
+   <property name="toolTip">
+    <string>Search Clips</string>
    </property>
   </action>
  </widget>

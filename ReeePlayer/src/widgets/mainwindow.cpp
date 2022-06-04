@@ -12,10 +12,10 @@
 #include "video_download_dialog.h"
 #include "about_window.h"
 #include "stats_window.h"
+#include "search_dialog.h"
 
 constexpr const char* MAIN_WINDOW_GEOMETRY_KEY = "main_window_geometry";
 constexpr const char* MAIN_WINDOW_STATE_KEY = "main_window_state";
-constexpr const char* PLAYER_WINDOW_GEOMETRY_KEY = "player_window_geometry";
 constexpr const char* SPLITTER_STATE_KEY = "splitter_state";
 
 constexpr int MAX_FOUND_CLIPS = 100;
@@ -70,6 +70,12 @@ MainWindow::MainWindow(App* app, QWidget *parent)
     connect(ui.videos, &VideoTreeView::stats_on_selected,
         this, &MainWindow::on_stats_on_selected_triggered);
 
+    connect(ui.actSearchClips, &QAction::triggered,
+        this, &MainWindow::on_actSearchClips_triggered);
+
+    connect(ui.videos, &VideoTreeView::search_in_selected,
+        this, &MainWindow::on_search_in_selected_triggered);
+
     connect(ui.videos, &VideoTreeView::download,
         this, &MainWindow::on_videotree_download_triggered);
 
@@ -79,28 +85,40 @@ MainWindow::MainWindow(App* app, QWidget *parent)
     connect(ui.actCreateBackup, &QAction::triggered,
         this, &MainWindow::on_actCreateBackup_triggered);
 
+    connect(ui.videos, &VideoTreeView::selection_changed,
+        this, &MainWindow::on_videos_selection_changed);
+
     connect(ui.videos, &QAbstractItemView::doubleClicked,
         this, &MainWindow::on_videos_doubleClicked);
 
     connect(ui.tblClips, &QTableView::doubleClicked,
         this, &MainWindow::on_tblClips_doubleClicked);
 
-    connect(ui.btnFindClips, &QPushButton::clicked,
-        this, &MainWindow::on_btnFindClips_clicked);
+    m_clips_model = new ClipModel(this);
+    m_clips_model->set_show_path(false);
+    ui.tblClips->setModel(m_clips_model);
+
+    connect(ui.tblClips->horizontalHeader(), &QHeaderView::sectionResized, [this](int, int, int)
+        {
+            ui.tblClips->resizeRowsToContents();
+        });
+
+    ui.tblClips->setColumnWidth(0, 20);
+    ui.tblClips->setColumnWidth(1, 300);
+    ui.tblClips->setColumnWidth(2, 300);
+    ui.tblClips->setColumnWidth(3, 80);
+    ui.tblClips->setColumnWidth(4, 40);
 
     m_library_tree = std::make_unique<LibraryTree>(this);
     ui.videos->setModel(m_library_tree.get());
 
-    m_clips_model = std::make_unique<ClipModel>(this);
-    ui.tblClips->setModel(m_clips_model.get());
+    ui.videos->setColumnWidth(0, 500);
+    //ui.videos->setColumnWidth(1, 300);
 
     connect(ui.videos, &QTreeView::expanded,
         this, &MainWindow::on_library_view_expanded);
     connect(ui.videos, &QTreeView::collapsed,
         this, &MainWindow::on_library_view_collapsed);
-
-    ui.videos->setColumnWidth(0, 300);
-    ui.videos->setColumnWidth(1, 300);
 
     QStringList col_widths =
         m_app->get_setting("gui", "videos_columns_widths").toString().split(',');
@@ -236,6 +254,19 @@ void MainWindow::on_stats_on_selected_triggered()
     w->show();
 }
 
+void MainWindow::on_actSearchClips_triggered()
+{
+    std::vector<const LibraryItem*> items = { m_app->get_library()->get_root() };
+    SearchDialog* w = new SearchDialog(m_app, items,  this);
+    w->show();
+}
+
+void MainWindow::on_search_in_selected_triggered()
+{
+    SearchDialog* w = new SearchDialog(m_app, get_selected_items(),  this);
+    w->show();
+}
+
 void MainWindow::on_actDownload_triggered()
 {
     download_to(m_app->get_library()->get_root_path());
@@ -279,12 +310,6 @@ void MainWindow::on_actCreateBackup_triggered()
     }
 }
 
-void MainWindow::on_videos_itemClicked(QTreeWidgetItem* item, int /*column*/)
-{
-    if (item->isSelected())
-        qDebug("edit");
-}
-
 void MainWindow::on_videos_doubleClicked(const QModelIndex& index)
 {
     LibraryItem* item = m_library_tree->get_item(index);
@@ -294,6 +319,25 @@ void MainWindow::on_videos_doubleClicked(const QModelIndex& index)
     }
 }
 
+void MainWindow::on_videos_selection_changed()
+{
+    std::vector<Clip*> clips;
+    QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
+    if (list.size() == 1)
+    {
+        const QModelIndex& index = list.first();
+        const LibraryItem* item = m_library_tree->get_item(index);
+        if (item->get_item_type() == ItemType::File)
+        {
+            const Clips cs = item->get_file()->get_clips();
+            clips.reserve(cs.size());
+            std::copy(cs.begin(), cs.end(), std::back_inserter(clips));
+        }
+    }
+    m_clips_model->set_clips(std::move(clips));
+    ui.tblClips->resizeRowsToContents();
+}
+
 void MainWindow::on_tblClips_doubleClicked(const QModelIndex& index)
 {
     Clip* clip = m_clips_model->get_clip(index.row());
@@ -301,22 +345,8 @@ void MainWindow::on_tblClips_doubleClicked(const QModelIndex& index)
     getPlayerWindow()->watch_clip(clip);
 }
 
-void MainWindow::on_btnFindClips_clicked()
-{
-    Library* library = m_app->get_library();
-    if (library == nullptr)
-        return;
-
-    QString text = ui.edtSearchedText->text();
-    std::vector<Clip*> clips = library->find_clips(text, MAX_FOUND_CLIPS);
-    m_clips_model->set_clips(std::move(clips));
-}
-
 void MainWindow::on_player_window_destroyed()
 {
-    m_app->set_setting("gui", PLAYER_WINDOW_GEOMETRY_KEY,
-        m_player_window->saveGeometry());
-
     m_player_window = nullptr;
 
     show();
@@ -358,7 +388,6 @@ void MainWindow::set_default_ui(State state)
         ui.actReloadDir->setEnabled(true);
         ui.actRepeatClips->setEnabled(true);
         ui.actDownload->setEnabled(true);
-        ui.edtSearchedText->clear();
         break;
     }
 }
@@ -371,11 +400,9 @@ PlayerWindow* MainWindow::getPlayerWindow()
         m_player_window->setAttribute(Qt::WA_DeleteOnClose);
         Qt::WindowFlags f = m_player_window->windowFlags();
         m_player_window->setWindowFlags(f | Qt::Dialog);
+        m_player_window->setWindowModality(Qt::ApplicationModal);
         connect(m_player_window, &QObject::destroyed,
             this, &MainWindow::on_player_window_destroyed);
-
-        QByteArray g = m_app->get_setting("gui", PLAYER_WINDOW_GEOMETRY_KEY).toByteArray();
-        m_player_window->restoreGeometry(g);
     }
     return m_player_window;
 }
@@ -481,6 +508,19 @@ void MainWindow::download_to(const QString& dir)
         m_app->set_setting("download", "resolution", vdd.get_resolution());
         open_dir(m_app->get_library()->get_root_path());
     }
+}
+
+std::vector<const LibraryItem*> MainWindow::get_selected_items() const
+{
+    QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
+    std::vector<const LibraryItem*> items;
+    items.reserve(list.size());
+    for (const QModelIndex& index : list)
+    {
+        const LibraryItem* item = m_library_tree->get_item(index);
+        items.push_back(item);
+    }
+    return get_disjoint_items(items);
 }
 
 std::vector<File*> MainWindow::get_selected_files() const

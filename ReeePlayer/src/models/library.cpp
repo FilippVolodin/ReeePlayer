@@ -182,12 +182,12 @@ std::vector<Clip*> Library::get_all_clips() const
     return clips;
 }
 
-std::vector<Clip*> Library::find_clips(QStringView str, int max_clips) const
-{
-    std::vector<Clip*> clips;
-    m_root->find_clips(str, max_clips, clips);
-    return clips;
-}
+//std::vector<Clip*> Library::find_clips(QStringView str, int max_clips) const
+//{
+//    std::vector<Clip*> clips;
+//    m_root->find_clips(str, max_clips, clips);
+//    return clips;
+//}
 
 LibraryItem* Library::get_root() const
 {
@@ -266,7 +266,7 @@ LibraryItem* Library::scan_folder(const QString& path, bool is_root)
     }
 }
 
-std::vector<File*> get_files(const  std::vector<const LibraryItem*>& items)
+std::vector<File*> get_files(const std::vector<const LibraryItem*>& items)
 {
     std::set<const LibraryItem*> items_set(items.begin(), items.end());
 
@@ -288,6 +288,30 @@ std::vector<File*> get_files(const  std::vector<const LibraryItem*>& items)
         }
     }
     return files;
+}
+
+std::vector<const LibraryItem*> get_disjoint_items(const std::vector<const LibraryItem*>& items)
+{
+    std::set<const LibraryItem*> items_set(items.begin(), items.end());
+
+    std::vector<const LibraryItem*> disjoint_items;
+    for (const LibraryItem* item : items)
+    {
+        const LibraryItem* p = item->parent();
+        bool parent_selected = false;
+        while (p != nullptr && !parent_selected)
+        {
+            if (items_set.find(p) != items_set.end())
+                parent_selected = true;
+            p = p->parent();
+        }
+
+        if (!parent_selected)
+        {
+            disjoint_items.push_back(item);
+        }
+    }
+    return disjoint_items;
 }
 
 void get_expanded(LibraryItem* item, std::map<QString, bool>& map)

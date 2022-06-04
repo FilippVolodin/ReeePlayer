@@ -457,10 +457,10 @@ QSlider::sub-page:horizontal {
      <normalon>:/MainWindow/fav_on</normalon>:/MainWindow/fav_off</iconset>
    </property>
    <property name="text">
-    <string>Add To Favorite</string>
+    <string>Favorite</string>
    </property>
    <property name="toolTip">
-    <string>Add To Favorite</string>
+    <string>Add To Favorite (F5)</string>
    </property>
    <property name="shortcut">
     <string>F5</string>

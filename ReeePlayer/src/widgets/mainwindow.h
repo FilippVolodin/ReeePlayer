@@ -9,6 +9,7 @@ class LibraryTree;
 class ClipModel;
 class File;
 class Clip;
+class LibraryItem;
 
 class MainWindow : public QMainWindow
 {
@@ -37,15 +38,16 @@ private:
     void on_actShowStats_triggered();
     void on_stats_on_selected_triggered();
 
+    void on_actSearchClips_triggered();
+    void on_search_in_selected_triggered();
+
     void on_actDownload_triggered();
 
     void on_actCreateBackup_triggered();
 
-    void on_videos_itemClicked(QTreeWidgetItem *item, int column);
     void on_videos_doubleClicked(const QModelIndex &index);
+    void on_videos_selection_changed();
     void on_tblClips_doubleClicked(const QModelIndex &index);
-
-    void on_btnFindClips_clicked();
 
     void on_player_window_destroyed();
 
@@ -64,6 +66,7 @@ private:
     void repeat(std::vector<File*>);
     void download_to(const QString& dir);
 
+    std::vector<const LibraryItem*> get_selected_items() const;
     std::vector<File*> get_selected_files() const;
 
     Ui::MainWindowClass ui;
@@ -73,7 +76,7 @@ private:
     PlayerWindow* m_player_window = nullptr;
 
     std::unique_ptr<LibraryTree> m_library_tree;
-    std::unique_ptr<ClipModel> m_clips_model;
+    ClipModel* m_clips_model;
     App* m_app = nullptr;
 };
 

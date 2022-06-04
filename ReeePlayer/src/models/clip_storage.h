@@ -73,6 +73,7 @@ public:
     ~File();
 
     Library* get_library();
+    const Library* get_library() const;
 
     QString get_path() const;
 
