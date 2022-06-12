@@ -38,7 +38,7 @@ bool VAD::run(const QString& wav_filename)
 
     m_server = std::make_unique<QTcpServer>();
 
-    if (!m_server->listen(QHostAddress::LocalHost, 12345))
+    if (!m_server->listen(QHostAddress::LocalHost))
         return false;
 
     connect(m_server.get(), &QTcpServer::newConnection, this, &VAD::new_conn);
