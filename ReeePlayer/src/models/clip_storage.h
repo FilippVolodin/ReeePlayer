@@ -51,6 +51,8 @@ public:
     void set_favorite(bool);
 };
 
+using ClipsPtr = std::shared_ptr<std::vector<Clip*>>;
+
 struct ClipCmp
 {
     bool operator()(const Clip* l, const Clip* r) const
@@ -97,6 +99,8 @@ public:
     virtual std::vector<Clip*> get_all_repeatable_clips() const = 0;
     virtual std::vector<Clip*> find(QStringView, int max) const = 0;
 };
+
+bool export_txt(const std::vector<Clip*>&, const QString& filename);
 
 #endif // !ICLIP_H
 

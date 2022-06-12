@@ -233,3 +233,23 @@ void File::set_length(int length)
         get_library()->file_changed(this);
     }
 }
+
+bool export_txt(const std::vector<Clip*>& clips, const QString& filename)
+{
+    QFile file(filename);
+    QTextStream out(&file);
+    if (!file.open(QIODevice::WriteOnly))
+        return false;
+
+    for (const Clip* clip : clips)
+    {
+        for (const QString& subtitle : clip->get_subtitles())
+        {
+            QString line = subtitle;
+            line.replace("\r\n", "<br>").replace("\n", "<br>");
+            out << line << "\r\n";
+        }
+        out << "\r\n";
+    }
+    return true;
+}

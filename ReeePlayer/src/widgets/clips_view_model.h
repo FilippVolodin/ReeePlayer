@@ -1,7 +1,7 @@
 #ifndef CLIP_VIEW_MODEL_H
 #define CLIP_VIEW_MODEL_H
 
-class Clip;
+#include "models/clip_storage.h"
 
 class ClipModel : public QAbstractTableModel
 {
@@ -21,11 +21,11 @@ public:
     void set_show_path(bool);
 
     Clip* get_clip(int row) const;
-    void set_clips(std::vector<Clip*>);
+    void set_clips(ClipsPtr);
 
 private:
     bool m_show_path = true;
-    std::vector<Clip*> m_clips;
+    ClipsPtr m_clips;
 };
 
 #endif 

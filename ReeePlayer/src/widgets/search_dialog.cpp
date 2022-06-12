@@ -1,5 +1,4 @@
 #include "search_dialog.h"
-#include "models/clip_storage.h"
 #include "models/app.h"
 #include "models/library.h"
 #include "clips_view_model.h"
@@ -54,6 +53,48 @@ SearchDialog::~SearchDialog()
 {
 }
 
+void SearchDialog::on_btnExport_clicked()
+{
+    QString filename = QFileDialog::getSaveFileName(this,
+        "Export to Anki",
+        m_app->get_library()->get_root_path(),
+        "Anki deck files (*.apkg)");
+    if (!filename.isEmpty())
+    {
+        QString temp_txt = QDir::temp().absoluteFilePath("clips.txt");
+        export_txt(*m_clips, temp_txt);
+
+        QFileInfo fi(filename);
+
+        QStringList args;
+        args
+            << temp_txt
+            << filename
+            << fi.completeBaseName();
+
+        QProcess anki_process;
+        anki_process.start("pyutils/anki.exe", args);
+        if (anki_process.waitForStarted())
+        {
+            if (anki_process.waitForFinished(-1))
+            {
+                if (anki_process.exitCode() == 0)
+                    QMessageBox::information(this, "Info", "Export completed succesfully");
+                else
+                    QMessageBox::critical(this, "Info", "Export completed with error");
+            }
+            else
+            {
+                QMessageBox::critical(this, "Error", "Can't finish pyutils/anki.exe");
+            }
+        }
+        else
+        {
+            QMessageBox::critical(this, "Error", "Can't start pyutils/anki.exe");
+        }
+    }
+}
+
 void SearchDialog::on_edtText_returnPressed()
 {
     search(ui.edtText->text());
@@ -64,8 +105,11 @@ void SearchDialog::on_btnSearch_clicked()
     search(ui.edtText->text());
 }
 
-void SearchDialog::on_tblClips_doubleClicked(const QModelIndex& index)
+void SearchDialog::on_tblClips_doubleClicked(const QModelIndex& proxy_index)
 {
+    QSortFilterProxyModel* proxy_model = static_cast<QSortFilterProxyModel*>(ui.tblClips->model());
+    QModelIndex index = proxy_model->mapToSource(proxy_index);
+
     Clip* clip = m_clips_model->get_clip(index.row());
     PlayerWindow* player_window = new PlayerWindow(m_app, this);
     player_window->setAttribute(Qt::WA_DeleteOnClose);
@@ -75,10 +119,10 @@ void SearchDialog::on_tblClips_doubleClicked(const QModelIndex& index)
 
 void SearchDialog::search(const QString& text)
 {
-    std::vector<Clip*> clips;
+    m_clips = std::make_shared<std::vector<Clip*>>();
     for (const LibraryItem* item : m_items)
-        item->find_clips(text, 0, ui.chkFavorite->isChecked(), clips);
+        item->find_clips(text, 0, ui.chkFavorite->isChecked(), *m_clips);
 
-    m_clips_model->set_clips(std::move(clips));
+    m_clips_model->set_clips(m_clips);
     ui.tblClips->resizeRowsToContents();
 }

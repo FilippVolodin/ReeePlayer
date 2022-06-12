@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "clips_view_model.h"
 #include "models/repetition_model.h"
-#include "models/clip_storage.h"
 #include "models/library.h"
 
 ClipModel::ClipModel(QObject* parent)
@@ -11,7 +10,7 @@ ClipModel::ClipModel(QObject* parent)
 
 int ClipModel::rowCount(const QModelIndex&) const
 {
-    return m_clips.size();
+    return m_clips ? m_clips->size() : 0;
 }
 
 int ClipModel::columnCount(const QModelIndex&) const
@@ -23,7 +22,7 @@ QVariant ClipModel::data(const QModelIndex & index, int role) const
 {
     int row = index.row();
     int col = index.column();
-    const Clip* clip = m_clips[row];
+    const Clip* clip = (*m_clips)[row];
 
     switch (role)
     {
@@ -100,15 +99,15 @@ void ClipModel::set_show_path(bool show_path)
 
 Clip* ClipModel::get_clip(int row) const
 {
-    if (row >= 0 && row < m_clips.size())
-        return m_clips[row];
+    if (row >= 0 && row < m_clips->size())
+        return (*m_clips)[row];
     else
         return nullptr;
 }
 
-void ClipModel::set_clips(std::vector<Clip*> clips)
+void ClipModel::set_clips(ClipsPtr clips)
 {
     beginResetModel();
-    m_clips = std::move(clips);
+    m_clips = clips;
     endResetModel();
 }

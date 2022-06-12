@@ -321,7 +321,8 @@ void MainWindow::on_videos_doubleClicked(const QModelIndex& index)
 
 void MainWindow::on_videos_selection_changed()
 {
-    std::vector<Clip*> clips;
+    ClipsPtr clips = std::make_shared<std::vector<Clip*>>();
+
     QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
     if (list.size() == 1)
     {
@@ -330,11 +331,11 @@ void MainWindow::on_videos_selection_changed()
         if (item->get_item_type() == ItemType::File)
         {
             const Clips cs = item->get_file()->get_clips();
-            clips.reserve(cs.size());
-            std::copy(cs.begin(), cs.end(), std::back_inserter(clips));
+            clips->reserve(cs.size());
+            std::copy(cs.begin(), cs.end(), std::back_inserter(*clips));
         }
     }
-    m_clips_model->set_clips(std::move(clips));
+    m_clips_model->set_clips(clips);
     ui.tblClips->resizeRowsToContents();
 }
 
