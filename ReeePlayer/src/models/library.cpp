@@ -35,6 +35,14 @@ Library::Library(QSettings* settings, const QString& root_path)
         m_root->append_child(dir_item);
 
     m_block_notifications = false;
+
+    auto set_uid = [](Clip* clip)
+    {
+        if (clip->get_uid().isEmpty())
+            clip->generate_uid();
+    };
+    m_root->iterate_clips(set_uid);
+    save();
 }
 
 Library::~Library()
@@ -72,6 +80,8 @@ File* Library::load_file(const QString& path)
             QString text1;
             QString text2;
             QJsonObject json_clip = json_clips[i].toObject();
+            if (json_clip.contains("uid") && json_clip["uid"].isString())
+                clip->set_uid(json_clip["uid"].toString());
             if (json_clip.contains("added") && json_clip["added"].isDouble())
                 clip->set_adding_time(json_clip["added"].toInt());
             if (json_clip.contains("begin") && json_clip["begin"].isDouble())
@@ -122,6 +132,7 @@ void Library::save_file(const File* file) const
         std::copy(repeats.begin(), repeats.end(), std::back_inserter(repeats_arr));
 
         QJsonObject json_clip;
+        json_clip["uid"] = clip->get_uid();
         if(clip->get_adding_time() != 0)
             json_clip["added"] = clip->get_adding_time();
         json_clip["begin"] = clip->get_begin();

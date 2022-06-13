@@ -48,6 +48,8 @@
 #include <QWebEngineView>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QUuid>
+#include <QProgressDialog>
 
 #include <algorithm>
 #include <optional>

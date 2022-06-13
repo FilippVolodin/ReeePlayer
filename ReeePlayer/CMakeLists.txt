@@ -25,6 +25,7 @@ target_sources(ReeePlayer PRIVATE
     forms/jumpcutter_settings_dialog.ui
     forms/about_window.ui
     forms/search_dialog.ui
+    forms/export_dialog.ui
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -49,6 +50,7 @@ target_sources(ReeePlayer PRIVATE
     src/widgets/calendar_heatmap_widget.cpp
     src/widgets/stats_window.cpp
     src/widgets/search_dialog.cpp
+    src/widgets/export_dialog.cpp
 )
 
 target_sources(ReeePlayer PRIVATE

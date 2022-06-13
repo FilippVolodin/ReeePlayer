@@ -1101,6 +1101,7 @@ void PlayerWindow::rewind(int delta_ms)
 void PlayerWindow::save_new_clip()
 {
     Clip* new_clip = new Clip();
+    new_clip->generate_uid();
     new_clip->set_adding_time(now());
     update_clip_interval(new_clip);
     update_clip_subtitles(new_clip);

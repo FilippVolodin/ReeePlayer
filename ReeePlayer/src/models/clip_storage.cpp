@@ -21,6 +21,26 @@ File* Clip::get_file()
     return m_file;
 }
 
+QString Clip::get_uid() const
+{
+    return m_uid;
+}
+
+void Clip::set_uid(const QString& uid)
+{
+    if (uid != m_uid)
+    {
+        m_uid = uid;
+        if (m_file)
+            m_file->get_library()->clip_changed(this);
+    }
+}
+
+void Clip::generate_uid()
+{
+    set_uid(QUuid::createUuid().toString(QUuid::WithoutBraces));
+}
+
 std::time_t Clip::get_begin() const
 {
     return m_begin;
@@ -116,7 +136,10 @@ void Clip::set_level(float level)
 
 QString Clip::get_subtitle(int index) const
 {
-    return m_subtitles[index];
+    if (index >= 0 && index < m_subtitles.size())
+        return m_subtitles[index];
+    else
+        return QString();
 }
 
 const std::vector<QString>& Clip::get_subtitles() const
@@ -243,12 +266,9 @@ bool export_txt(const std::vector<Clip*>& clips, const QString& filename)
 
     for (const Clip* clip : clips)
     {
-        for (const QString& subtitle : clip->get_subtitles())
-        {
-            QString line = subtitle;
-            line.replace("\r\n", "<br>").replace("\n", "<br>");
-            out << line << "\r\n";
-        }
+        out << clip->get_uid() << "\r\n";
+        out << clip->get_subtitle(0).replace("\r\n", "<br>").replace("\n", "<br>") << "\r\n";
+        out << clip->get_subtitle(1).replace("\r\n", "<br>").replace("\n", "<br>") << "\r\n";
         out << "\r\n";
     }
     return true;

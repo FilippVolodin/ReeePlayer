@@ -9,6 +9,7 @@ class Clip
     friend File;
 
     File* m_file = nullptr;
+    QString m_uid;
     std::time_t m_begin = 0;
     std::time_t m_end = 0;
     std::vector<QString> m_subtitles;
@@ -24,6 +25,10 @@ public:
 
     const File* get_file() const;
     File* get_file();
+
+    QString get_uid() const;
+    void set_uid(const QString&);
+    void generate_uid();
 
     std::time_t get_begin() const;
     void set_begin(std::time_t);

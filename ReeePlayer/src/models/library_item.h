@@ -1,8 +1,7 @@
 #ifndef DOMITEM_H
 #define DOMITEM_H
 
-class File;
-class Clip;
+#include "clip_storage.h"
 
 enum class ItemType { Folder, File };
 
@@ -53,6 +52,22 @@ public:
 
     void get_clips(std::vector<Clip*>&);
     void find_clips(QStringView str, int max_clips, bool fav, std::vector<Clip*>&) const;
+
+    template<typename ClipFunc>
+    void iterate_clips(ClipFunc cf)
+    {
+        if (get_item_type() == ItemType::File)
+        {
+            const Clips& file_clips = m_file->get_clips();
+            for (Clip* clip : file_clips)
+                cf(clip);
+        }
+        else if (get_item_type() == ItemType::Folder)
+        {
+            for (LibraryItem* item : m_child_items)
+                item->iterate_clips(cf);
+        }
+    }
 private:
     void get_ids(std::vector<int>&) const;
 

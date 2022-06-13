@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "library_item.h"
-#include "clip_storage.h"
 
 LibraryItem::LibraryItem(const QString& path, LibraryItem* parent)
     : m_parent(parent)
