@@ -50,6 +50,7 @@
 #include <QTcpSocket>
 #include <QUuid>
 #include <QProgressDialog>
+#include <QTableView>
 
 #include <algorithm>
 #include <optional>

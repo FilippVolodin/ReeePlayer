@@ -204,9 +204,9 @@ void PlayerWindow::watch_clip(Clip* clip)
     show();
 }
 
-void PlayerWindow::repeat(std::vector<File*>&& files)
+void PlayerWindow::repeat(std::shared_ptr<Session> session)
 {
-    m_session = std::make_shared<Session>(m_app->get_library(), files);
+    m_session = session;
     m_mode = Mode::Repeating;
     show();
 }

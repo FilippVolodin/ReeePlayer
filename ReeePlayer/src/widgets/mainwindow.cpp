@@ -5,6 +5,7 @@
 #include "models/app.h"
 #include "models/jumpcutter.h"
 #include "models/vad.h"
+#include "models/session.h"
 #include "library_tree_model.h"
 #include "clips_view_model.h"
 #include "player_window.h"
@@ -485,7 +486,8 @@ void MainWindow::repeat(std::vector<File*> files)
     if (has_clips)
     {
         hide();
-        getPlayerWindow()->repeat(std::move(files));
+        std::shared_ptr<Session> session = std::make_shared<Session>(m_app->get_library(), files);
+        getPlayerWindow()->repeat(session);
     }
     else
     {

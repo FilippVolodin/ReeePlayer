@@ -2,9 +2,11 @@
 #include "search_dialog.h"
 #include "models/app.h"
 #include "models/library.h"
+#include "models/session.h"
 #include "clips_view_model.h"
 #include "player_window.h"
 #include "export_dialog.h"
+#include "clips_view.h"
 
 SearchDialog::SearchDialog(App* app, std::vector<const LibraryItem*> items, QWidget *parent) :
     m_app(app),
@@ -40,15 +42,26 @@ SearchDialog::SearchDialog(App* app, std::vector<const LibraryItem*> items, QWid
     connect(ui.tblClips, &QTableView::doubleClicked,
         this, &SearchDialog::on_tblClips_doubleClicked);
 
+    int file_num = 0;
+    for (const LibraryItem* item : m_items)
+    {
+        item->iterate_files([&file_num](File*) {file_num++; });
+    }
+
     bool search_everywhere = m_items.size() == 1 && m_items[0] == m_app->get_library()->get_root();
     if (search_everywhere)
     {
-        ui.lblSearchIn->setText("<b>All Files</b>");
+        ui.lblSearchIn->setText(QString("<b>All %1 Files</b>").arg(file_num));
     }
     else
     {
-        ui.lblSearchIn->setText("<b>Selected Files</b>");
+        ui.lblSearchIn->setText(QString("<b>%1 Selected Files</b>").arg(file_num));
     }
+
+    connect(ui.tblClips, &ClipsView::export_selected,
+        this, &SearchDialog::on_export_selected_triggered);
+    connect(ui.tblClips, &ClipsView::repeat_selected,
+        this, &SearchDialog::on_repeat_selected_triggered);
 }
 
 SearchDialog::~SearchDialog()
@@ -57,11 +70,71 @@ SearchDialog::~SearchDialog()
 
 void SearchDialog::on_btnExport_clicked()
 {
-    if (!m_clips)
+    export_clips(*m_clips.get());
+}
+
+void SearchDialog::on_btnRepeat_clicked()
+{
+    if (!m_clips || m_clips->empty())
         return;
 
+    std::shared_ptr<Session> session = std::make_shared<Session>(m_app->get_library(), *m_clips.get());
+    get_player_window()->repeat(session);
+}
+
+void SearchDialog::on_edtText_returnPressed()
+{
+    search(ui.edtText->text());
+}
+
+void SearchDialog::on_btnSearch_clicked()
+{
+    search(ui.edtText->text());
+}
+
+void SearchDialog::on_tblClips_doubleClicked(const QModelIndex& proxy_index)
+{
+    QSortFilterProxyModel* proxy_model = static_cast<QSortFilterProxyModel*>(ui.tblClips->model());
+    QModelIndex index = proxy_model->mapToSource(proxy_index);
+
+    Clip* clip = m_clips_model->get_clip(index.row());
+    get_player_window()->watch_clip(clip);
+}
+
+void SearchDialog::on_export_selected_triggered()
+{
+    std::vector<Clip*> clips = get_selected_clips();
+    if (clips.empty())
+        return;
+    export_clips(clips);
+}
+
+void SearchDialog::on_repeat_selected_triggered()
+{
+    std::vector<Clip*> clips = get_selected_clips();
+    if (clips.empty())
+        return;
+
+    std::shared_ptr<Session> session = std::make_shared<Session>(m_app->get_library(), clips);
+    get_player_window()->repeat(session);
+}
+
+void SearchDialog::search(const QString& text)
+{
+    m_clips = std::make_shared<std::vector<Clip*>>();
+    for (const LibraryItem* item : m_items)
+        item->find_clips(text, 0, ui.chkFavorite->isChecked(), *m_clips);
+
+    m_clips_model->set_clips(m_clips);
+    ui.tblClips->resizeRowsToContents();
+    ui.btnExport->setEnabled(!m_clips->empty());
+    ui.btnRepeat->setEnabled(!m_clips->empty());
+}
+
+void SearchDialog::export_clips(const std::vector<Clip*>& clips)
+{
     ExportDialog export_dialog;
-    export_dialog.set_info_text(QString("Export %1 clips to Anki file").arg(m_clips->size()));
+    export_dialog.set_info_text(QString("Export %1 clips to Anki file").arg(clips.size()));
     export_dialog.exec();
     if (export_dialog.result() != QDialog::Accepted)
         return;
@@ -80,7 +153,7 @@ void SearchDialog::on_btnExport_clicked()
     if (anki_file.isEmpty())
         return;
 
-    QProgressDialog progress("Generating media files...", "Abort", 0, m_clips->size(), this);
+    QProgressDialog progress("Generating media files...", "Abort", 0, clips.size(), this);
     progress.setWindowModality(Qt::WindowModal);
     progress.setMinimumDuration(1000);
 
@@ -93,7 +166,7 @@ void SearchDialog::on_btnExport_clicked()
         temp_dir = dir.absolutePath();
 
         int clip_idx = 0;
-        for (const Clip* clip : *m_clips)
+        for (const Clip* clip : clips)
         {
             progress.setValue(clip_idx);
             if (progress.wasCanceled())
@@ -131,12 +204,12 @@ void SearchDialog::on_btnExport_clicked()
             clip_idx++;
         }
     }
-    progress.setValue(m_clips->size());
+    progress.setValue(clips.size());
 
     progress.setLabelText("Create Anki File...");
 
     QString temp_txt = QDir::temp().absoluteFilePath("clips.txt");
-    export_txt(*m_clips, temp_txt);
+    export_txt(clips, temp_txt);
 
     QFileInfo fi(anki_file);
 
@@ -173,34 +246,23 @@ void SearchDialog::on_btnExport_clicked()
     }
 }
 
-void SearchDialog::on_edtText_returnPressed()
+std::vector<Clip*> SearchDialog::get_selected_clips() const
 {
-    search(ui.edtText->text());
-}
-
-void SearchDialog::on_btnSearch_clicked()
-{
-    search(ui.edtText->text());
-}
-
-void SearchDialog::on_tblClips_doubleClicked(const QModelIndex& proxy_index)
-{
+    QModelIndexList list = ui.tblClips->selectionModel()->selectedRows();
+    std::vector<Clip*> clips;
     QSortFilterProxyModel* proxy_model = static_cast<QSortFilterProxyModel*>(ui.tblClips->model());
-    QModelIndex index = proxy_model->mapToSource(proxy_index);
+    for (const QModelIndex& proxy_index : list)
+    {
+        QModelIndex index = proxy_model->mapToSource(proxy_index);
+        clips.push_back((*m_clips)[index.row()]);
+    }
+    return clips;
+}
 
-    Clip* clip = m_clips_model->get_clip(index.row());
+PlayerWindow* SearchDialog::get_player_window()
+{
     PlayerWindow* player_window = new PlayerWindow(m_app, this);
     player_window->setAttribute(Qt::WA_DeleteOnClose);
     player_window->setWindowModality(Qt::ApplicationModal);
-    player_window->watch_clip(clip);
-}
-
-void SearchDialog::search(const QString& text)
-{
-    m_clips = std::make_shared<std::vector<Clip*>>();
-    for (const LibraryItem* item : m_items)
-        item->find_clips(text, 0, ui.chkFavorite->isChecked(), *m_clips);
-
-    m_clips_model->set_clips(m_clips);
-    ui.tblClips->resizeRowsToContents();
+    return player_window;
 }

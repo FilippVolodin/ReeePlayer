@@ -139,7 +139,7 @@ public:
 
     void watch(File* file);
     void watch_clip(Clip* clip);
-    void repeat(std::vector<File*>&& files);
+    void repeat(std::shared_ptr<Session> session);
 
     void set_vad(std::shared_ptr<VAD>);
 

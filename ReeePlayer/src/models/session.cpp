@@ -21,7 +21,19 @@ Session::Session(Library* library, const std::vector<File*>& files)
     : m_library(library)
 {
     connect(m_library, &Library::clip_removed_sig, this, &Session::remove_clip);
-    repeat(files);
+
+    m_showed_clips.clear();
+    m_showing_clip_index = -1;
+
+    for (const File* file : files)
+    {
+        const Clips& clips = file->get_clips();
+        m_clips.insert(m_clips.end(), clips.begin(), clips.end());
+    }
+}
+
+Session::Session(Library*, const std::vector<Clip*>& clips) : m_clips(clips)
+{
 }
 
 Session::~Session()
@@ -101,30 +113,6 @@ int Session::remain_clips()
     };
 
     return std::count_if(m_clips.begin(), m_clips.end(), need_to_repeat);
-}
-
-bool Session::load_clips()
-{
-    m_clips.clear();
-    m_clips = m_library->get_all_clips();
-    m_showed_clips.clear();
-    m_showing_clip_index = -1;
-    return !m_clips.empty();
-}
-
-bool Session::repeat(const std::vector<File*>& files)
-{
-    m_clips.clear();
-    m_showed_clips.clear();
-    m_showing_clip_index = -1;
-
-    for (const File* file : files)
-    {
-        const Clips& clips = file->get_clips();
-        m_clips.insert(m_clips.end(), clips.begin(), clips.end());
-    }
-
-    return !m_clips.empty();
 }
 
 int Session::get_num_clips() const

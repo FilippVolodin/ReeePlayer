@@ -53,6 +53,33 @@ public:
     void get_clips(std::vector<Clip*>&);
     void find_clips(QStringView str, int max_clips, bool fav, std::vector<Clip*>&) const;
 
+    template<typename FileFunc>
+    void iterate_files(FileFunc ff) const
+    {
+        if (get_item_type() == ItemType::File)
+        {
+            ff(m_file);
+        }
+        else if (get_item_type() == ItemType::Folder)
+        {
+            for (LibraryItem* item : m_child_items)
+                item->iterate_files(ff);
+        }
+    }
+    template<typename FileFunc>
+    void iterate_files(FileFunc ff)
+    {
+        if (get_item_type() == ItemType::File)
+        {
+            ff(m_file);
+        }
+        else if (get_item_type() == ItemType::Folder)
+        {
+            for (LibraryItem* item : m_child_items)
+                item->iterate_files(ff);
+        }
+    }
+
     template<typename ClipFunc>
     void iterate_clips(ClipFunc cf)
     {

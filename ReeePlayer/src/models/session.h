@@ -20,6 +20,7 @@ class Session : public QObject
     Q_OBJECT
 public:
     Session(Library*, const std::vector<File*>&);
+    Session(Library*, const std::vector<Clip*>&);
     ~Session();
 
     bool has_prev_clip() const;
@@ -29,12 +30,8 @@ public:
     void remove_clip(Clip*);
     int remain_clips();
 
-    bool load_clips();
-    bool repeat(const std::vector<File*>&);
-
     int get_num_clips() const;
 private:
-
     App* m_app;
     std::vector<Clip*> m_clips;
     std::vector<Clip*> m_showed_clips;

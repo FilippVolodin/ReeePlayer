@@ -51,6 +51,7 @@ target_sources(ReeePlayer PRIVATE
     src/widgets/stats_window.cpp
     src/widgets/search_dialog.cpp
     src/widgets/export_dialog.cpp
+    src/widgets/clips_view.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
