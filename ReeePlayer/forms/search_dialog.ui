@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Search Clips</string>
+   <string>Clips Browser</string>
   </property>
   <property name="modal">
    <bool>true</bool>

@@ -84,8 +84,8 @@ void VideoTreeView::show_context_menu(const QPoint& pos)
     connect(&stats_action, &QAction::triggered, this, &VideoTreeView::stats_on_selected);
     menu.addAction(&stats_action);
 
-    QAction search_action("Search in selected", this);
-    search_action.setIcon(QIcon(":/MainWindow/search"));
+    QAction search_action("Clips Browser", this);
+    search_action.setIcon(QIcon(":/MainWindow/clips_browser"));
     connect(&search_action, &QAction::triggered, this, &VideoTreeView::search_in_selected);
     menu.addAction(&search_action);
 

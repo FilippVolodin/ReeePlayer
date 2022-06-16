@@ -253,10 +253,10 @@
   <action name="actSearchClips">
    <property name="icon">
     <iconset resource="mainwindow.qrc">
-     <normaloff>:/MainWindow/search</normaloff>:/MainWindow/search</iconset>
+     <normaloff>:/MainWindow/clips_browser</normaloff>:/MainWindow/clips_browser</iconset>
    </property>
    <property name="text">
-    <string>Search Clips</string>
+    <string>Clips Browser</string>
    </property>
    <property name="toolTip">
     <string>Search Clips</string>
