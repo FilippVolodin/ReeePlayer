@@ -1304,6 +1304,7 @@ void UIState::activate()
     ui.actJumpCutter->setVisible(false);
     ui.actJumpCutterSettings->setVisible(false);
     ui.actAddToFavorite->setVisible(false);
+    ui.actAddToFavorite->setChecked(false);
 
     ui.waveform->setVisible(false);
 
