@@ -1,0 +1,51 @@
+Visual Studio 2019 or 2022
+Qt6
+CMake
+Python 3
+
+FFmpeg
+7-Zip
+yt-dlp
+
+# Build Qt with "configure -webengine-proprietary-codecs"
+# https://wiki.qt.io/Building_Qt_6_from_Git
+
+mkdir qt6-build
+cd qt6-build
+..\qt6\configure -webengine-proprietary-codecs -release -prefix ../install
+cmake --build .
+cmake --install .
+
+# Build ReeePlayer
+
+mkdir build
+cd "build"
+set CMAKE_PREFIX_PATH=C:\Qt\6.2.2\install
+cmake ..\
+cmake --build . --config Release
+cd ..
+
+# Build pyutils
+
+cd pyutils
+build.bat
+cd ..
+
+# Prepare install folder
+
+xcopy "build\ReeePlayer\Release\ReeePlayer.exe" install\
+xcopy "build\Launcher\Release\ReeePlayerLauncher.exe" install\
+xcopy pyutils\dist\pyutils\* install\pyutils\
+
+# Copy to install folder:
+# - ffmpeg\ffmpeg.exe
+# - 7za.exe
+# - yt-dlp.exe
+# - zlib.dll
+
+copy_qt_files.bat
+
+# Create Installer
+
+"install\7za" a -mx=9 installer\ReeePlayer.7z install\*
+"%ProgramFiles(x86)%\NSIS\makensis.exe" ReeePlayer.nsi

@@ -1,0 +1,20 @@
+xcopy %QT_DIR%\bin\Qt6Core.dll install\
+xcopy %QT_DIR%\bin\Qt6Gui.dll install\
+xcopy %QT_DIR%\bin\Qt6Network.dll install\
+xcopy %QT_DIR%\bin\Qt6OpenGL.dll install\
+xcopy %QT_DIR%\bin\Qt6Positioning.dll install\
+xcopy %QT_DIR%\bin\Qt6PrintSupport.dll install\
+xcopy %QT_DIR%\bin\Qt6Qml.dll install\
+xcopy %QT_DIR%\bin\Qt6QmlModels.dll install\
+xcopy %QT_DIR%\bin\Qt6Quick.dll install\
+xcopy %QT_DIR%\bin\Qt6QuickWidgets.dll install\
+xcopy %QT_DIR%\bin\Qt6WebChannel.dll install\
+xcopy %QT_DIR%\bin\Qt6WebEngineCore.dll install\
+xcopy %QT_DIR%\bin\Qt6WebEngineWidgets.dll install\
+xcopy %QT_DIR%\bin\Qt6Widgets.dll install\
+xcopy %QT_DIR%\bin\QtWebEngineProcess.exe install\
+
+xcopy %QT_DIR%\plugins\platforms\qwindows.dll install\platforms\
+xcopy %QT_DIR%\plugins\styles\qwindowsvistastyle.dll install\styles\
+xcopy %QT_DIR%\resources\ install\resources\
+xcopy %QT_DIR%\translations\qtwebengine_locales\en-US.pak install\translations\qtwebengine_locales\
