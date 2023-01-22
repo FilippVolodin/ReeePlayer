@@ -87,16 +87,6 @@ SubtitlesView::SubtitlesView(QWidget *parent)
         emit on_insert_clicked(m_inserted_right);
     });
 
-    connect(ui.edtSubtitles, &SubtitlesTextEdit::focusIn, [this]()
-    {
-        update_background();
-    });
-
-    connect(ui.edtSubtitles, &SubtitlesTextEdit::focusOut, [this]()
-    {
-        update_background();
-    });
-
     connect(m_cmb_subs, &QComboBox::currentIndexChanged,
         [this](int index)
         {
@@ -276,22 +266,7 @@ void SubtitlesView::update_text_visibility()
 
 void SubtitlesView::update_background()
 {
-    QPalette p = ui.edtSubtitles->palette();
-    QColor color(0xFAFAFA);
-    bool can_focused = false;
-    if (ui.edtSubtitles->isEnabled() && !ui.edtSubtitles->isReadOnly())
-    {
-        if (ui.edtSubtitles->hasFocus())
-            color = QColor(0xCD, 0xF8, 0xC5);
-        else
-            color = Qt::white;
-        can_focused = true;
-    }
-    p.setColor(QPalette::Active, QPalette::Base, color);
-    p.setColor(QPalette::Inactive, QPalette::Base, color);
-    ui.edtSubtitles->setPalette(p);
-    ui.edtSubtitles->setFocusPolicy(
-        can_focused ? Qt::FocusPolicy::StrongFocus : Qt::ClickFocus);
+    ui.edtSubtitles->update_background();
 }
 
 void SubtitlesView::update_offset_buttons_text()

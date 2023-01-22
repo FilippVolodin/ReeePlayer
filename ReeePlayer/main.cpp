@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
     newArgv[argc + 2] = ARG_EXPERIMENTAL;
 
     QApplication a(newArgc, newArgv);
+    a.setStyle("Fusion");
+
     App app;
 
     a.setQuitOnLastWindowClosed(false);

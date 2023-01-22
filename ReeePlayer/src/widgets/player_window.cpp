@@ -1311,10 +1311,10 @@ void UIState::activate()
     m_pw->m_edt_loop_a_action->setVisible(false);
     m_pw->m_edt_loop_b_action->setVisible(false);
 
-    QPalette p = m_pw->palette();
-    QColor bg = m_pw->m_default_bg;
-    p.setColor(QPalette::Window, bg);
-    m_pw->setPalette(p);
+    //QPalette p = m_pw->palette();
+    //QColor bg = m_pw->m_default_bg;
+    //p.setColor(QPalette::Window, bg);
+    //m_pw->setPalette(p);
 }
 
 VideoNotLoadedState::VideoNotLoadedState(PlayerWindow* pw) : UIState(pw)
@@ -1623,10 +1623,10 @@ void WatchingClipState::activate()
         m_pw->m_subtitle_views[i]->set_show_always(v.isNull() ? true : v.toBool());
     }
 
-    QPalette p = m_pw->palette();
-    QColor bg = m_pw->m_default_bg;
-    p.setColor(QPalette::Window, bg);
-    m_pw->setPalette(p);
+    //QPalette p = m_pw->palette();
+    //QColor bg = m_pw->m_default_bg;
+    //p.setColor(QPalette::Window, bg);
+    //m_pw->setPalette(p);
 }
 
 void WatchingClipState::play()
@@ -1692,10 +1692,10 @@ void RepeatingClipState::activate()
         m_pw->m_subtitle_views[i]->set_show_always(v.isNull() ? true : v.toBool());
     }
 
-    QPalette p = m_pw->palette();
-    QColor bg = m_pw->m_default_bg;
-    p.setColor(QPalette::Window, bg);
-    m_pw->setPalette(p);
+    //QPalette p = m_pw->palette();
+    //QColor bg = m_pw->m_default_bg;
+    //p.setColor(QPalette::Window, bg);
+    //m_pw->setPalette(p);
 }
 
 void RepeatingClipState::play()

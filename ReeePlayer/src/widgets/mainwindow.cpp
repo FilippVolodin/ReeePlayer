@@ -21,6 +21,8 @@ constexpr const char* SPLITTER_STATE_KEY = "splitter_state";
 
 constexpr int MAX_FOUND_CLIPS = 100;
 
+const static QStringList ThemeNames = { "Light", "Dark" };
+
 MainWindow::MainWindow(App* app, QWidget *parent)
     : QMainWindow(parent), m_app(app)
 {
@@ -30,7 +32,24 @@ MainWindow::MainWindow(App* app, QWidget *parent)
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui.mainToolBar->addWidget(spacer);
 
-    QLabel* lblPlayer = new QLabel("Player: ", this);
+    QLabel* lblTheme = new QLabel("Theme: ", this);
+    ui.mainToolBar->addWidget(lblTheme);
+
+    QComboBox* cbTheme = new QComboBox(this);
+    for (const QString& t : ThemeNames)
+        cbTheme->addItem(t);
+
+    QString theme = app->get_setting("gui", "theme", "Light").toString();
+    int theme_id = ThemeNames.indexOf(theme);
+    if (theme_id == -1)
+        theme_id = 0;
+
+    cbTheme->setCurrentIndex(theme_id);
+    connect(cbTheme, &QComboBox::currentIndexChanged, this, &MainWindow::on_theme_changed);
+    ui.mainToolBar->addWidget(cbTheme);
+    apply_theme(static_cast<Theme>(theme_id));
+
+    QLabel* lblPlayer = new QLabel(" Player: ", this);
     ui.mainToolBar->addWidget(lblPlayer);
 
     QComboBox* cbPlayer = new QComboBox(this);
@@ -369,6 +388,50 @@ void MainWindow::on_library_view_collapsed(const QModelIndex& index)
 {
     LibraryItem* item = m_library_tree->get_item(index);
     m_library_tree->collapsed(index);
+}
+
+void MainWindow::on_theme_changed(int index)
+{
+    m_app->set_setting("gui", "theme", ThemeNames[index]);
+    apply_theme(static_cast<Theme>(index));
+}
+
+void MainWindow::apply_theme(Theme theme)
+{
+    switch (theme)
+    {
+    case Theme::Dark:
+    {
+        QPalette p;
+        p.setColor(QPalette::Window, QColor(53, 53, 53));
+        p.setColor(QPalette::WindowText, Qt::white);
+        p.setColor(QPalette::Disabled, QPalette::WindowText, QColor(127, 127, 127));
+        p.setColor(QPalette::Base, QColor(42, 42, 42));
+        p.setColor(QPalette::Disabled, QPalette::Base, QColor(53, 53, 53));
+        p.setColor(QPalette::AlternateBase, QColor(66, 66, 66));
+        p.setColor(QPalette::ToolTipBase, Qt::white);
+        p.setColor(QPalette::ToolTipText, Qt::white);
+        p.setColor(QPalette::Text, Qt::white);
+        p.setColor(QPalette::Disabled, QPalette::Text, QColor(127, 127, 127));
+        p.setColor(QPalette::Dark, QColor(35, 35, 35));
+        p.setColor(QPalette::Shadow, QColor(20, 20, 20));
+        p.setColor(QPalette::Button, QColor(53, 53, 53));
+        p.setColor(QPalette::ButtonText, Qt::white);
+        p.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(127, 127, 127));
+        p.setColor(QPalette::BrightText, Qt::red);
+        p.setColor(QPalette::Link, QColor(42, 130, 218));
+        p.setColor(QPalette::Highlight, QColor(42, 130, 218));
+        p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
+        p.setColor(QPalette::HighlightedText, Qt::white);
+        p.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
+        qApp->setPalette(p);
+        break;
+    }
+    default:
+    {
+        qApp->setPalette(QPalette());
+    }
+    }
 }
 
 void MainWindow::set_state(State state)

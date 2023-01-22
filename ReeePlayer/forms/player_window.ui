@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>834</width>
-    <height>739</height>
+    <width>1052</width>
+    <height>769</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -157,7 +157,7 @@ QSlider::sub-page:horizontal {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>834</width>
+     <width>1052</width>
      <height>22</height>
     </rect>
    </property>

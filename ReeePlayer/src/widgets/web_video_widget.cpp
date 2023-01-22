@@ -1,9 +1,13 @@
 #include "web_video_widget.h"
 #include "emitter.h"
 
+#include <QWebEngineSettings>
+
 WebVideoWidget::WebVideoWidget(QWidget* parent)
     : QWebEngineView(parent)
 {
+    settings()->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, false);
+
     m_emitter = std::make_unique<Emitter>();
 
     QFile html_file(":/player.html");

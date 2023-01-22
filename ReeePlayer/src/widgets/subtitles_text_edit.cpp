@@ -5,6 +5,48 @@ SubtitlesTextEdit::SubtitlesTextEdit(QWidget * parent)
     : QPlainTextEdit(parent)
 {
     installEventFilter(this);
+
+    QPalette p = palette();
+    //m_default_base_color_name = p.base().color().name();
+    m_default_base_color = p.color(QPalette::Base); // p.base().color();
+    m_default_border_color = p.window().color().darker(140).lighter(108);
+
+    setFrameShape(QFrame::Shape::StyledPanel);
+
+    connect(this, &SubtitlesTextEdit::focusIn, [this]()
+    {
+        update_background();
+    });
+
+    connect(this, &SubtitlesTextEdit::focusOut, [this]()
+    {
+        update_background();
+    });
+}
+
+SubtitlesTextEdit::~SubtitlesTextEdit()
+{
+}
+
+void SubtitlesTextEdit::update_background()
+{
+    QColor base_color = QPalette().color(QPalette::Disabled, QPalette::Base);
+    QColor border_color = m_default_border_color;
+    //QString base_color_name = QPalette().color(QPalette::Disabled, QPalette::Base).name();
+    bool can_focused = false;
+    if (isEnabled() && !isReadOnly())
+    {
+        border_color = hasFocus() ? Qt::red : QPalette().color(QPalette::AlternateBase);
+        base_color = m_default_base_color;
+        can_focused = true;
+    }
+
+    QString style_sheet = QString(".SubtitlesTextEdit {background-color: %1; border: 1px solid %2;}")
+        .arg(base_color.name()).arg(border_color.name());
+    setStyleSheet(style_sheet);
+
+    setFocusPolicy(
+        can_focused ? Qt::FocusPolicy::StrongFocus : Qt::ClickFocus);
 }
 
 void SubtitlesTextEdit::focusInEvent(QFocusEvent * e)
@@ -37,4 +79,20 @@ bool SubtitlesTextEdit::eventFilter(QObject* object, QEvent* event)
     }
 
     return res;
+}
+
+void SubtitlesTextEdit::paintEvent(QPaintEvent* e)
+{
+    QPlainTextEdit::paintEvent(e);
+    return;
+    parentWidget();
+    QPainter painter(viewport());
+    painter.save();
+
+    QPen thePen(Qt::red);
+    thePen.setCosmetic(false);
+    painter.setPen(thePen);
+    QRect rec = rect();
+    painter.drawRect(rect().adjusted(0, 0, -1, -1));
+    painter.restore();
 }

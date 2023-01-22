@@ -11,6 +11,8 @@ class File;
 class Clip;
 class LibraryItem;
 
+enum class Theme { Light, Dark };
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -53,6 +55,9 @@ private:
 
     void on_library_view_expanded(const QModelIndex& index);
     void on_library_view_collapsed(const QModelIndex& index);
+
+    void on_theme_changed(int index);
+    void apply_theme(Theme);
 
     void set_state(State);
     void set_default_ui(State);
