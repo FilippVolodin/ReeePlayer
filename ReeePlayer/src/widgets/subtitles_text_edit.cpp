@@ -11,7 +11,6 @@ SubtitlesTextEdit::SubtitlesTextEdit(QWidget * parent)
     m_default_base_color = p.color(QPalette::Base); // p.base().color();
     m_default_border_color = p.window().color().darker(140).lighter(108);
 
-    setFrameShape(QFrame::Shape::StyledPanel);
 
     connect(this, &SubtitlesTextEdit::focusIn, [this]()
     {
@@ -36,12 +35,12 @@ void SubtitlesTextEdit::update_background()
     bool can_focused = false;
     if (isEnabled() && !isReadOnly())
     {
-        border_color = hasFocus() ? Qt::red : QPalette().color(QPalette::AlternateBase);
+        border_color = hasFocus() ? QColor("#54a0ec") : QPalette().color(QPalette::AlternateBase);
         base_color = m_default_base_color;
         can_focused = true;
     }
 
-    QString style_sheet = QString(".SubtitlesTextEdit {background-color: %1; border: 1px solid %2;}")
+    QString style_sheet = QString(".SubtitlesTextEdit {background-color: %1; border: 2px solid %2;}")
         .arg(base_color.name()).arg(border_color.name());
     setStyleSheet(style_sheet);
 

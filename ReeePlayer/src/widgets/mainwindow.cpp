@@ -424,12 +424,12 @@ void MainWindow::apply_theme(Theme theme)
         p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
         p.setColor(QPalette::HighlightedText, Qt::white);
         p.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
-        qApp->setPalette(p);
+        QApplication::setPalette(p);
         break;
     }
     default:
     {
-        qApp->setPalette(QPalette());
+        QApplication::setPalette(QPalette());
     }
     }
 }
