@@ -66,7 +66,7 @@ target_sources(ReeePlayer PRIVATE
 	src/models/waveform.cpp	
 )
 	
-target_include_directories(ReeePlayer PRIVATE include src)
+target_include_directories(ReeePlayer PRIVATE 3rdparty/vlc/include src src/models)
 
 target_precompile_headers(ReeePlayer PUBLIC src/pch.h)
 
@@ -80,6 +80,6 @@ target_link_libraries(ReeePlayer PRIVATE
     Qt6::Network    
     Qt6::WebEngineWidgets    
 	QSubtitles
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlc.lib
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/libvlccore.lib
+	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/vlc/lib/libvlc.lib
+	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/vlc/lib/libvlccore.lib
 )
