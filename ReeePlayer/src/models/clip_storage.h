@@ -4,6 +4,12 @@
 class File;
 class Library;
 
+namespace srs
+{
+    class ICard;
+    using ICardUPtr = std::unique_ptr<ICard>;
+}
+
 class Clip
 {
     friend File;
@@ -18,6 +24,7 @@ class Clip
     std::time_t m_rep_time = 0;
     std::vector<std::time_t> m_repeats;
     bool m_is_favorite = false;
+    srs::ICardUPtr m_card;
 
     void set_file(File*);
 public:
@@ -54,6 +61,10 @@ public:
 
     bool is_favorite() const;
     void set_favorite(bool);
+
+    srs::ICard* get_card();
+    const srs::ICard* get_card() const;
+    void set_card(srs::ICardUPtr);
 };
 
 using ClipsPtr = std::shared_ptr<std::vector<Clip*>>;

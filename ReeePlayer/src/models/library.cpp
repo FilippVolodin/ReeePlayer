@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "library.h"
 #include "clip_storage.h"
+#include "srs_simple_system.h"
 
 static std::set<QString> audio_exts = { "3ga", "669", "a52", "aac", "ac3", "adt", "adts", "aif", "aifc", "aiff",
                          "amb", "amr", "aob", "ape", "au", "awb", "caf", "dts", "dsf", "dff", "flac", "it", "kar",
@@ -77,9 +78,27 @@ File* Library::load_file(const QString& path)
         for (int i = 0; i < json_clips.size(); ++i)
         {
             Clip* clip = new Clip();
+            srs::ICardUPtr card;
             QString text1;
             QString text2;
             QJsonObject json_clip = json_clips[i].toObject();
+            if (json_clip.contains("card") && json_clip["card"].isObject())
+            {
+                QJsonObject json_card = json_clip["card"].toObject();
+                if (json_card.contains("type") && json_card["type"].isString())
+                {
+                    QString type = json_card["type"].toString();
+                    if (type == "simple")
+                        card = std::make_unique<srs::simple::Card>(json_card);
+                }
+            }
+            else
+            {
+                // Legacy
+                card = std::make_unique<srs::simple::Card>(json_clip);
+            }
+            clip->set_card(std::move(card));
+
             if (json_clip.contains("uid") && json_clip["uid"].isString())
                 clip->set_uid(json_clip["uid"].toString());
             if (json_clip.contains("added") && json_clip["added"].isDouble())

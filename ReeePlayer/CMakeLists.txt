@@ -64,6 +64,8 @@ target_sources(ReeePlayer PRIVATE
 	src/models/repetition_model.cpp
 	src/models/vad.cpp
 	src/models/waveform.cpp	
+    src/models/srs_simple_system.cpp
+    src/models/srs_isystem.cpp    
 )
 	
 target_include_directories(ReeePlayer PRIVATE 3rdparty/vlc/include src src/models)

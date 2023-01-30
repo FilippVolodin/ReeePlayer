@@ -172,6 +172,21 @@ void Clip::set_favorite(bool favorite)
     }
 }
 
+srs::ICard* Clip::get_card()
+{
+    return m_card.get();
+}
+
+const srs::ICard* Clip::get_card() const
+{
+    return m_card.get();
+}
+
+void Clip::set_card(srs::ICardUPtr card)
+{
+    m_card = std::move(card);
+}
+
 File::File(Library* library, const QString& path)
     : m_library(library), m_path(path)
 {
