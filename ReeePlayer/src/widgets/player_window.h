@@ -171,9 +171,6 @@ private:
     void on_actJumpCutter_triggered(bool);
     void on_actAddToFavorite_triggered(bool);
 
-    void on_btnMinus_clicked(bool);
-    void on_btnPlus_clicked(bool);
-
     void on_player_time_changed(int);
     void on_player_playing();
     void on_player_paused();
@@ -206,7 +203,6 @@ private:
     void show_video();
 
     void show_clip();
-    void refresh_clip_info();
 
     bool remove_clip_confirmation();
     void update_clip_interval(Clip*);
@@ -263,8 +259,6 @@ private:
     File* m_file = nullptr;
     Clip* m_clip = nullptr;
     bool m_close_after_stopped = false;
-
-    float m_next_level = 0.0;
 
     float m_playback_rate = 1.0;
 

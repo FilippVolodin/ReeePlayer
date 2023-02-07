@@ -15,6 +15,9 @@
 #include "video_widget.h"
 #include "web_video_widget.h"
 #include "emitter.h"
+#include <time.h>
+#include <srs_interfaces.h>
+#include <srs.h>
 
 struct PlaybackRateItem
 {
@@ -507,10 +510,11 @@ void PlayerWindow::on_actNextClip_triggered()
 
     if (!m_session->has_next_clip())
     {
-        // We don't repeated clip in this session
-        m_clip->set_level(m_next_level);
-        int64_t cur_time = now();
-        m_clip->add_repeat(cur_time);
+        // We didn't repeat clip in this session
+        TimePoint cur = now();
+        if (m_clip->get_card() != nullptr)
+            m_clip->get_card()->repeat(cur, 2);
+        m_clip->add_repeat(cur);
         ++m_num_repeated_clips;
         m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(m_num_repeated_clips));
     }
@@ -576,18 +580,6 @@ void PlayerWindow::on_actAddToFavorite_triggered(bool checked)
         m_clip->set_favorite(checked);
         m_library->save();
     }
-}
-
-void PlayerWindow::on_btnMinus_clicked(bool)
-{
-    m_next_level -= 1.0;
-    refresh_clip_info();
-}
-
-void PlayerWindow::on_btnPlus_clicked(bool)
-{
-    m_next_level += 1.0;
-    refresh_clip_info();
 }
 
 void PlayerWindow::on_player_time_changed(int time)
@@ -864,6 +856,7 @@ void PlayerWindow::show_clip()
         set_state(std::make_shared<VideoNotLoadedState>(this));
         QMessageBox::information(this, tr("Information"),
             tr("No clips to repeat"));
+        close();
         return;
     }
 
@@ -892,11 +885,6 @@ void PlayerWindow::show_clip()
         m_subtitle_views[i]->set_text(m_clip->get_subtitle(i));
     }
 
-    time_t elapsed = now() - m_clip->get_rep_time();
-    m_next_level = get_next_level(elapsed, m_clip->get_level());
-
-    refresh_clip_info();
-
     if (m_session)
     {
         int remains = m_session->remain_clips();
@@ -909,25 +897,6 @@ void PlayerWindow::show_clip()
 
         ui.actPrevClip->setEnabled(m_session->has_prev_clip());
     }
-}
-
-void PlayerWindow::refresh_clip_info()
-{
-    QString info = QString::asprintf("%f\n%f (%+f)",
-        m_clip->get_level(), m_next_level, m_next_level - m_clip->get_level());
-
-    time_t best_rep_interval = get_repetititon_interval(m_clip->get_level()).begin;
-    time_t next_rep_interval = get_repetititon_interval(m_next_level).begin;
-
-    time_t elapsed = now() - m_clip->get_rep_time();
-    time_t remain = best_rep_interval - elapsed;
-
-    QString level_str = QString::asprintf("%f", m_clip->get_level());
-    QString next_level_str = QString::asprintf("%f", m_next_level);
-    QString diff_str = QString::asprintf("%+f", m_next_level - m_clip->get_level());
-    QString last_rep_str = get_interval_str(-elapsed);
-    QString best_rep_str = m_clip->get_level() > 0.001 ? get_interval_str(remain) : "";
-    QString next_rep_str = get_interval_str(next_rep_interval);
 }
 
 bool PlayerWindow::remove_clip_confirmation()
@@ -1100,9 +1069,13 @@ void PlayerWindow::rewind(int delta_ms)
 
 void PlayerWindow::save_new_clip()
 {
+    // TODO get new clip in model, not here
     Clip* new_clip = new Clip();
+    srs::ICardUPtr card = m_app->get_card_factory()->create();
+    new_clip->set_card(std::move(card));
     new_clip->generate_uid();
     new_clip->set_adding_time(now());
+
     update_clip_interval(new_clip);
     update_clip_subtitles(new_clip);
     new_clip->set_favorite(ui.actAddToFavorite->isChecked());
@@ -1223,9 +1196,10 @@ std::pair<int, int> PlayerWindow::get_num_todays_added_clips() const
     {
         for (const Clip* clip : file->get_clips())
         {
-            if (clip->get_adding_time() != 0)
+            if (clip->get_adding_time() != TimePoint(Duration::zero()))
             {
-                QDate date = QDateTime::fromSecsSinceEpoch(clip->get_adding_time()).date();
+                auto time_sec = clip->get_adding_time().time_since_epoch().count();
+                QDate date = QDateTime::fromSecsSinceEpoch(time_sec).date();
                 if (date == today)
                     ++count;
             }
@@ -1254,9 +1228,10 @@ int PlayerWindow::get_num_todays_repeated_clips() const
     {
         for (const Clip* clip : file->get_clips())
         {
-            for (time_t time : clip->get_repeats())
+            for (TimePoint time : clip->get_repeats())
             {
-                QDate date = QDateTime::fromSecsSinceEpoch(time).date();
+                auto time_sec = time.time_since_epoch().count();
+                QDate date = QDateTime::fromSecsSinceEpoch(time_sec).date();
                 if (date == today)
                     ++res;
             }

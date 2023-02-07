@@ -1,13 +1,15 @@
 #ifndef ICLIP_H
 #define ICLIP_H
 
+#include <time_types.h>
+#include <srs_interfaces.h>
+
 class File;
 class Library;
 
 namespace srs
 {
-    class ICard;
-    using ICardUPtr = std::unique_ptr<ICard>;
+    class ICardFactory;
 }
 
 class Clip
@@ -19,10 +21,8 @@ class Clip
     std::time_t m_begin = 0;
     std::time_t m_end = 0;
     std::vector<QString> m_subtitles;
-    float m_level = 0.0f;
-    std::time_t m_added = 0;
-    std::time_t m_rep_time = 0;
-    std::vector<std::time_t> m_repeats;
+    TimePoint m_added;
+    std::vector<TimePoint> m_repeats;
     bool m_is_favorite = false;
     srs::ICardUPtr m_card;
 
@@ -42,18 +42,12 @@ public:
     std::time_t get_end() const;
     void set_end(std::time_t);
 
-    std::time_t get_adding_time() const;
-    void set_adding_time(std::time_t);
+    TimePoint get_adding_time() const;
+    void set_adding_time(TimePoint);
 
-    std::time_t get_rep_time() const;
-    void set_rep_time(std::time_t);
-
-    void add_repeat(std::time_t);
-    const std::vector<std::time_t>& get_repeats() const;
-    void set_repeats(std::vector<std::time_t>);
-
-    float get_level() const;
-    void set_level(float);
+    void add_repeat(TimePoint);
+    const std::vector<TimePoint>& get_repeats() const;
+    void set_repeats(std::vector<TimePoint>);
 
     QString get_subtitle(int index) const;
     const std::vector<QString>& get_subtitles() const;
@@ -117,6 +111,9 @@ public:
 };
 
 bool export_txt(const std::vector<Clip*>&, const QString& filename);
+
+File* load_file(Library* library, const QString& path, const srs::ICardFactory* card_factory);
+void save_file(const File* file);
 
 #endif // !ICLIP_H
 

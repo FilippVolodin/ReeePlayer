@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "library.h"
 #include "clip_storage.h"
-#include "srs_simple_system.h"
+#include <srs.h>
 
 static std::set<QString> audio_exts = { "3ga", "669", "a52", "aac", "ac3", "adt", "adts", "aif", "aifc", "aiff",
                          "amb", "amr", "aob", "ape", "au", "awb", "caf", "dts", "dsf", "dff", "flac", "it", "kar",
@@ -28,10 +28,19 @@ bool is_ext_match(const QString& ext)
 Library::Library(QSettings* settings, const QString& root_path)
     : m_settings(settings), m_root_path(root_path)
 {
+}
+
+Library::~Library()
+{
+    delete m_root;
+}
+
+void Library::load(const srs::ICardFactory* card_factory)
+{
     m_block_notifications = true;
 
     m_root = new LibraryItem();
-    LibraryItem* dir_item = scan_folder(m_root_path);
+    LibraryItem* dir_item = scan_folder(m_root_path, true, card_factory);
     if (dir_item != nullptr)
         m_root->append_child(dir_item);
 
@@ -44,138 +53,6 @@ Library::Library(QSettings* settings, const QString& root_path)
     };
     m_root->iterate_clips(set_uid);
     save();
-}
-
-Library::~Library()
-{
-    delete m_root;
-}
-
-File* Library::load_file(const QString& path)
-{
-    File* file = new File(this, path);
-    QFileInfo info(path);
-    QString json_file = info.absolutePath() + "/" + info.completeBaseName() + ".user.json";
-
-    QFile in_file(json_file);
-    if (!in_file.open(QIODevice::ReadOnly))
-        return file;
-
-    QByteArray text = in_file.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(text));
-
-    QJsonObject json = doc.object();
-
-    if (json.contains("player_time") && json["player_time"].isDouble())
-        file->set_player_time(json["player_time"].toInt());
-
-    if (json.contains("length") && json["length"].isDouble())
-        file->set_length(json["length"].toInt());
-
-    if (json.contains("clips") && json["clips"].isArray())
-    {
-        QJsonArray json_clips = json["clips"].toArray();
-        for (int i = 0; i < json_clips.size(); ++i)
-        {
-            Clip* clip = new Clip();
-            srs::ICardUPtr card;
-            QString text1;
-            QString text2;
-            QJsonObject json_clip = json_clips[i].toObject();
-            if (json_clip.contains("card") && json_clip["card"].isObject())
-            {
-                QJsonObject json_card = json_clip["card"].toObject();
-                if (json_card.contains("type") && json_card["type"].isString())
-                {
-                    QString type = json_card["type"].toString();
-                    if (type == "simple")
-                        card = std::make_unique<srs::simple::Card>(json_card);
-                }
-            }
-            else
-            {
-                // Legacy
-                card = std::make_unique<srs::simple::Card>(json_clip);
-            }
-            clip->set_card(std::move(card));
-
-            if (json_clip.contains("uid") && json_clip["uid"].isString())
-                clip->set_uid(json_clip["uid"].toString());
-            if (json_clip.contains("added") && json_clip["added"].isDouble())
-                clip->set_adding_time(json_clip["added"].toInt());
-            if (json_clip.contains("begin") && json_clip["begin"].isDouble())
-                clip->set_begin(json_clip["begin"].toInt());
-            if (json_clip.contains("end") && json_clip["end"].isDouble())
-                clip->set_end(json_clip["end"].toInt());
-            if (json_clip.contains("level") && json_clip["level"].isDouble())
-                clip->set_level(json_clip["level"].toDouble());
-            if (json_clip.contains("favorite") && json_clip["favorite"].isBool())
-                clip->set_favorite(json_clip["favorite"].toBool());
-            if (json_clip.contains("repeated") && json_clip["repeated"].isDouble())
-                clip->set_rep_time(json_clip["repeated"].toInteger());
-            if (json_clip.contains("repeats") && json_clip["repeats"].isArray())
-            {
-                QJsonArray repeats_arr = json_clip["repeats"].toArray();
-                std::vector<std::time_t> repeats;
-                repeats.reserve(repeats_arr.size());
-                for (QJsonValue value : repeats_arr)
-                {
-                    if (value.isDouble())
-                        repeats.push_back(value.toDouble());
-                }
-                clip->set_repeats(std::move(repeats));
-            }
-            if (json_clip.contains("text1") && json_clip["text1"].isString())
-                text1 = json_clip["text1"].toString();
-            if (json_clip.contains("text2") && json_clip["text2"].isString())
-                text2 = json_clip["text2"].toString();
-            clip->set_subtitles({ text1, text2 });
-            file->add_clip(clip);
-        }
-    }
-    return file;
-}
-
-void Library::save_file(const File* file) const
-{
-    QJsonObject json;
-    QJsonArray json_clips;
-
-    json["player_time"] = file->get_player_time();
-    json["length"] = file->get_length();
-
-    for (const Clip* clip : file->get_clips())
-    {
-        const std::vector<std::time_t>& repeats = clip->get_repeats();
-        QJsonArray repeats_arr;
-        std::copy(repeats.begin(), repeats.end(), std::back_inserter(repeats_arr));
-
-        QJsonObject json_clip;
-        json_clip["uid"] = clip->get_uid();
-        if(clip->get_adding_time() != 0)
-            json_clip["added"] = clip->get_adding_time();
-        json_clip["begin"] = clip->get_begin();
-        json_clip["end"] = clip->get_end();
-        json_clip["level"] = clip->get_level();
-        if (clip->is_favorite())
-            json_clip["favorite"] = clip->is_favorite();
-        json_clip["repeated"] = clip->get_rep_time();
-        if (!repeats_arr.isEmpty())
-            json_clip["repeats"] = repeats_arr;
-        json_clip["text1"] = clip->get_subtitle(0);
-        json_clip["text2"] = clip->get_subtitle(1);
-        json_clips.append(json_clip);
-    }
-
-    json["clips"] = json_clips;
-
-    QFileInfo info(file->get_path());
-    QString json_file = info.absolutePath() + "/" + info.completeBaseName() + ".user.json";
-
-    QFile out_file(json_file);
-    if (!out_file.open(QIODevice::WriteOnly))
-        return;
-    out_file.write(QJsonDocument(json).toJson());
 }
 
 void Library::clip_added(Clip* clip)
@@ -238,7 +115,7 @@ void Library::save()
     m_changed_files.clear();
 }
 
-LibraryItem* Library::scan_folder(const QString& path, bool is_root)
+LibraryItem* Library::scan_folder(const QString& path, bool is_root, const srs::ICardFactory* card_factory)
 {
     QDir dir(path);
     dir.setFilter(
@@ -255,7 +132,7 @@ LibraryItem* Library::scan_folder(const QString& path, bool is_root)
         if (file_info.isDir())
         {
             LibraryItem* dir_item =
-                scan_folder(file_info.canonicalFilePath(), false);
+                scan_folder(file_info.canonicalFilePath(), false, card_factory);
             if (dir_item != nullptr)
             {
                 dir_item->set_parent(cur_item);
@@ -272,7 +149,7 @@ LibraryItem* Library::scan_folder(const QString& path, bool is_root)
                     QDir(m_root_path).relativeFilePath(abs_path);
 
                 LibraryItem* item = new LibraryItem(abs_path, cur_item);
-                item->m_file = load_file(abs_path);
+                item->m_file = load_file(this, abs_path, card_factory);
                 dir_items.push_back(item);
             }
         }

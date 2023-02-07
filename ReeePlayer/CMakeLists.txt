@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.0)
 
 project(ReeePlayer VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
@@ -64,8 +64,11 @@ target_sources(ReeePlayer PRIVATE
 	src/models/repetition_model.cpp
 	src/models/vad.cpp
 	src/models/waveform.cpp	
-    src/models/srs_simple_system.cpp
-    src/models/srs_isystem.cpp    
+    src/models/time_types.cpp    
+    src/models/srs_interfaces.cpp    
+    src/models/srs_simple.cpp
+    src/models/srs_fsrs.cpp
+    src/models/srs.cpp
 )
 	
 target_include_directories(ReeePlayer PRIVATE 3rdparty/vlc/include src src/models)

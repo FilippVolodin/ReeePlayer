@@ -35,10 +35,11 @@ QVariant ClipModel::data(const QModelIndex & index, int role) const
         case 2: return clip->get_subtitle(1);
         case 3:
         {
-            if (clip->get_adding_time() != 0)
+            if (clip->get_adding_time() != TimePoint(Duration::zero()))
             {
-                QDateTime time = QDateTime::fromSecsSinceEpoch(clip->get_adding_time());
-                return time.date(); // .toString("dd.MM.yyyy");
+                auto time_sec = clip->get_adding_time().time_since_epoch().count();
+                QDateTime time = QDateTime::fromSecsSinceEpoch(time_sec);
+                return time.date();
             }
             else
                 return QVariant();

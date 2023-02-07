@@ -60,6 +60,7 @@ void WebVideoWidget::toggle_pause()
 
 void WebVideoWidget::stop()
 {
+    page()->runJavaScript("pause();");
 }
 
 bool WebVideoWidget::is_playing() const

@@ -1,4 +1,4 @@
-#ifndef LIBRARY_H
+﻿#ifndef LIBRARY_H
 #define LIBRARY_H
 
 #include "library_item.h"
@@ -6,12 +6,19 @@
 class Clip;
 class File;
 
+namespace srs
+{
+    class ICardFactory;
+}
+
 class Library : public QObject
 {
     Q_OBJECT
 public:
     Library(QSettings*, const QString& root_path);
     ~Library();
+
+    void load(const srs::ICardFactory*);
 
     void clip_added(Clip*);
     void clip_removed(Clip*);
@@ -30,10 +37,7 @@ signals:
     void clip_removed_sig(Clip*);
 
 private:
-    LibraryItem* scan_folder(const QString& path, bool is_root = true);
-
-    File* load_file(const QString&);
-    void save_file(const File*) const;
+    LibraryItem* scan_folder(const QString& path, bool is_root, const srs::ICardFactory*);
 
     LibraryItem* m_root;
     QString m_root_path;

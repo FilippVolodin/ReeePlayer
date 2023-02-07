@@ -1,3 +1,4 @@
+#include "app.h"
 #include "pch.h"
 #include "app.h"
 
@@ -18,6 +19,8 @@ App::App()
         m_settings = std::make_unique<QSettings>(paths.first() + "/settings.ini", QSettings::Format::IniFormat);
     else
         m_settings = std::make_unique<QSettings>();
+
+    m_card_factory = std::make_unique<srs::CardFactory>();
 }
 
 App::~App()
@@ -53,6 +56,7 @@ void App::open_dir(const QString& filename)
     if (QFileInfo(filename).exists())
     {
         m_library = std::make_unique<Library>(get_settings(), filename);
+        m_library->load(m_card_factory.get());
         m_settings->setValue("session/recent", filename);
     }
 }
@@ -173,6 +177,11 @@ void App::save_subtitle_priority(const QString& video_file, const SubsCollection
         res.push_back(sp_item.suffix + QString::number(sp_item.index));
     }
     m_settings->setValue("main/subs_priority", res.join("/"));
+}
+
+const srs::ICardFactory* App::get_card_factory() const
+{
+    return m_card_factory.get();
 }
 
 SubsCollection App::get_subtitles(const QString& video_file, const QString& priorities)

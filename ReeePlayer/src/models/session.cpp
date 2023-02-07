@@ -4,16 +4,19 @@
 #include "clip_storage.h"
 #include "app.h"
 #include "library.h"
+#include <srs_interfaces.h>
 
-ClipPriorityCmp::ClipPriorityCmp(time_t cur_time)
+ClipPriorityCmp::ClipPriorityCmp(TimePoint cur_time)
     : m_cur_time(cur_time)
 {
 }
 
 bool ClipPriorityCmp::operator()(const Clip* lhs, const Clip* rhs)
 {
-    float p1 = get_priority(m_cur_time, lhs->get_rep_time(), lhs->get_level());
-    float p2 = get_priority(m_cur_time, rhs->get_rep_time(), rhs->get_level());
+    float p1 = lhs->get_card() != nullptr ?
+        lhs->get_card()->get_priority(m_cur_time) : 0.0f;
+    float p2 = rhs->get_card() != nullptr ?
+        rhs->get_card()->get_priority(m_cur_time) : 0.0f;
     return p1 > p2;
 }
 
@@ -104,12 +107,11 @@ void Session::remove_clip(Clip* clip)
 
 int Session::remain_clips()
 {
-    int64_t cur = now();
+    TimePoint cur_time = now();
 
-    auto need_to_repeat = [cur](const Clip* clip) -> bool
+    auto need_to_repeat = [cur_time](const Clip* clip) -> bool
     {
-        int64_t ri = get_repetititon_interval(clip->get_level()).begin;
-        return cur >= (clip->get_rep_time() + ri) || clip->get_level() < 0.001;
+        return clip->get_card() != nullptr ? clip->get_card()->is_due(cur_time) : false;
     };
 
     return std::count_if(m_clips.begin(), m_clips.end(), need_to_repeat);

@@ -2,9 +2,15 @@
 #define APP_H
 
 #include <QSettings>
+#include <srs.h>
 
 class Project;
 class Library;
+
+namespace srs
+{
+    class ICardFactory;
+}
 
 struct SubsCollection
 {
@@ -34,6 +40,8 @@ public:
 
     SubsCollection get_subtitles(const QString& video_file);
     void save_subtitle_priority(const QString& video_file, const SubsCollection&);
+
+    const srs::ICardFactory* get_card_factory() const;
 private:
     SubsCollection get_subtitles(const QString& video_file, const QString& priorities);
 
@@ -41,6 +49,7 @@ private:
 
     std::unique_ptr<QSettings> m_settings;
     std::unique_ptr<Library> m_library;
+    std::unique_ptr<srs::ICardFactory> m_card_factory;
 };
 
 #endif // !APP_H

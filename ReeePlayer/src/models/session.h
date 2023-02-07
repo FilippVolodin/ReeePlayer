@@ -1,6 +1,8 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+#include <time_types.h>
+
 class Clip;
 class File;
 class IClipStorage;
@@ -10,8 +12,8 @@ class Library;
 
 struct ClipPriorityCmp
 {
-    ClipPriorityCmp(time_t cur_time);
-    int64_t m_cur_time;
+    ClipPriorityCmp(TimePoint cur_time);
+    TimePoint m_cur_time;
     bool operator()(const Clip* lhs, const Clip* rhs);
 };
 

@@ -9,39 +9,49 @@ StatsWindow::StatsWindow(const std::vector<File*>& files, QWidget *parent)
 {
     ui.setupUi(this);
 
-    time_t first = std::numeric_limits<time_t>::max();
-    time_t last = 0;
+    bool seen_any_time = false;
+    TimePoint first;
+    TimePoint last;
 
-    auto update_first_last = [&](time_t time)
+    auto update_first_last = [&](TimePoint time)
     {
-        if (time < first && time != 0)
+        if (!seen_any_time)
+        {
             first = time;
-        if (time > last && time != 0)
             last = time;
+            seen_any_time = true;
+        }
+        else
+        {
+            if (time < first)
+                first = time;
+            if (time > last)
+                last = time;
+        }
     };
 
     for (const File* file : files)
         for (const Clip* clip : file->get_clips())
         {
             update_first_last(clip->get_adding_time());
-            for (time_t time : clip->get_repeats())
+            for (TimePoint time : clip->get_repeats())
                 update_first_last(time);
         }
 
-    if (last == 0)
+    if (!seen_any_time)
         return;
 
-    QDate first_day = QDateTime::fromSecsSinceEpoch(first).date();
-    QDate last_day = QDateTime::fromSecsSinceEpoch(last).date();
+    QDate first_day = QDateTime::fromSecsSinceEpoch(first.time_since_epoch().count()).date();
+    QDate last_day = QDateTime::fromSecsSinceEpoch(last.time_since_epoch().count()).date();
     int num_days = first_day.daysTo(last_day) + 1;
     
     m_num_added_clips.resize(num_days, 0);
     m_num_repeated_clips.resize(num_days, 0);
     m_total_num_clips.resize(num_days, 0);
 
-    auto get_rel_day = [first_day](time_t time)
+    auto get_rel_day = [first_day](TimePoint time)
     {
-        QDate date = QDateTime::fromSecsSinceEpoch(time).date();
+        QDate date = QDateTime::fromSecsSinceEpoch(time.time_since_epoch().count()).date();
         return first_day.daysTo(date);
     };
 
@@ -55,7 +65,7 @@ StatsWindow::StatsWindow(const std::vector<File*>& files, QWidget *parent)
                 ++m_total_num_clips[rel_day];
             }
 
-            for (time_t time : clip->get_repeats())
+            for (TimePoint time : clip->get_repeats())
             {
                 rel_day = get_rel_day(time);
                 if (rel_day >= 0 && rel_day < num_days)

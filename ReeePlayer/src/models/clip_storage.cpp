@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "clip_storage.h"
 #include "library.h"
+#include <srs_simple.h>
+#include <srs_fsrs.h>
+#include <srs.h>
 
 void Clip::set_file(File* file)
 {
@@ -71,12 +74,12 @@ void Clip::set_end(std::time_t end)
     }
 }
 
-std::time_t Clip::get_adding_time() const
+TimePoint Clip::get_adding_time() const
 {
     return m_added;
 }
 
-void Clip::set_adding_time(std::time_t time)
+void Clip::set_adding_time(TimePoint time)
 {
     if (time != m_added)
     {
@@ -86,52 +89,21 @@ void Clip::set_adding_time(std::time_t time)
     }
 }
 
-std::time_t Clip::get_rep_time() const
-{
-    return m_rep_time;
-}
-
-void Clip::set_rep_time(std::time_t rep_time)
-{
-    if (rep_time != m_rep_time)
-    {
-        m_rep_time = rep_time;
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
-}
-
-void Clip::add_repeat(std::time_t time)
+void Clip::add_repeat(TimePoint time)
 {
     m_repeats.push_back(time);
-    m_rep_time = time;
     if (m_file)
         m_file->get_library()->clip_changed(this);
 }
 
-const std::vector<std::time_t>& Clip::get_repeats() const
+const std::vector<TimePoint>& Clip::get_repeats() const
 {
     return m_repeats;
 }
 
-void Clip::set_repeats(std::vector<std::time_t> repeats)
+void Clip::set_repeats(std::vector<TimePoint> repeats)
 {
     m_repeats = std::move(repeats);
-}
-
-float Clip::get_level() const
-{
-    return m_level;
-}
-
-void Clip::set_level(float level)
-{
-    if (level != m_level)
-    {
-        m_level = level;
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
 }
 
 QString Clip::get_subtitle(int index) const
@@ -287,4 +259,141 @@ bool export_txt(const std::vector<Clip*>& clips, const QString& filename)
         out << "\r\n";
     }
     return true;
+}
+
+File* load_file(Library* library, const QString& path, const srs::ICardFactory* card_factory)
+{
+    File* file = new File(library, path);
+    QFileInfo info(path);
+    QString json_file = info.absolutePath() + "/" + info.completeBaseName() + ".user.json";
+
+    QFile in_file(json_file);
+    if (!in_file.open(QIODevice::ReadOnly))
+        return file;
+
+    QByteArray text = in_file.readAll();
+    QJsonDocument doc(QJsonDocument::fromJson(text));
+
+    QJsonObject json = doc.object();
+
+    if (json.contains("player_time") && json["player_time"].isDouble())
+        file->set_player_time(json["player_time"].toInt());
+
+    if (json.contains("length") && json["length"].isDouble())
+        file->set_length(json["length"].toInt());
+
+    if (json.contains("clips") && json["clips"].isArray())
+    {
+        QJsonArray json_clips = json["clips"].toArray();
+        for (int i = 0; i < json_clips.size(); ++i)
+        {
+            try
+            {
+                Clip* clip = new Clip();
+                srs::ICardUPtr card;
+                QString text1;
+                QString text2;
+                QJsonObject json_clip = json_clips[i].toObject();
+                if (json_clip.contains("card") && json_clip["card"].isObject())
+                {
+                    QJsonObject json_card = json_clip["card"].toObject();
+                    if (json_card.contains("type") && json_card["type"].isString())
+                    {
+                        QString type = json_card["type"].toString();
+                        card = card_factory->create(type);
+                        card->read(json_card);
+                    }
+                }
+                else
+                {
+                    // Legacy
+                    card = card_factory->create("simple");
+                    card->read(json_clip);
+                }
+                clip->set_card(std::move(card));
+
+                if (json_clip.contains("uid") && json_clip["uid"].isString())
+                    clip->set_uid(json_clip["uid"].toString());
+                if (json_clip.contains("added") && json_clip["added"].isDouble())
+                    clip->set_adding_time(TimePoint(Duration(json_clip["added"].toInteger())));
+                if (json_clip.contains("begin") && json_clip["begin"].isDouble())
+                    clip->set_begin(json_clip["begin"].toInt());
+                if (json_clip.contains("end") && json_clip["end"].isDouble())
+                    clip->set_end(json_clip["end"].toInt());
+                if (json_clip.contains("favorite") && json_clip["favorite"].isBool())
+                    clip->set_favorite(json_clip["favorite"].toBool());
+                if (json_clip.contains("repeats") && json_clip["repeats"].isArray())
+                {
+                    QJsonArray repeats_arr = json_clip["repeats"].toArray();
+                    std::vector<TimePoint> repeats;
+                    repeats.reserve(repeats_arr.size());
+                    for (QJsonValue value : repeats_arr)
+                    {
+                        if (value.isDouble())
+                            repeats.push_back(TimePoint(Duration(value.toInteger())));
+                    }
+                    clip->set_repeats(std::move(repeats));
+                }
+                if (json_clip.contains("text1") && json_clip["text1"].isString())
+                    text1 = json_clip["text1"].toString();
+                if (json_clip.contains("text2") && json_clip["text2"].isString())
+                    text2 = json_clip["text2"].toString();
+                clip->set_subtitles({ text1, text2 });
+                file->add_clip(clip);
+            }
+            catch (srs::ReadException&)
+            {
+            }
+        }
+    }
+    return file;
+}
+
+void save_file(const File* file)
+{
+    QJsonObject json;
+    QJsonArray json_clips;
+
+    json["player_time"] = file->get_player_time();
+    json["length"] = file->get_length();
+
+    for (const Clip* clip : file->get_clips())
+    {
+        const std::vector<TimePoint>& repeats = clip->get_repeats();
+        QJsonArray repeats_arr;
+        std::transform(repeats.begin(), repeats.end(), std::back_inserter(repeats_arr),
+            [](const TimePoint& tp) {return tp.time_since_epoch().count(); });
+
+        QJsonObject json_clip;
+        json_clip["uid"] = clip->get_uid();
+        if (clip->get_adding_time() != TimePoint(Duration::zero()))
+            json_clip["added"] = clip->get_adding_time().time_since_epoch().count();
+        json_clip["begin"] = clip->get_begin();
+        json_clip["end"] = clip->get_end();
+        if (clip->is_favorite())
+            json_clip["favorite"] = clip->is_favorite();
+        if (!repeats_arr.empty())
+        {
+            json_clip["repeats"] = repeats_arr;
+        }
+        json_clip["text1"] = clip->get_subtitle(0);
+        json_clip["text2"] = clip->get_subtitle(1);
+
+        QJsonObject json_card;
+        if (clip->get_card() != nullptr)
+            clip->get_card()->write(json_card);
+        json_clip["card"] = json_card;
+
+        json_clips.append(json_clip);
+    }
+
+    json["clips"] = json_clips;
+
+    QFileInfo info(file->get_path());
+    QString json_file = info.absolutePath() + "/" + info.completeBaseName() + ".user.json";
+
+    QFile out_file(json_file);
+    if (!out_file.open(QIODevice::WriteOnly))
+        return;
+    out_file.write(QJsonDocument(json).toJson());
 }
