@@ -31,47 +31,12 @@ QString Clip::get_uid() const
 
 void Clip::set_uid(const QString& uid)
 {
-    if (uid != m_uid)
-    {
-        m_uid = uid;
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
+    m_uid = uid;
 }
 
 void Clip::generate_uid()
 {
     set_uid(QUuid::createUuid().toString(QUuid::WithoutBraces));
-}
-
-std::time_t Clip::get_begin() const
-{
-    return m_begin;
-}
-
-void Clip::set_begin(std::time_t begin)
-{
-    if (begin != m_begin)
-    {
-        m_begin = begin;
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
-}
-
-std::time_t Clip::get_end() const
-{
-    return m_end;
-}
-
-void Clip::set_end(std::time_t end)
-{
-    if (end != m_end)
-    {
-        m_end = end;
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
 }
 
 TimePoint Clip::get_adding_time() const
@@ -81,19 +46,12 @@ TimePoint Clip::get_adding_time() const
 
 void Clip::set_adding_time(TimePoint time)
 {
-    if (time != m_added)
-    {
-        m_added = time;
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
+    m_added = time;
 }
 
 void Clip::add_repeat(TimePoint time)
 {
     m_repeats.push_back(time);
-    if (m_file)
-        m_file->get_library()->clip_changed(this);
 }
 
 const std::vector<TimePoint>& Clip::get_repeats() const
@@ -106,42 +64,52 @@ void Clip::set_repeats(std::vector<TimePoint> repeats)
     m_repeats = std::move(repeats);
 }
 
-QString Clip::get_subtitle(int index) const
+//QString Clip::get_subtitle(int index) const
+//{
+//    if (index >= 0 && index < m_subtitles.size())
+//        return m_subtitles[index];
+//    else
+//        return QString();
+//}
+//
+//const std::vector<QString>& Clip::get_subtitles() const
+//{
+//    return m_subtitles;
+//}
+//
+//void Clip::set_subtitles(std::vector<QString>&& subtitles)
+//{
+//    if (subtitles != m_subtitles)
+//    {
+//        m_subtitles = std::move(subtitles);
+//        if (m_file)
+//            m_file->get_library()->clip_changed(this);
+//    }
+//}
+//
+//bool Clip::is_favorite() const
+//{
+//    return m_is_favorite;
+//}
+//
+//void Clip::set_favorite(bool favorite)
+//{
+//    if (favorite != m_is_favorite)
+//    {
+//        m_is_favorite = favorite;
+//        if (m_file)
+//            m_file->get_library()->clip_changed(this);
+//    }
+//}
+
+const ClipUserData* Clip::get_user_data() const
 {
-    if (index >= 0 && index < m_subtitles.size())
-        return m_subtitles[index];
-    else
-        return QString();
+    return m_user_data.get();
 }
 
-const std::vector<QString>& Clip::get_subtitles() const
+void Clip::set_user_data(std::unique_ptr<ClipUserData> data)
 {
-    return m_subtitles;
-}
-
-void Clip::set_subtitles(std::vector<QString>&& subtitles)
-{
-    if (subtitles != m_subtitles)
-    {
-        m_subtitles = std::move(subtitles);
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
-}
-
-bool Clip::is_favorite() const
-{
-    return m_is_favorite;
-}
-
-void Clip::set_favorite(bool favorite)
-{
-    if (favorite != m_is_favorite)
-    {
-        m_is_favorite = favorite;
-        if (m_file)
-            m_file->get_library()->clip_changed(this);
-    }
+    m_user_data = std::move(data);
 }
 
 srs::ICard* Clip::get_card()
@@ -197,8 +165,7 @@ const Clips& File::get_clips() const
 void File::add_clip(Clip* clip)
 {
     clip->set_file(this);
-    m_clips.insert(clip);
-    m_library->clip_added(clip);
+    m_clips.push_back(clip);
 }
 
 void File::remove_clip(Clip* clip)
@@ -211,37 +178,17 @@ void File::remove_clip(Clip* clip)
             break;
         }
     }
-
-    m_library->clip_removed(clip);
     delete clip;
 }
 
-int File::get_player_time() const
+const FileUserData* File::get_user_data() const
 {
-    return m_player_time;
+    return m_user_data.get();
 }
 
-void File::set_player_time(int player_time)
+void File::set_user_data(std::unique_ptr<FileUserData> user_data)
 {
-    if (player_time != m_player_time)
-    {
-        m_player_time = player_time;
-        get_library()->file_changed(this);
-    }
-}
-
-int File::get_length() const
-{
-    return m_length;
-}
-
-void File::set_length(int length)
-{
-    if (length != m_length)
-    {
-        m_length = length;
-        get_library()->file_changed(this);
-    }
+    m_user_data = std::move(user_data);
 }
 
 bool export_txt(const std::vector<Clip*>& clips, const QString& filename)
@@ -253,12 +200,98 @@ bool export_txt(const std::vector<Clip*>& clips, const QString& filename)
 
     for (const Clip* clip : clips)
     {
+        const ClipUserData* data = clip->get_user_data();
+        std::vector<QString> subs = data->subtitles;
+
         out << clip->get_uid() << "\r\n";
-        out << clip->get_subtitle(0).replace("\r\n", "<br>").replace("\n", "<br>") << "\r\n";
-        out << clip->get_subtitle(1).replace("\r\n", "<br>").replace("\n", "<br>") << "\r\n";
+        out << subs[0].replace("\r\n", "<br>").replace("\n", "<br>") << "\r\n";
+        out << subs[1].replace("\r\n", "<br>").replace("\n", "<br>") << "\r\n";
         out << "\r\n";
     }
     return true;
+}
+
+srs::ICardUPtr read_card(const QJsonObject& json_clip, int version, const srs::ICardFactory* card_factory)
+{
+    bool res = true;
+    srs::ICardUPtr card;
+    if (version > 1)
+    {
+        if (json_clip.contains("card") && json_clip["card"].isObject())
+        {
+            QJsonObject json_card = json_clip["card"].toObject();
+            if (json_card.contains("type") && json_card["type"].isString())
+            {
+                QString type = json_card["type"].toString();
+                card = card_factory->create(type);
+                card->read(json_card);
+            }
+            else
+                res = false;
+        }
+        else
+            res = false;
+    }
+    else
+    {
+        // Legacy
+        card = card_factory->create("simple");
+        card->read(json_clip);
+    }
+
+    if (res)
+        return card;
+    else
+        return nullptr;
+}
+
+std::unique_ptr<FileUserData> read_file_user_data(const QJsonObject& json_user_data)
+{
+    std::unique_ptr<FileUserData> data = std::make_unique<FileUserData>();
+    if (json_user_data.contains("player_time") && json_user_data["player_time"].isDouble())
+        data->player_time = json_user_data["player_time"].toInt();
+    if (json_user_data.contains("length") && json_user_data["length"].isDouble())
+        data->length = json_user_data["length"].toInt();
+    return data;
+}
+
+std::unique_ptr<FileUserData> read_file_user_data(const QJsonObject& json, int version)
+{
+    if (version > 1 && json.contains("user_data") && json["user_data"].isObject())
+    {
+        QJsonObject json_user_data = json["user_data"].toObject();
+        return read_file_user_data(json_user_data);
+    }
+    else
+        return read_file_user_data(json);
+}
+
+std::unique_ptr<ClipUserData> read_clip_user_data(const QJsonObject& json_user_data)
+{
+    std::unique_ptr<ClipUserData> data = std::make_unique<ClipUserData>();
+    data->subtitles.resize(2);
+    if (json_user_data.contains("begin") && json_user_data["begin"].isDouble())
+        data->begin = json_user_data["begin"].toInt();
+    if (json_user_data.contains("end") && json_user_data["end"].isDouble())
+        data->end = json_user_data["end"].toInt();
+    if (json_user_data.contains("favorite") && json_user_data["favorite"].isBool())
+        data->is_favorite = json_user_data["favorite"].toBool();
+    if (json_user_data.contains("text1") && json_user_data["text1"].isString())
+        data->subtitles[0] = json_user_data["text1"].toString();
+    if (json_user_data.contains("text2") && json_user_data["text2"].isString())
+        data->subtitles[1] = json_user_data["text2"].toString();
+    return data;
+}
+
+std::unique_ptr<ClipUserData> read_clip_user_data(const QJsonObject& json_clip, int version)
+{
+    if (version > 1 && json_clip.contains("user_data") && json_clip["user_data"].isObject())
+    {
+        QJsonObject json_user_data = json_clip["user_data"].toObject();
+        return read_clip_user_data(json_user_data);
+    }
+    else
+        return read_clip_user_data(json_clip);
 }
 
 File* load_file(Library* library, const QString& path, const srs::ICardFactory* card_factory)
@@ -276,11 +309,11 @@ File* load_file(Library* library, const QString& path, const srs::ICardFactory* 
 
     QJsonObject json = doc.object();
 
-    if (json.contains("player_time") && json["player_time"].isDouble())
-        file->set_player_time(json["player_time"].toInt());
+    int version = 1;
+    if (json.contains("version") && json["version"].isDouble())
+        version = json["version"].toInt();
 
-    if (json.contains("length") && json["length"].isDouble())
-        file->set_length(json["length"].toInt());
+    file->set_user_data(read_file_user_data(json, version));
 
     if (json.contains("clips") && json["clips"].isArray())
     {
@@ -289,59 +322,37 @@ File* load_file(Library* library, const QString& path, const srs::ICardFactory* 
         {
             try
             {
-                Clip* clip = new Clip();
-                srs::ICardUPtr card;
-                QString text1;
-                QString text2;
+                int res = true;
                 QJsonObject json_clip = json_clips[i].toObject();
-                if (json_clip.contains("card") && json_clip["card"].isObject())
-                {
-                    QJsonObject json_card = json_clip["card"].toObject();
-                    if (json_card.contains("type") && json_card["type"].isString())
-                    {
-                        QString type = json_card["type"].toString();
-                        card = card_factory->create(type);
-                        card->read(json_card);
-                    }
-                }
-                else
-                {
-                    // Legacy
-                    card = card_factory->create("simple");
-                    card->read(json_clip);
-                }
+
+                // TODO possible leak
+                Clip* clip = new Clip();
+
+                srs::ICardUPtr card = read_card(json_clip, version, card_factory);
                 clip->set_card(std::move(card));
 
                 if (json_clip.contains("uid") && json_clip["uid"].isString())
                     clip->set_uid(json_clip["uid"].toString());
                 if (json_clip.contains("added") && json_clip["added"].isDouble())
                     clip->set_adding_time(TimePoint(Duration(json_clip["added"].toInteger())));
-                if (json_clip.contains("begin") && json_clip["begin"].isDouble())
-                    clip->set_begin(json_clip["begin"].toInt());
-                if (json_clip.contains("end") && json_clip["end"].isDouble())
-                    clip->set_end(json_clip["end"].toInt());
-                if (json_clip.contains("favorite") && json_clip["favorite"].isBool())
-                    clip->set_favorite(json_clip["favorite"].toBool());
                 if (json_clip.contains("repeats") && json_clip["repeats"].isArray())
                 {
                     QJsonArray repeats_arr = json_clip["repeats"].toArray();
                     std::vector<TimePoint> repeats;
                     repeats.reserve(repeats_arr.size());
-                    for (QJsonValue value : repeats_arr)
+                    for (const QJsonValue& value : repeats_arr)
                     {
                         if (value.isDouble())
                             repeats.push_back(TimePoint(Duration(value.toInteger())));
                     }
                     clip->set_repeats(std::move(repeats));
                 }
-                if (json_clip.contains("text1") && json_clip["text1"].isString())
-                    text1 = json_clip["text1"].toString();
-                if (json_clip.contains("text2") && json_clip["text2"].isString())
-                    text2 = json_clip["text2"].toString();
-                clip->set_subtitles({ text1, text2 });
+                
+                clip->set_user_data(read_clip_user_data(json_clip, version));
+
                 file->add_clip(clip);
             }
-            catch (srs::ReadException&)
+            catch (srs::ReadException)
             {
             }
         }
@@ -352,11 +363,14 @@ File* load_file(Library* library, const QString& path, const srs::ICardFactory* 
 void save_file(const File* file)
 {
     QJsonObject json;
+    json["version"] = 2;
+
+    QJsonObject json_file_user_data;
+    json_file_user_data["player_time"] = file->get_user_data()->player_time;
+    json_file_user_data["length"] = file->get_user_data()->length;
+    json["user_data"] = json_file_user_data;
+
     QJsonArray json_clips;
-
-    json["player_time"] = file->get_player_time();
-    json["length"] = file->get_length();
-
     for (const Clip* clip : file->get_clips())
     {
         const std::vector<TimePoint>& repeats = clip->get_repeats();
@@ -368,21 +382,25 @@ void save_file(const File* file)
         json_clip["uid"] = clip->get_uid();
         if (clip->get_adding_time() != TimePoint(Duration::zero()))
             json_clip["added"] = clip->get_adding_time().time_since_epoch().count();
-        json_clip["begin"] = clip->get_begin();
-        json_clip["end"] = clip->get_end();
-        if (clip->is_favorite())
-            json_clip["favorite"] = clip->is_favorite();
         if (!repeats_arr.empty())
         {
             json_clip["repeats"] = repeats_arr;
         }
-        json_clip["text1"] = clip->get_subtitle(0);
-        json_clip["text2"] = clip->get_subtitle(1);
 
         QJsonObject json_card;
         if (clip->get_card() != nullptr)
             clip->get_card()->write(json_card);
         json_clip["card"] = json_card;
+
+        const ClipUserData* data = clip->get_user_data();
+        QJsonObject json_clip_user_data;
+        json_clip_user_data["begin"] = data->begin;
+        json_clip_user_data["end"] = data->end;
+        if (data->is_favorite)
+            json_clip_user_data["favorite"] = data->is_favorite;
+        json_clip_user_data["text1"] = data->subtitles[0];
+        json_clip_user_data["text2"] = data->subtitles[1];
+        json_clip["user_data"] = json_clip_user_data;
 
         json_clips.append(json_clip);
     }

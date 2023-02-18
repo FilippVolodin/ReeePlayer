@@ -363,7 +363,11 @@ void MainWindow::on_tblClips_doubleClicked(const QModelIndex& index)
 {
     Clip* clip = m_clips_model->get_clip(index.row());
     hide();
-    getPlayerWindow()->watch_clip(clip);
+
+    std::shared_ptr<IClipSession> session =
+        std::make_shared<WatchClipSession>(m_app->get_library(), clip);
+
+    getPlayerWindow()->run(Mode::WatchingClip, session);
 }
 
 void MainWindow::on_player_window_destroyed()
@@ -531,7 +535,10 @@ void MainWindow::watch(File* file)
 
     PlayerWindow* pw = getPlayerWindow();
     pw->set_vad(vad);
-    pw->watch(file);
+
+    std::shared_ptr<IClipSession> session =
+        std::make_shared<AddingClipsSession>(m_app->get_library(), file, m_app->get_card_factory());
+    pw->run(Mode::Watching, session);
 }
 
 void MainWindow::repeat(std::vector<File*> files)
@@ -549,8 +556,9 @@ void MainWindow::repeat(std::vector<File*> files)
     if (has_clips)
     {
         hide();
-        std::shared_ptr<Session> session = std::make_shared<Session>(m_app->get_library(), files);
-        getPlayerWindow()->repeat(session);
+        std::shared_ptr<IClipSession> session =
+            std::make_shared<RepeatingSession>(m_app->get_library(), files);
+        getPlayerWindow()->run(Mode::Repeating, session);
     }
     else
     {

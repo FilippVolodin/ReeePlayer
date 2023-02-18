@@ -20,12 +20,9 @@ public:
 
     void load(const srs::ICardFactory*);
 
-    void clip_added(Clip*);
-    void clip_removed(Clip*);
-    void clip_changed(Clip*);
-    void file_changed(File*);
-
     void save();
+    void save(const File*);
+    void save(const Clip*);
 
     std::vector<Clip*> get_all_clips() const;
     //std::vector<Clip*> find_clips(QStringView, int max = 0) const;
@@ -43,7 +40,7 @@ private:
     QString m_root_path;
     QSettings* m_settings;
 
-    std::set<File*> m_changed_files;
+    std::set<const File*> m_changed_files;
     bool m_block_notifications = false;
 };
 

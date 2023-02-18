@@ -162,6 +162,11 @@ void VideoWidget::init(libvlc_instance_t* vlc_inst)
 
 void VideoWidget::set_file_name(const QString& file_name, bool)
 {
+    if (m_file_name == file_name)
+        return;
+
+    m_file_name = file_name;
+
     m_timer->stop();
     m_timer->set_trigger(-1);
     sync_stop();

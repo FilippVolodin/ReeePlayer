@@ -58,6 +58,8 @@ protected:
 private:
     void runJS(const QString& script, const std::function<void(const QVariant&)>& callback);
 
+    QString m_file_name;
+
     std::atomic<bool> m_destroying;
     std::unique_ptr<Emitter> m_emitter;
     bool m_playing = false;

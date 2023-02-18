@@ -316,10 +316,10 @@ void LibraryItem::find_clips(QStringView str, int max_clips, bool fav, std::vect
         const Clips& file_clips = m_file->get_clips();
         for (Clip* clip : file_clips)
         {
-            const std::vector<QString>& texts = clip->get_subtitles();
-            for (const QString& text : texts)
+            const ClipUserData* user_data = clip->get_user_data();
+            for (const QString& text : user_data->subtitles)
             {
-                if (fav && !clip->is_favorite())
+                if (fav && !user_data->is_favorite)
                     continue;
 
                 if (str.isEmpty() || text.contains(str, Qt::CaseInsensitive))

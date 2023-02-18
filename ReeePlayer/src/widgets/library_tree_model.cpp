@@ -36,14 +36,12 @@ void LibraryTree::expanded(const QModelIndex& index)
 {
     LibraryItem* item = get_item(index);
     item->expand(true);
-    m_library->save();
 }
 
 void LibraryTree::collapsed(const QModelIndex& index)
 {
     LibraryItem* item = get_item(index);
     item->expand(false);
-    m_library->save();
 }
 
 bool LibraryTree::is_expanded(const QModelIndex& index)

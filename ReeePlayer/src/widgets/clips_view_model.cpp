@@ -23,6 +23,7 @@ QVariant ClipModel::data(const QModelIndex & index, int role) const
     int row = index.row();
     int col = index.column();
     const Clip* clip = (*m_clips)[row];
+    const ClipUserData* user_data = clip->get_user_data();
 
     switch (role)
     {
@@ -30,9 +31,9 @@ QVariant ClipModel::data(const QModelIndex & index, int role) const
     {
         switch (col)
         {
-        case 0: return clip->is_favorite() ? QString("★") : QString();
-        case 1: return clip->get_subtitle(0);
-        case 2: return clip->get_subtitle(1);
+        case 0: return user_data->is_favorite ? QString("★") : QString();
+        case 1: return user_data->subtitles[0];
+        case 2: return user_data->subtitles[1];
         case 3:
         {
             if (clip->get_adding_time() != TimePoint(Duration::zero()))

@@ -29,6 +29,11 @@ WebVideoWidget::~WebVideoWidget()
 
 void WebVideoWidget::set_file_name(const QString& file_name, bool)
 {
+    if (m_file_name == file_name)
+        return;
+
+    m_file_name = file_name;
+
     page()->runJavaScript(QString("set_source(\"file:///%1\");").arg(file_name));
 }
 

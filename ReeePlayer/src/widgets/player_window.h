@@ -17,6 +17,8 @@ class IVideoWidget;
 class VAD;
 class VADSettings;
 class JumpCutterSettingsDialog;
+class IClipSession;
+class ClipUserData;
 
 namespace qsubs
 {
@@ -137,9 +139,7 @@ public:
 
     QMenu* createPopupMenu() override;
 
-    void watch(File* file);
-    void watch_clip(Clip* clip);
-    void repeat(std::shared_ptr<Session> session);
+    void run(Mode, std::shared_ptr<IClipSession>);
 
     void set_vad(std::shared_ptr<VAD>);
 
@@ -169,7 +169,6 @@ private:
     void on_actJumpCutterSettings_triggered();
     void on_actShowWaveform_triggered(bool);
     void on_actJumpCutter_triggered(bool);
-    void on_actAddToFavorite_triggered(bool);
 
     void on_player_time_changed(int);
     void on_player_playing();
@@ -205,8 +204,8 @@ private:
     void show_clip();
 
     bool remove_clip_confirmation();
-    void update_clip_interval(Clip*);
-    void update_clip_subtitles(Clip*);
+
+    std::unique_ptr<ClipUserData> get_clip_user_data();
 
     void update_insert_button(int index, int value);
 
@@ -228,8 +227,6 @@ private:
 
     bool remove_clip();
 
-    void next_clip();
-
     void jumpcutter(int);
     void load_jc_settings();
     void save_jc_settings();
@@ -244,7 +241,7 @@ private:
 
     App* m_app;
     Library* m_library;
-    std::shared_ptr<Session> m_session;
+    std::shared_ptr<IClipSession> m_clip_session;
     std::shared_ptr<Waveform> m_waveform;
     std::shared_ptr<VAD> m_vad;
     std::shared_ptr<JumpCutterSettings> m_jc_settings;
@@ -256,8 +253,8 @@ private:
 
     std::shared_ptr<UIState> m_ui_state;
 
-    File* m_file = nullptr;
-    Clip* m_clip = nullptr;
+    //File* m_file = nullptr;
+    //Clip* m_clip = nullptr;
     bool m_close_after_stopped = false;
 
     float m_playback_rate = 1.0;

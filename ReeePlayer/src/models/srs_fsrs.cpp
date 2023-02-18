@@ -295,12 +295,13 @@ void srs::fsrs::Card::write(QJsonObject& json) const
 
 float srs::fsrs::Card::get_priority(TimePoint now) const
 {
-    return 0;
+    Duration overdue = now - m_p.due;
+    return overdue.count();
 }
 
 bool srs::fsrs::Card::is_due(TimePoint now) const
 {
-    return true;
+    return now > m_p.due;
 }
 
 void srs::fsrs::Card::repeat(TimePoint now, int rating)

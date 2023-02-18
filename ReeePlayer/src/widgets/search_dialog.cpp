@@ -78,8 +78,9 @@ void SearchDialog::on_btnRepeat_clicked()
     if (!m_clips || m_clips->empty())
         return;
 
-    std::shared_ptr<Session> session = std::make_shared<Session>(m_app->get_library(), *m_clips.get());
-    get_player_window()->repeat(session);
+    std::shared_ptr<IClipSession> session =
+        std::make_shared<RepeatingSession>(m_app->get_library(), *m_clips.get());
+    get_player_window()->run(Mode::Repeating, session);
 }
 
 void SearchDialog::on_edtText_returnPressed()
@@ -98,7 +99,11 @@ void SearchDialog::on_tblClips_doubleClicked(const QModelIndex& proxy_index)
     QModelIndex index = proxy_model->mapToSource(proxy_index);
 
     Clip* clip = m_clips_model->get_clip(index.row());
-    get_player_window()->watch_clip(clip);
+
+    std::shared_ptr<IClipSession> session =
+        std::make_shared<WatchClipSession>(m_app->get_library(), clip);
+
+    get_player_window()->run(Mode::WatchingClip, session);
 }
 
 void SearchDialog::on_export_selected_triggered()
@@ -115,8 +120,9 @@ void SearchDialog::on_repeat_selected_triggered()
     if (clips.empty())
         return;
 
-    std::shared_ptr<Session> session = std::make_shared<Session>(m_app->get_library(), clips);
-    get_player_window()->repeat(session);
+    std::shared_ptr<IClipSession> session =
+        std::make_shared<RepeatingSession>(m_app->get_library(), clips);
+    get_player_window()->run(Mode::Repeating, session);
 }
 
 void SearchDialog::search(const QString& text)
@@ -168,6 +174,7 @@ void SearchDialog::export_clips(const std::vector<Clip*>& clips)
         int clip_idx = 0;
         for (const Clip* clip : clips)
         {
+            const ClipUserData* user_data = clip->get_user_data();
             progress.setValue(clip_idx);
             if (progress.wasCanceled())
                 break;
@@ -176,8 +183,8 @@ void SearchDialog::export_clips(const std::vector<Clip*>& clips)
             {
                 QStringList args1;
                 args1 << "-y"
-                    << "-ss" << QString::number(clip->get_begin() * 0.001)
-                    << "-to" << QString::number(clip->get_end() * 0.001)
+                    << "-ss" << QString::number(user_data->begin * 0.001)
+                    << "-to" << QString::number(user_data->end * 0.001)
                     << "-i" << clip->get_file()->get_path()
                     << dir.absoluteFilePath(QString("%1.mp3").arg(clip->get_uid()));
 
@@ -191,7 +198,7 @@ void SearchDialog::export_clips(const std::vector<Clip*>& clips)
             {
                 QStringList args2;
                 args2 << "-y"
-                    << "-ss" << QString::number((clip->get_begin() + clip->get_end()) * 0.0005)
+                    << "-ss" << QString::number((user_data->begin + user_data->end) * 0.0005)
                     << "-i" << clip->get_file()->get_path()
                     << "-vframes" << "1"
                     << dir.absoluteFilePath(QString("%1.jpg").arg(clip->get_uid()));

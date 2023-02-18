@@ -46,41 +46,47 @@ void Library::load(const srs::ICardFactory* card_factory)
 
     m_block_notifications = false;
 
-    auto set_uid = [](Clip* clip)
+    std::set<const File*> changed_files;
+    auto set_uid = [&changed_files](Clip* clip)
     {
         if (clip->get_uid().isEmpty())
+        {
             clip->generate_uid();
+            changed_files.insert(clip->get_file());
+        }
     };
     m_root->iterate_clips(set_uid);
-    save();
+    
+    for (const File* file : changed_files)
+        save(file);
 }
 
-void Library::clip_added(Clip* clip)
-{
-    if (!m_block_notifications)
-        m_changed_files.insert(clip->get_file());
-}
-
-void Library::clip_changed(Clip* clip)
-{
-    if (!m_block_notifications)
-        m_changed_files.insert(clip->get_file());
-}
-
-void Library::file_changed(File* file)
-{
-    if (!m_block_notifications)
-        m_changed_files.insert(file);
-}
-
-void Library::clip_removed(Clip* clip)
-{
-    if (!m_block_notifications)
-    {
-        emit clip_removed_sig(clip);
-        m_changed_files.insert(clip->get_file());
-    }
-}
+//void Library::clip_added(Clip* clip)
+//{
+//    if (!m_block_notifications)
+//        m_changed_files.insert(clip->get_file());
+//}
+//
+//void Library::clip_changed(Clip* clip)
+//{
+//    if (!m_block_notifications)
+//        m_changed_files.insert(clip->get_file());
+//}
+//
+//void Library::file_changed(File* file)
+//{
+//    if (!m_block_notifications)
+//        m_changed_files.insert(file);
+//}
+//
+//void Library::clip_removed(Clip* clip)
+//{
+//    if (!m_block_notifications)
+//    {
+//        emit clip_removed_sig(clip);
+//        m_changed_files.insert(clip->get_file());
+//    }
+//}
 
 std::vector<Clip*> Library::get_all_clips() const
 {
@@ -113,6 +119,16 @@ void Library::save()
         save_file(file);
     }
     m_changed_files.clear();
+}
+
+void Library::save(const File* file)
+{
+    m_changed_files.insert(file);
+}
+
+void Library::save(const Clip* clip)
+{
+    m_changed_files.insert(clip->get_file());
 }
 
 LibraryItem* Library::scan_folder(const QString& path, bool is_root, const srs::ICardFactory* card_factory)
