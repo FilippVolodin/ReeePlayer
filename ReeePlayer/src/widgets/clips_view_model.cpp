@@ -113,3 +113,8 @@ void ClipModel::set_clips(ClipsPtr clips)
     m_clips = clips;
     endResetModel();
 }
+
+void ClipModel::clear()
+{
+    m_clips.reset();
+}

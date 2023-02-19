@@ -20,21 +20,21 @@ bool ClipPriorityCmp::operator()(const Clip* lhs, const Clip* rhs)
     return p1 > p2;
 }
 
-IClipSession::~IClipSession()
+IClipQueue::~IClipQueue()
 {
 }
 
-BaseClipSession::BaseClipSession(Library* library)
+BaseClipQueue::BaseClipQueue(Library* library)
     : m_library(library)
 {
 }
 
-const ClipUserData* BaseClipSession::get_clip_user_data() const
+const ClipUserData* BaseClipQueue::get_clip_user_data() const
 {
     return get_current_clip()->get_user_data();
 }
 
-void BaseClipSession::set_clip_user_data(std::unique_ptr<ClipUserData> data)
+void BaseClipQueue::set_clip_user_data(std::unique_ptr<ClipUserData> data)
 {
     Clip* clip = get_current_clip();
     if (clip != nullptr)
@@ -42,7 +42,7 @@ void BaseClipSession::set_clip_user_data(std::unique_ptr<ClipUserData> data)
     m_library->save(clip);
 }
 
-void BaseClipSession::remove()
+void BaseClipQueue::remove()
 {
     Clip* clip = get_current_clip();
     File* file = clip->get_file();
@@ -50,17 +50,17 @@ void BaseClipSession::remove()
     clip = nullptr;
 }
 
-const QString BaseClipSession::get_file_path() const
+const QString BaseClipQueue::get_file_path() const
 {
     return get_current_file()->get_path();
 }
 
-const FileUserData* BaseClipSession::get_file_user_data() const
+const FileUserData* BaseClipQueue::get_file_user_data() const
 {
     return get_current_file()->get_user_data();
 }
 
-void BaseClipSession::set_file_user_data(std::unique_ptr<FileUserData> data)
+void BaseClipQueue::set_file_user_data(std::unique_ptr<FileUserData> data)
 {
     File* file = get_current_file();
     if (file != nullptr)
@@ -70,56 +70,56 @@ void BaseClipSession::set_file_user_data(std::unique_ptr<FileUserData> data)
     }
 }
 
-bool BaseClipSession::has_next() const
+bool BaseClipQueue::has_next() const
 {
     return false;
 }
 
-bool BaseClipSession::has_prev() const
+bool BaseClipQueue::has_prev() const
 {
     return false;
 }
 
-bool BaseClipSession::next()
+bool BaseClipQueue::next()
 {
     return false;
 }
 
-bool BaseClipSession::prev()
+bool BaseClipQueue::prev()
 {
     return false;
 }
 
-int BaseClipSession::remain_count() const
+int BaseClipQueue::remain_count() const
 {
     return 0;
 }
 
-void BaseClipSession::repeat(int rating)
+void BaseClipQueue::repeat(int rating)
 {
 }
 
-void BaseClipSession::save_library()
+void BaseClipQueue::save_library()
 {
     m_library->save();
 }
 
-Clip* BaseClipSession::get_current_clip()
+Clip* BaseClipQueue::get_current_clip()
 {
     return m_current_clip;
 }
 
-const Clip* BaseClipSession::get_current_clip() const
+const Clip* BaseClipQueue::get_current_clip() const
 {
     return m_current_clip;
 }
 
-void BaseClipSession::set_current_clip(Clip* clip)
+void BaseClipQueue::set_current_clip(Clip* clip)
 {
     m_current_clip = clip;
 }
 
-const File* BaseClipSession::get_current_file() const
+const File* BaseClipQueue::get_current_file() const
 {
     const Clip* clip = get_current_clip();
     if (clip != nullptr)
@@ -128,7 +128,7 @@ const File* BaseClipSession::get_current_file() const
         nullptr;
 }
 
-File* BaseClipSession::get_current_file()
+File* BaseClipQueue::get_current_file()
 {
     Clip* clip = get_current_clip();
     if (clip != nullptr)
@@ -137,8 +137,8 @@ File* BaseClipSession::get_current_file()
         nullptr;
 }
 
-RepeatingSession::RepeatingSession(Library* library, const std::vector<File*>& files)
-    : BaseClipSession(library)
+RepeatingClipQueue::RepeatingClipQueue(Library* library, const std::vector<File*>& files)
+    : BaseClipQueue(library)
 {
     m_showed_clips.clear();
     m_showing_clip_index = -1;
@@ -151,17 +151,17 @@ RepeatingSession::RepeatingSession(Library* library, const std::vector<File*>& f
     next();
 }
 
-RepeatingSession::RepeatingSession(Library* library, const std::vector<Clip*>& clips)
-    : BaseClipSession(library), m_clips(clips)
+RepeatingClipQueue::RepeatingClipQueue(Library* library, const std::vector<Clip*>& clips)
+    : BaseClipQueue(library), m_clips(clips)
 {
     next();
 }
 
-RepeatingSession::~RepeatingSession()
+RepeatingClipQueue::~RepeatingClipQueue()
 {
 }
 
-void RepeatingSession::remove()
+void RepeatingClipQueue::remove()
 {
     const Clip* clip = get_current_clip();
     int showed_num = std::count(
@@ -179,20 +179,20 @@ void RepeatingSession::remove()
     if (it != m_clips.end())
         m_clips.erase(it);
 
-    BaseClipSession::remove();
+    BaseClipQueue::remove();
 }
 
-bool RepeatingSession::has_next() const
+bool RepeatingClipQueue::has_next() const
 {
     return m_showing_clip_index + 1 < m_showed_clips.size();
 }
 
-bool RepeatingSession::has_prev() const
+bool RepeatingClipQueue::has_prev() const
 {
     return m_showing_clip_index > 0;
 }
 
-bool RepeatingSession::next()
+bool RepeatingClipQueue::next()
 {
     if (m_clips.empty())
         return false;
@@ -217,7 +217,7 @@ bool RepeatingSession::next()
     return true;
 }
 
-bool RepeatingSession::prev()
+bool RepeatingClipQueue::prev()
 {
     if (!has_prev())
         return false;
@@ -227,7 +227,7 @@ bool RepeatingSession::prev()
     return true;
 }
 
-int RepeatingSession::remain_count() const
+int RepeatingClipQueue::remain_count() const
 {
     TimePoint cur_time = now();
 
@@ -239,7 +239,7 @@ int RepeatingSession::remain_count() const
     return std::count_if(m_clips.begin(), m_clips.end(), need_to_repeat);
 }
 
-void RepeatingSession::repeat(int rating)
+void RepeatingClipQueue::repeat(int rating)
 {
     TimePoint cur = now();
     Clip* clip = get_current_clip();
@@ -250,12 +250,12 @@ void RepeatingSession::repeat(int rating)
     }
 }
 
-AddingClipsSession::AddingClipsSession(Library* library, File* file, const srs::ICardFactory* factory)
-    : BaseClipSession(library), m_file(file), m_factory(factory)
+AddingClipsQueue::AddingClipsQueue(Library* library, File* file, const srs::ICardFactory* factory)
+    : BaseClipQueue(library), m_file(file), m_factory(factory)
 {
 }
 
-void AddingClipsSession::set_clip_user_data(std::unique_ptr<ClipUserData> user_data)
+void AddingClipsQueue::set_clip_user_data(std::unique_ptr<ClipUserData> user_data)
 {
     Clip* new_clip = new Clip();
     srs::ICardUPtr card = m_factory->create();
@@ -265,20 +265,20 @@ void AddingClipsSession::set_clip_user_data(std::unique_ptr<ClipUserData> user_d
     m_file->add_clip(new_clip);
 
     set_current_clip(new_clip);
-    BaseClipSession::set_clip_user_data(std::move(user_data));
+    BaseClipQueue::set_clip_user_data(std::move(user_data));
 }
 
-const File* AddingClipsSession::get_current_file() const
+const File* AddingClipsQueue::get_current_file() const
 {
     return m_file;
 }
 
-File* AddingClipsSession::get_current_file()
+File* AddingClipsQueue::get_current_file()
 {
     return m_file;
 }
 
-WatchClipSession::WatchClipSession(Library* library, Clip* clip) : BaseClipSession(library)
+WatchClipQueue::WatchClipQueue(Library* library, Clip* clip) : BaseClipQueue(library)
 {
     set_current_clip(clip);
 }

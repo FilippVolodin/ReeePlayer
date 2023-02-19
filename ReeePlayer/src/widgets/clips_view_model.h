@@ -22,6 +22,7 @@ public:
 
     Clip* get_clip(int row) const;
     void set_clips(ClipsPtr);
+    void clear();
 
 private:
     bool m_show_path = true;

@@ -366,9 +366,13 @@ void save_file(const File* file)
     json["version"] = 2;
 
     QJsonObject json_file_user_data;
-    json_file_user_data["player_time"] = file->get_user_data()->player_time;
-    json_file_user_data["length"] = file->get_user_data()->length;
-    json["user_data"] = json_file_user_data;
+    const FileUserData* file_user_data = file->get_user_data();
+    if (file_user_data != nullptr)
+    {
+        json_file_user_data["player_time"] = file->get_user_data()->player_time;
+        json_file_user_data["length"] = file->get_user_data()->length;
+        json["user_data"] = json_file_user_data;
+    }
 
     QJsonArray json_clips;
     for (const Clip* clip : file->get_clips())

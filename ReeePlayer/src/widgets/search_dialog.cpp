@@ -78,8 +78,8 @@ void SearchDialog::on_btnRepeat_clicked()
     if (!m_clips || m_clips->empty())
         return;
 
-    std::shared_ptr<IClipSession> session =
-        std::make_shared<RepeatingSession>(m_app->get_library(), *m_clips.get());
+    std::shared_ptr<IClipQueue> session =
+        std::make_shared<RepeatingClipQueue>(m_app->get_library(), *m_clips.get());
     get_player_window()->run(Mode::Repeating, session);
 }
 
@@ -100,8 +100,8 @@ void SearchDialog::on_tblClips_doubleClicked(const QModelIndex& proxy_index)
 
     Clip* clip = m_clips_model->get_clip(index.row());
 
-    std::shared_ptr<IClipSession> session =
-        std::make_shared<WatchClipSession>(m_app->get_library(), clip);
+    std::shared_ptr<IClipQueue> session =
+        std::make_shared<WatchClipQueue>(m_app->get_library(), clip);
 
     get_player_window()->run(Mode::WatchingClip, session);
 }
@@ -120,8 +120,8 @@ void SearchDialog::on_repeat_selected_triggered()
     if (clips.empty())
         return;
 
-    std::shared_ptr<IClipSession> session =
-        std::make_shared<RepeatingSession>(m_app->get_library(), clips);
+    std::shared_ptr<IClipQueue> session =
+        std::make_shared<RepeatingClipQueue>(m_app->get_library(), clips);
     get_player_window()->run(Mode::Repeating, session);
 }
 

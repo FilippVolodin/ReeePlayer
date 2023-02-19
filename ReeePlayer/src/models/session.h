@@ -22,10 +22,10 @@ struct ClipPriorityCmp
     bool operator()(const Clip* lhs, const Clip* rhs);
 };
 
-class IClipSession
+class IClipQueue
 {
 public:
-    virtual ~IClipSession();
+    virtual ~IClipQueue();
 
     virtual const ClipUserData* get_clip_user_data() const = 0;
     virtual void set_clip_user_data(std::unique_ptr<ClipUserData>) = 0;
@@ -46,15 +46,15 @@ public:
     virtual void save_library() = 0;
 };
 
-class BaseClipSession : public IClipSession
+class BaseClipQueue : public IClipQueue
 {
 public:
-    BaseClipSession(Library*);
+    BaseClipQueue(Library*);
+
+    void remove() override;
 
     const ClipUserData* get_clip_user_data() const override;
     void set_clip_user_data(std::unique_ptr<ClipUserData>) override;
-
-    void remove() override;
 
     const QString get_file_path() const override;
     const FileUserData* get_file_user_data() const override;
@@ -81,12 +81,12 @@ private:
     Clip* m_current_clip = nullptr;
 };
 
-class RepeatingSession : public BaseClipSession
+class RepeatingClipQueue : public BaseClipQueue
 {
 public:
-    RepeatingSession(Library*, const std::vector<File*>&);
-    RepeatingSession(Library*, const std::vector<Clip*>&);
-    ~RepeatingSession();
+    RepeatingClipQueue(Library*, const std::vector<File*>&);
+    RepeatingClipQueue(Library*, const std::vector<Clip*>&);
+    ~RepeatingClipQueue();
 
     void remove() override;
 
@@ -104,10 +104,10 @@ private:
     int m_showing_clip_index = -1;
 };
 
-class AddingClipsSession : public BaseClipSession
+class AddingClipsQueue : public BaseClipQueue
 {
 public:
-    AddingClipsSession(Library*, File*, const srs::ICardFactory*);
+    AddingClipsQueue(Library*, File*, const srs::ICardFactory*);
 
     void set_clip_user_data(std::unique_ptr<ClipUserData>) override;
 protected:
@@ -118,19 +118,19 @@ private:
     File* m_file;
 };
 
-class WatchClipSession : public BaseClipSession
+class WatchClipQueue : public BaseClipQueue
 {
 public:
-    WatchClipSession(Library*, Clip*);
+    WatchClipQueue(Library*, Clip*);
 };
 
-class Session : public QObject
+class Queue : public QObject
 {
     Q_OBJECT
 public:
-    Session(Library*, const std::vector<File*>&);
-    Session(Library*, const std::vector<Clip*>&);
-    ~Session();
+    Queue(Library*, const std::vector<File*>&);
+    Queue(Library*, const std::vector<Clip*>&);
+    ~Queue();
 
     bool has_prev_clip() const;
     bool has_next_clip() const;

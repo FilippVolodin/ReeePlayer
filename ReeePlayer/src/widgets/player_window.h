@@ -10,14 +10,13 @@ class File;
 class ClipInfoDialog;
 class App;
 class Library;
-class Session;
 class Waveform;
 class JumpCutterSettings;
 class IVideoWidget;
 class VAD;
 class VADSettings;
 class JumpCutterSettingsDialog;
-class IClipSession;
+class IClipQueue;
 class ClipUserData;
 
 namespace qsubs
@@ -139,7 +138,7 @@ public:
 
     QMenu* createPopupMenu() override;
 
-    void run(Mode, std::shared_ptr<IClipSession>);
+    void run(Mode, std::shared_ptr<IClipQueue>);
 
     void set_vad(std::shared_ptr<VAD>);
 
@@ -241,7 +240,7 @@ private:
 
     App* m_app;
     Library* m_library;
-    std::shared_ptr<IClipSession> m_clip_session;
+    std::shared_ptr<IClipQueue> m_clip_queue;
     std::shared_ptr<Waveform> m_waveform;
     std::shared_ptr<VAD> m_vad;
     std::shared_ptr<JumpCutterSettings> m_jc_settings;

@@ -81,7 +81,7 @@ private:
     PlayerWindow* m_player_window = nullptr;
 
     std::unique_ptr<LibraryTree> m_library_tree;
-    ClipModel* m_clips_model;
+    std::unique_ptr<ClipModel> m_clips_model;
     App* m_app = nullptr;
 };
 

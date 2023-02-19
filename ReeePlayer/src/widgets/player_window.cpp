@@ -193,10 +193,10 @@ QMenu* PlayerWindow::createPopupMenu()
     return menu;
 }
 
-void PlayerWindow::run(Mode mode, std::shared_ptr<IClipSession> clip_session)
+void PlayerWindow::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
 {
     m_mode = mode;
-    m_clip_session = clip_session;
+    m_clip_queue = clip_queue;
     show();
 }
 
@@ -212,8 +212,8 @@ void PlayerWindow::save_player_time()
     std::unique_ptr<FileUserData> file_user_data = std::make_unique<FileUserData>();
     file_user_data->player_time = time;
     file_user_data->length = m_video_widget->get_length();
-    m_clip_session->set_file_user_data(std::move(file_user_data));
-    m_clip_session->save_library();
+    m_clip_queue->set_file_user_data(std::move(file_user_data));
+    m_clip_queue->save_library();
 }
 
 void PlayerWindow::showEvent(QShowEvent * event)
@@ -476,26 +476,26 @@ void PlayerWindow::on_actCancelClip_triggered()
 
 void PlayerWindow::on_actPrevClip_triggered()
 {
-    if (m_clip_session->has_prev())
+    if (m_clip_queue->has_prev())
     {
-        m_clip_session->set_clip_user_data(get_clip_user_data());
-        m_clip_session->save_library();
+        m_clip_queue->set_clip_user_data(get_clip_user_data());
+        m_clip_queue->save_library();
 
         m_video_widget->get_widget()->setFocus();
 
-        m_clip_session->prev();
+        m_clip_queue->prev();
         show_clip();
     }
 }
 
 void PlayerWindow::on_actNextClip_triggered()
 {
-    m_clip_session->set_clip_user_data(get_clip_user_data());
+    m_clip_queue->set_clip_user_data(get_clip_user_data());
 
-    if (!m_clip_session->has_next())
+    if (!m_clip_queue->has_next())
     {
         // We didn't repeat clip in this session
-        m_clip_session->repeat(2);
+        m_clip_queue->repeat(3);
         
         ++m_num_repeated_clips;
         m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(m_num_repeated_clips));
@@ -503,9 +503,9 @@ void PlayerWindow::on_actNextClip_triggered()
 
     m_video_widget->get_widget()->setFocus();
 
-    m_clip_session->save_library();
+    m_clip_queue->save_library();
 
-    m_clip_session->next();
+    m_clip_queue->next();
     show_clip();
 }
 
@@ -731,7 +731,7 @@ void PlayerWindow::set_state(std::shared_ptr<UIState> new_state)
 
 void PlayerWindow::show_video()
 {
-    QString filename = m_clip_session->get_file_path();
+    QString filename = m_clip_queue->get_file_path();
     QFileInfo fileinfo(filename);
 
     setWindowTitle(filename);
@@ -812,18 +812,20 @@ void PlayerWindow::show_video()
     m_video_widget->play();
     m_video_widget->set_rate(1.0);
 
-    const FileUserData* file_user_data = m_clip_session->get_file_user_data();
-
-    int time = file_user_data->player_time;
-    if (time > 0)
-        m_video_widget->set_time(time);
+    const FileUserData* file_user_data = m_clip_queue->get_file_user_data();
+    if (file_user_data != nullptr)
+    {
+        int time = file_user_data->player_time;
+        if (time > 0)
+            m_video_widget->set_time(time);
+    }
 
     std::tie(m_num_added_clips_for_file, m_num_added_clips) = get_num_todays_added_clips();
 }
 
 void PlayerWindow::show_clip()
 {
-    const ClipUserData* clip_data = m_clip_session->get_clip_user_data();
+    const ClipUserData* clip_data = m_clip_queue->get_clip_user_data();
     //std::unique_ptr<IFileData> file_data = m_clip_session->get_file_data();
     if (clip_data == nullptr)
     {
@@ -835,7 +837,7 @@ void PlayerWindow::show_clip()
         return;
     }
 
-    QString filename = m_clip_session->get_file_path();
+    QString filename = m_clip_queue->get_file_path();
     m_video_widget->set_file_name(filename, true);
 
     set_playback_rate(DEFAULT_PLAYBACK_RATE_INDEX);
@@ -855,7 +857,7 @@ void PlayerWindow::show_clip()
 
     if (m_mode == Mode::Repeating)
     {
-        int remains = m_clip_session->remain_count();
+        int remains = m_clip_queue->remain_count();
         setWindowTitle(QString("[%1] %2").arg(remains).arg(filename));
 
         if (remains == 0)
@@ -863,7 +865,7 @@ void PlayerWindow::show_clip()
         else
             m_lbl_info->clear();
 
-        ui.actPrevClip->setEnabled(m_clip_session->has_prev());
+        ui.actPrevClip->setEnabled(m_clip_queue->has_prev());
     }
 }
 
@@ -999,7 +1001,7 @@ void PlayerWindow::save_subs_priority()
         subs.indices[i] = idx;
     }
 
-    QString filename = m_clip_session->get_file_path();
+    QString filename = m_clip_queue->get_file_path();
     m_app->save_subtitle_priority(filename, subs);
 }
 
@@ -1039,8 +1041,8 @@ void PlayerWindow::rewind(int delta_ms)
 
 void PlayerWindow::save_new_clip()
 {
-    m_clip_session->set_clip_user_data(get_clip_user_data());
-    m_clip_session->save_library();
+    m_clip_queue->set_clip_user_data(get_clip_user_data());
+    m_clip_queue->save_library();
 
     ++m_num_added_clips_for_file;
     ++m_num_added_clips;
@@ -1048,15 +1050,15 @@ void PlayerWindow::save_new_clip()
 
 void PlayerWindow::save_current_clip()
 {
-    m_clip_session->set_clip_user_data(get_clip_user_data());
-    m_clip_session->save_library();
+    m_clip_queue->set_clip_user_data(get_clip_user_data());
+    m_clip_queue->save_library();
 }
 
 bool PlayerWindow::remove_clip()
 {
     if (remove_clip_confirmation())
     {
-        m_clip_session->remove();
+        m_clip_queue->remove();
         return true;
     }
     return false;

@@ -114,9 +114,9 @@ MainWindow::MainWindow(App* app, QWidget *parent)
     connect(ui.tblClips, &QTableView::doubleClicked,
         this, &MainWindow::on_tblClips_doubleClicked);
 
-    m_clips_model = new ClipModel(this);
+    m_clips_model = std::make_unique<ClipModel>(this);
     m_clips_model->set_show_path(false);
-    ui.tblClips->setModel(m_clips_model);
+    ui.tblClips->setModel(m_clips_model.get());
 
     connect(ui.tblClips->horizontalHeader(), &QHeaderView::sectionResized, [this](int, int, int)
         {
@@ -200,8 +200,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::open_dir(const QString& dir)
 {
+
     if (!dir.isEmpty())
     {
+        m_clips_model->clear();
+
         m_app->open_dir(dir);
         Library* library = m_app->get_library();
         if (library != nullptr)
@@ -364,10 +367,10 @@ void MainWindow::on_tblClips_doubleClicked(const QModelIndex& index)
     Clip* clip = m_clips_model->get_clip(index.row());
     hide();
 
-    std::shared_ptr<IClipSession> session =
-        std::make_shared<WatchClipSession>(m_app->get_library(), clip);
+    std::shared_ptr<IClipQueue> queue =
+        std::make_shared<WatchClipQueue>(m_app->get_library(), clip);
 
-    getPlayerWindow()->run(Mode::WatchingClip, session);
+    getPlayerWindow()->run(Mode::WatchingClip, queue);
 }
 
 void MainWindow::on_player_window_destroyed()
@@ -536,9 +539,9 @@ void MainWindow::watch(File* file)
     PlayerWindow* pw = getPlayerWindow();
     pw->set_vad(vad);
 
-    std::shared_ptr<IClipSession> session =
-        std::make_shared<AddingClipsSession>(m_app->get_library(), file, m_app->get_card_factory());
-    pw->run(Mode::Watching, session);
+    std::shared_ptr<IClipQueue> queue =
+        std::make_shared<AddingClipsQueue>(m_app->get_library(), file, m_app->get_card_factory());
+    pw->run(Mode::Watching, queue);
 }
 
 void MainWindow::repeat(std::vector<File*> files)
@@ -556,9 +559,9 @@ void MainWindow::repeat(std::vector<File*> files)
     if (has_clips)
     {
         hide();
-        std::shared_ptr<IClipSession> session =
-            std::make_shared<RepeatingSession>(m_app->get_library(), files);
-        getPlayerWindow()->run(Mode::Repeating, session);
+        std::shared_ptr<IClipQueue> queue =
+            std::make_shared<RepeatingClipQueue>(m_app->get_library(), files);
+        getPlayerWindow()->run(Mode::Repeating, queue);
     }
     else
     {
