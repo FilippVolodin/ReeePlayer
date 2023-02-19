@@ -20,12 +20,89 @@ bool ClipPriorityCmp::operator()(const Clip* lhs, const Clip* rhs)
     return p1 > p2;
 }
 
+
+TodayClipStat::TodayClipStat(const Library* library, const File* file)
+{
+    QDate today = QDateTime::currentDateTime().date();
+
+    auto today_repeated_count = [&today](int count, const File* file)
+    {
+        for (const Clip* clip : file->get_clips())
+        {
+            for (TimePoint time : clip->get_repeats())
+            {
+                auto time_sec = time.time_since_epoch().count();
+                QDate date = QDateTime::fromSecsSinceEpoch(time_sec).date();
+                if (date == today)
+                    ++count;
+            }
+        }
+        return count;
+    };
+
+    auto today_added_count = [&today](int count, const File* file)
+    {
+        for (const Clip* clip : file->get_clips())
+        {
+            if (clip->get_adding_time() != TimePoint(Duration::zero()))
+            {
+                auto time_sec = clip->get_adding_time().time_since_epoch().count();
+                QDate date = QDateTime::fromSecsSinceEpoch(time_sec).date();
+                if (date == today)
+                    ++count;
+            }
+        }
+        return count;
+    };
+
+    LibraryItem* root = library->get_root();
+    std::vector<File*> files = get_files({ root });
+
+    m_repeated_count = std::accumulate(files.begin(), files.end(), 0, today_repeated_count);
+    m_added_count = std::accumulate(files.begin(), files.end(), 0, today_added_count);
+    if (file != nullptr)
+        m_added_count_for_file = today_added_count(0, file);
+}
+
+void TodayClipStat::inc_added()
+{
+    ++m_added_count;
+    ++m_added_count_for_file;
+}
+
+void TodayClipStat::inc_repeated()
+{
+    ++m_repeated_count;
+}
+
+int TodayClipStat::get_added_count() const
+{
+    return m_added_count;
+}
+
+int TodayClipStat::get_added_count_for_file() const
+{
+    return m_added_count_for_file;
+}
+
+int TodayClipStat::get_repeated_count() const
+{
+    return m_repeated_count;
+}
+
 IClipQueue::~IClipQueue()
 {
 }
 
-BaseClipQueue::BaseClipQueue(Library* library)
-    : m_library(library)
+BaseClipQueue::BaseClipQueue(Library* library) :
+    m_library(library),
+    m_today_clip_stat(std::make_unique<TodayClipStat>(library, nullptr))
+{
+}
+
+BaseClipQueue::BaseClipQueue(Library* library, const File* file) :
+    m_library(library),
+    m_today_clip_stat(std::make_unique<TodayClipStat>(library, file))
 {
 }
 
@@ -90,7 +167,7 @@ bool BaseClipQueue::prev()
     return false;
 }
 
-int BaseClipQueue::remain_count() const
+int BaseClipQueue::overdue_count() const
 {
     return 0;
 }
@@ -102,6 +179,11 @@ void BaseClipQueue::repeat(int rating)
 void BaseClipQueue::save_library()
 {
     m_library->save();
+}
+
+const TodayClipStat* BaseClipQueue::get_today_clip_stat() const
+{
+    return m_today_clip_stat.get();
 }
 
 Clip* BaseClipQueue::get_current_clip()
@@ -125,7 +207,7 @@ const File* BaseClipQueue::get_current_file() const
     if (clip != nullptr)
         return clip->get_file();
     else
-        nullptr;
+        return nullptr;
 }
 
 File* BaseClipQueue::get_current_file()
@@ -134,7 +216,12 @@ File* BaseClipQueue::get_current_file()
     if (clip != nullptr)
         return clip->get_file();
     else
-        nullptr;
+        return nullptr;
+}
+
+TodayClipStat* BaseClipQueue::get_today_clip_stat()
+{
+    return m_today_clip_stat.get();
 }
 
 RepeatingClipQueue::RepeatingClipQueue(Library* library, const std::vector<File*>& files)
@@ -227,7 +314,7 @@ bool RepeatingClipQueue::prev()
     return true;
 }
 
-int RepeatingClipQueue::remain_count() const
+int RepeatingClipQueue::overdue_count() const
 {
     TimePoint cur_time = now();
 
@@ -247,11 +334,12 @@ void RepeatingClipQueue::repeat(int rating)
     {
         clip->get_card()->repeat(cur, rating);
         clip->add_repeat(cur);
+        get_today_clip_stat()->inc_repeated();
     }
 }
 
 AddingClipsQueue::AddingClipsQueue(Library* library, File* file, const srs::ICardFactory* factory)
-    : BaseClipQueue(library), m_file(file), m_factory(factory)
+    : BaseClipQueue(library, file), m_file(file), m_factory(factory)
 {
 }
 
@@ -266,6 +354,8 @@ void AddingClipsQueue::set_clip_user_data(std::unique_ptr<ClipUserData> user_dat
 
     set_current_clip(new_clip);
     BaseClipQueue::set_clip_user_data(std::move(user_data));
+
+    get_today_clip_stat()->inc_added();
 }
 
 const File* AddingClipsQueue::get_current_file() const

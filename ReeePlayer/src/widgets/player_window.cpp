@@ -176,8 +176,6 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
     m_lbl_info = new QLabel(this);
     m_lbl_info->setMargin(2);
     ui.statusbar->addWidget(m_lbl_info);
-
-    m_num_repeated_clips = get_num_todays_repeated_clips();
 }
 
 PlayerWindow::~PlayerWindow()
@@ -254,10 +252,7 @@ void PlayerWindow::showEvent(QShowEvent * event)
     else
     {
         set_state(std::make_shared<RepeatingClipState>(this));
-        //m_clip = m_session->get_next_clip();
         show_clip();
-
-        m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(m_num_repeated_clips));
     }
 }
 
@@ -496,9 +491,9 @@ void PlayerWindow::on_actNextClip_triggered()
     {
         // We didn't repeat clip in this session
         m_clip_queue->repeat(3);
-        
-        ++m_num_repeated_clips;
-        m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(m_num_repeated_clips));
+
+        const TodayClipStat* stat = m_clip_queue->get_today_clip_stat();
+        m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(stat->get_repeated_count()));
     }
 
     m_video_widget->get_widget()->setFocus();
@@ -819,8 +814,6 @@ void PlayerWindow::show_video()
         if (time > 0)
             m_video_widget->set_time(time);
     }
-
-    std::tie(m_num_added_clips_for_file, m_num_added_clips) = get_num_todays_added_clips();
 }
 
 void PlayerWindow::show_clip()
@@ -857,7 +850,7 @@ void PlayerWindow::show_clip()
 
     if (m_mode == Mode::Repeating)
     {
-        int remains = m_clip_queue->remain_count();
+        int remains = m_clip_queue->overdue_count();
         setWindowTitle(QString("[%1] %2").arg(remains).arg(filename));
 
         if (remains == 0)
@@ -1043,9 +1036,6 @@ void PlayerWindow::save_new_clip()
 {
     m_clip_queue->set_clip_user_data(get_clip_user_data());
     m_clip_queue->save_library();
-
-    ++m_num_added_clips_for_file;
-    ++m_num_added_clips;
 }
 
 void PlayerWindow::save_current_clip()
@@ -1134,63 +1124,6 @@ std::shared_ptr<VADSettings> PlayerWindow::get_vad_settings() const
     vad_settings->set_margin_before(m_jc_settings->get_margin_before());
     vad_settings->set_voice_prob(m_jc_settings->get_voice_prob_th() * 256);
     return vad_settings;
-}
-
-//TODO move to appropriate place
-std::pair<int, int> PlayerWindow::get_num_todays_added_clips() const
-{
-    int res_file = 0;
-    int res_total = 0;
-
-    //QDate today = QDateTime::currentDateTime().date();
-
-    //auto count_clips = [&](int count, const File* file)
-    //{
-    //    for (const Clip* clip : file->get_clips())
-    //    {
-    //        if (clip->get_adding_time() != TimePoint(Duration::zero()))
-    //        {
-    //            auto time_sec = clip->get_adding_time().time_since_epoch().count();
-    //            QDate date = QDateTime::fromSecsSinceEpoch(time_sec).date();
-    //            if (date == today)
-    //                ++count;
-    //        }
-    //    }
-    //    return count;
-    //};
-
-    //LibraryItem* root = m_library->get_root();
-    //std::vector<File*> files = get_files({ root });
-
-    //res_total = std::accumulate(files.begin(), files.end(), 0, count_clips);
-    //if (m_file != nullptr)
-    //    res_file = count_clips(0, m_file);
-
-    return std::make_pair(res_file, res_total);
-}
-
-int PlayerWindow::get_num_todays_repeated_clips() const
-{
-    int res = 0;
-    //QDate today = QDateTime::currentDateTime().date();
-
-    //LibraryItem* root = m_library->get_root();
-    //std::vector<File*> files = get_files({ root });
-    //for (const File* file : files)
-    //{
-    //    for (const Clip* clip : file->get_clips())
-    //    {
-    //        for (TimePoint time : clip->get_repeats())
-    //        {
-    //            auto time_sec = time.time_since_epoch().count();
-    //            QDate date = QDateTime::fromSecsSinceEpoch(time_sec).date();
-    //            if (date == today)
-    //                ++res;
-    //        }
-    //    }
-    //}
-
-    return res;
 }
 
 UIState::UIState(PlayerWindow* pw) : m_pw(pw)
@@ -1304,9 +1237,10 @@ void WatchingState::activate()
         m_pw->m_jc_settings->set_enabled(false);
     }
 
+    const TodayClipStat* stat = m_pw->m_clip_queue->get_today_clip_stat();
     QString lbl = QString("Added today: %1 (%2)")
-        .arg(m_pw->m_num_added_clips_for_file)
-        .arg(m_pw->m_num_added_clips);
+        .arg(stat->get_added_count_for_file())
+        .arg(stat->get_added_count());
     m_pw->m_lbl_clip_stats->setText(lbl);
 }
 
@@ -1623,10 +1557,8 @@ void RepeatingClipState::activate()
         m_pw->m_subtitle_views[i]->set_show_always(v.isNull() ? true : v.toBool());
     }
 
-    //QPalette p = m_pw->palette();
-    //QColor bg = m_pw->m_default_bg;
-    //p.setColor(QPalette::Window, bg);
-    //m_pw->setPalette(p);
+    const TodayClipStat* stat = m_pw->m_clip_queue->get_today_clip_stat();
+    m_pw->m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(stat->get_repeated_count()));
 }
 
 void RepeatingClipState::play()

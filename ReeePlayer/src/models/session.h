@@ -15,6 +15,23 @@ namespace srs
     class ICardFactory;
 }
 
+class TodayClipStat
+{
+public:
+    TodayClipStat(const Library*, const File*);
+
+    void inc_added();
+    void inc_repeated();
+
+    int get_added_count() const;
+    int get_added_count_for_file() const;
+    int get_repeated_count() const;
+private:
+    int m_added_count = 0;
+    int m_added_count_for_file = 0;
+    int m_repeated_count = 0;
+};
+
 struct ClipPriorityCmp
 {
     ClipPriorityCmp(TimePoint cur_time);
@@ -39,11 +56,13 @@ public:
     virtual bool has_prev() const = 0;
     virtual bool next() = 0;
     virtual bool prev() = 0;
-    virtual int remain_count() const = 0;
+    virtual int overdue_count() const = 0;
 
     virtual void repeat(int rating) = 0;
 
     virtual void save_library() = 0;
+
+    virtual TodayClipStat* get_today_clip_stat() = 0;
 };
 
 class BaseClipQueue : public IClipQueue
@@ -64,21 +83,28 @@ public:
     bool has_prev() const override;
     bool next() override;
     bool prev() override;
-    int remain_count() const override;
+    int overdue_count() const override;
 
     void repeat(int rating) override;
 
     void save_library() override;
+
+    const TodayClipStat* get_today_clip_stat() const;
 protected:
+    BaseClipQueue(Library*, const File*);
+
     Clip* get_current_clip();
     const Clip* get_current_clip() const;
     void set_current_clip(Clip*);
 
     virtual const File* get_current_file() const;
     virtual File* get_current_file();
+
+    TodayClipStat* get_today_clip_stat();
 private:
     Library* m_library;
     Clip* m_current_clip = nullptr;
+    std::unique_ptr<TodayClipStat> m_today_clip_stat = nullptr;
 };
 
 class RepeatingClipQueue : public BaseClipQueue
@@ -94,11 +120,10 @@ public:
     bool has_prev()  const override;
     bool next() override;
     bool prev() override;
-    int remain_count() const override;
+    int overdue_count() const override;
 
     void repeat(int rating) override;
 private:
-    //App* m_app;
     std::vector<Clip*> m_clips;
     std::vector<Clip*> m_showed_clips;
     int m_showing_clip_index = -1;
@@ -122,30 +147,6 @@ class WatchClipQueue : public BaseClipQueue
 {
 public:
     WatchClipQueue(Library*, Clip*);
-};
-
-class Queue : public QObject
-{
-    Q_OBJECT
-public:
-    Queue(Library*, const std::vector<File*>&);
-    Queue(Library*, const std::vector<Clip*>&);
-    ~Queue();
-
-    bool has_prev_clip() const;
-    bool has_next_clip() const;
-    Clip* get_prev_clip();
-    Clip* get_next_clip();
-    void remove_clip(Clip*);
-    int remain_clips();
-
-    int get_num_clips() const;
-private:
-    std::vector<Clip*> m_clips;
-    std::vector<Clip*> m_showed_clips;
-    int m_showing_clip_index = -1;
-
-    Library* m_library;
 };
 
 #endif // !PROJECT_H

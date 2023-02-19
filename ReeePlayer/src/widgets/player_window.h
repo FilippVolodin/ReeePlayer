@@ -231,9 +231,6 @@ private:
     void save_jc_settings();
     std::shared_ptr<VADSettings> get_vad_settings() const;
 
-    std::pair<int, int> get_num_todays_added_clips() const;
-    int get_num_todays_repeated_clips() const;
-
     Ui::PlayerWindow ui;
 
     bool m_showed = false;
@@ -257,10 +254,6 @@ private:
     bool m_close_after_stopped = false;
 
     float m_playback_rate = 1.0;
-
-    int m_num_added_clips = 0;
-    int m_num_added_clips_for_file = 0;
-    int m_num_repeated_clips = 0;
 
     std::vector<QString> m_subtitle_files;
     SubtitlesView* m_subtitle_views[NUM_SUBS_VIEWS];
