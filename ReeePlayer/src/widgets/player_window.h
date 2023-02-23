@@ -17,7 +17,7 @@ class VAD;
 class VADSettings;
 class JumpCutterSettingsDialog;
 class IClipQueue;
-class ClipUserData;
+struct ClipUserData;
 
 namespace qsubs
 {
@@ -47,8 +47,8 @@ public:
     virtual void on_remove_clip() {}
     virtual void on_time_changed(int) {};
     virtual void on_player_timer_triggered(int) {};
-    virtual void on_waveform_mouse_release(int time, QMouseEvent*) {};
-    virtual void on_wheel_event(int time, QWheelEvent*) {};
+    virtual void on_waveform_mouse_release(int /*time*/, QMouseEvent*) {};
+    virtual void on_wheel_event(int /*time*/, QWheelEvent*) {};
 protected:
     PlayerWindow* m_pw;
 };
@@ -254,6 +254,8 @@ private:
     bool m_close_after_stopped = false;
 
     float m_playback_rate = 1.0;
+
+    int m_num_repeats = 0;
 
     std::vector<QString> m_subtitle_files;
     SubtitlesView* m_subtitle_views[NUM_SUBS_VIEWS];

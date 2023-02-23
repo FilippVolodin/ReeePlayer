@@ -12,7 +12,7 @@ class Library;
 
 namespace srs
 {
-    class ICardFactory;
+    class IFactory;
 }
 
 class TodayClipStat
@@ -132,14 +132,14 @@ private:
 class AddingClipsQueue : public BaseClipQueue
 {
 public:
-    AddingClipsQueue(Library*, File*, const srs::ICardFactory*);
+    AddingClipsQueue(Library*, File*, const srs::IFactory*);
 
     void set_clip_user_data(std::unique_ptr<ClipUserData>) override;
 protected:
     const File* get_current_file() const override;
     File* get_current_file() override;
 private:
-    const srs::ICardFactory* m_factory;
+    const srs::IFactory* m_srs_factory;
     File* m_file;
 };
 

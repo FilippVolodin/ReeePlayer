@@ -69,7 +69,7 @@ void WaveformView::paintEvent(QPaintEvent *)
 
     const std::vector<uint8_t>& volumes = m_waveform->get_max_volumes();
 
-    int length = volumes.size() * chunk_length_ms;
+    int length = ssize(volumes) * chunk_length_ms;
 
     double time_window;
 

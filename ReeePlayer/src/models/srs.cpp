@@ -3,20 +3,20 @@
 #include <srs_simple.h>
 #include <srs_fsrs.h>
 
-srs::ICardFactory::~ICardFactory()
+srs::IFactory::~IFactory()
 {
 }
 
-srs::CardFactory::CardFactory()
+srs::Factory::Factory()
 {
 }
 
-srs::ICardUPtr srs::CardFactory::create() const
+srs::ICardUPtr srs::Factory::create_card() const
 {
     return std::make_unique<srs::fsrs::Card>(m_fsrs);
 }
 
-srs::ICardUPtr srs::CardFactory::create(const QString& type) const
+srs::ICardUPtr srs::Factory::create_card(const QString& type) const
 {
     if (type == "simple")
         return std::make_unique<srs::simple::Card>();

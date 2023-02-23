@@ -42,7 +42,7 @@ void WebVideoWidget::play()
     page()->runJavaScript("play();");
 }
 
-void WebVideoWidget::play(int start_time, int stop_time, int repeats)
+void WebVideoWidget::play(int start_time, int stop_time, int /*repeats*/)
 {
     page()->runJavaScript(QString("seek_and_play(%1);").arg(start_time * 0.001),
         [this, stop_time](const QVariant&) {set_timer(stop_time); });

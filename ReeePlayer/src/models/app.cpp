@@ -19,7 +19,7 @@ App::App()
     else
         m_settings = std::make_unique<QSettings>();
 
-    m_card_factory = std::make_unique<srs::CardFactory>();
+    m_card_factory = std::make_unique<srs::Factory>();
 }
 
 App::~App()
@@ -178,7 +178,7 @@ void App::save_subtitle_priority(const QString& video_file, const SubsCollection
     m_settings->setValue("main/subs_priority", res.join("/"));
 }
 
-const srs::ICardFactory* App::get_card_factory() const
+const srs::IFactory* App::get_card_factory() const
 {
     return m_card_factory.get();
 }

@@ -193,7 +193,7 @@ MainWindow::~MainWindow()
     m_app->set_setting("gui", SPLITTER_STATE_KEY, ui.splitter->saveState());
 }
 
-void MainWindow::closeEvent(QCloseEvent* event)
+void MainWindow::closeEvent(QCloseEvent*)
 {
     qApp->quit();
 }
@@ -387,13 +387,11 @@ void MainWindow::on_player_window_destroyed()
 
 void MainWindow::on_library_view_expanded(const QModelIndex& index)
 {
-    LibraryItem* item = m_library_tree->get_item(index);
     m_library_tree->expanded(index);
 }
 
 void MainWindow::on_library_view_collapsed(const QModelIndex& index)
 {
-    LibraryItem* item = m_library_tree->get_item(index);
     m_library_tree->collapsed(index);
 }
 

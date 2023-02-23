@@ -6,22 +6,24 @@
 
 namespace srs
 {
-    class ICardFactory
+    class IFactory
     {
     public:
-        virtual ~ICardFactory() = 0;
+        virtual ~IFactory() = 0;
 
-        virtual ICardUPtr create() const = 0;
-        virtual ICardUPtr create(const QString& type) const = 0;
+        virtual ICardUPtr create_card() const = 0;
+        virtual ICardUPtr create_card(const QString& type) const = 0;
+
+
     };
 
-    class CardFactory : public ICardFactory
+    class Factory : public IFactory
     {
     public:
-        CardFactory();
+        Factory();
 
-        ICardUPtr create() const override;
-        ICardUPtr create(const QString& type) const override;
+        ICardUPtr create_card() const override;
+        ICardUPtr create_card(const QString& type) const override;
     private:
         srs::fsrs::FSRS m_fsrs;
     };

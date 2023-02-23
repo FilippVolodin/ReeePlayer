@@ -65,7 +65,7 @@ void SubtitlesTextEdit::keyPressEvent(QKeyEvent* e)
     QPlainTextEdit::keyPressEvent(e);
 }
 
-bool SubtitlesTextEdit::eventFilter(QObject* object, QEvent* event)
+bool SubtitlesTextEdit::eventFilter(QObject*, QEvent* event)
 {
     bool res = false;
     if (event->type() == QEvent::KeyPress || event->type() == QEvent::ShortcutOverride)

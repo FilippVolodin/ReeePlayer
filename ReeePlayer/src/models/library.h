@@ -8,7 +8,7 @@ class File;
 
 namespace srs
 {
-    class ICardFactory;
+    class IFactory;
 }
 
 class Library : public QObject
@@ -18,7 +18,7 @@ public:
     Library(QSettings*, const QString& root_path);
     ~Library();
 
-    void load(const srs::ICardFactory*);
+    void load(const srs::IFactory*);
 
     void save();
     void save(const File*);
@@ -34,7 +34,7 @@ signals:
     void clip_removed_sig(Clip*);
 
 private:
-    LibraryItem* scan_folder(const QString& path, bool is_root, const srs::ICardFactory*);
+    LibraryItem* scan_folder(const QString& path, bool is_root, const srs::IFactory*);
 
     LibraryItem* m_root;
     QString m_root_path;

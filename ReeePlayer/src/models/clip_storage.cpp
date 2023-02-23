@@ -211,7 +211,7 @@ bool export_txt(const std::vector<Clip*>& clips, const QString& filename)
     return true;
 }
 
-srs::ICardUPtr read_card(const QJsonObject& json_clip, int version, const srs::ICardFactory* card_factory)
+srs::ICardUPtr read_card(const QJsonObject& json_clip, int version, const srs::IFactory* card_factory)
 {
     bool res = true;
     srs::ICardUPtr card;
@@ -223,7 +223,7 @@ srs::ICardUPtr read_card(const QJsonObject& json_clip, int version, const srs::I
             if (json_card.contains("type") && json_card["type"].isString())
             {
                 QString type = json_card["type"].toString();
-                card = card_factory->create(type);
+                card = card_factory->create_card(type);
                 card->read(json_card);
             }
             else
@@ -235,7 +235,7 @@ srs::ICardUPtr read_card(const QJsonObject& json_clip, int version, const srs::I
     else
     {
         // Legacy
-        card = card_factory->create("simple");
+        card = card_factory->create_card("simple");
         card->read(json_clip);
     }
 
@@ -294,7 +294,7 @@ std::unique_ptr<ClipUserData> read_clip_user_data(const QJsonObject& json_clip, 
         return read_clip_user_data(json_clip);
 }
 
-File* load_file(Library* library, const QString& path, const srs::ICardFactory* card_factory)
+File* load_file(Library* library, const QString& path, const srs::IFactory* card_factory)
 {
     File* file = new File(library, path);
     QFileInfo info(path);

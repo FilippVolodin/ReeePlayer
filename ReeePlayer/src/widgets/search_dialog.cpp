@@ -21,12 +21,6 @@ SearchDialog::SearchDialog(App* app, std::vector<const LibraryItem*> items, QWid
 
     m_clips_model = new ClipModel(this);
     ui.tblClips->setModel(m_clips_model);
-    auto* hh = ui.tblClips->horizontalHeader();
-    //hh->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    //hh->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    //hh->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    //hh->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-    //hh->setSectionResizeMode(4, QHeaderView::ResizeToContents);
 
     QSortFilterProxyModel* proxy_model = new QSortFilterProxyModel(this);
     proxy_model->setSourceModel(m_clips_model);
@@ -159,7 +153,7 @@ void SearchDialog::export_clips(const std::vector<Clip*>& clips)
     if (anki_file.isEmpty())
         return;
 
-    QProgressDialog progress("Generating media files...", "Abort", 0, clips.size(), this);
+    QProgressDialog progress("Generating media files...", "Abort", 0, ssize(clips), this);
     progress.setWindowModality(Qt::WindowModal);
     progress.setMinimumDuration(1000);
 
@@ -211,7 +205,7 @@ void SearchDialog::export_clips(const std::vector<Clip*>& clips)
             clip_idx++;
         }
     }
-    progress.setValue(clips.size());
+    progress.setValue(ssize(clips));
 
     progress.setLabelText("Create Anki File...");
 

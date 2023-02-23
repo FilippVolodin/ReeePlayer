@@ -28,15 +28,15 @@ struct PlaybackRateItem
 
 PlaybackRateItem PLAYBACK_ITEMS[] =
 {
-    {0.5,  "0.5", Qt::Key_5},
-    {0.6,  "0.6", Qt::Key_6},
-    {0.7,  "0.7", Qt::Key_7},
-    {0.8,  "0.8", Qt::Key_8},
-    {0.9,  "0.9", Qt::Key_9},
-    {1.0,  "1",   Qt::Key_0},
-    {1.25, "1.2", Qt::Key_Minus},
-    {1.5,  "1.5", Qt::Key_Equal},
-    {2.0,  "2.0", Qt::Key_BracketRight},
+    {0.5f,  "0.5", Qt::Key_5},
+    {0.6f,  "0.6", Qt::Key_6},
+    {0.7f,  "0.7", Qt::Key_7},
+    {0.8f,  "0.8", Qt::Key_8},
+    {0.9f,  "0.9", Qt::Key_9},
+    {1.0f,  "1",   Qt::Key_0},
+    {1.25f, "1.2", Qt::Key_Minus},
+    {1.5f,  "1.5", Qt::Key_Equal},
+    {2.0f,  "2.0", Qt::Key_BracketRight},
 };
 
 
@@ -266,7 +266,7 @@ void PlayerWindow::closeEvent(QCloseEvent * event)
     QWidget::closeEvent(event);
 }
 
-void PlayerWindow::timerEvent(QTimerEvent* event)
+void PlayerWindow::timerEvent(QTimerEvent*)
 {
     if (m_video_widget->is_playing())
     {
@@ -525,6 +525,7 @@ void PlayerWindow::on_actPlayPause_triggered()
 
 void PlayerWindow::on_actRepeatClip_triggered()
 {
+    ++m_num_repeats;
     m_video_widget->play(get_loop_a(), get_loop_b(), 1);
 }
 
@@ -739,8 +740,8 @@ void PlayerWindow::show_video()
     for (int si = 0; si < subs.files.size(); ++si)
     {
         const QString& s = subs.files[si];
-        QString filename = fileinfo.absolutePath() + "/" + s;
-        m_subtitle_files.push_back(filename);
+        QString subs_filename = fileinfo.absolutePath() + "/" + s;
+        m_subtitle_files.push_back(subs_filename);
 
         QFileInfo sub_info(s);
         QString subs_file_name = sub_info.fileName();
@@ -860,6 +861,7 @@ void PlayerWindow::show_clip()
 
         ui.actPrevClip->setEnabled(m_clip_queue->has_prev());
     }
+    m_num_repeats = 1;
 }
 
 bool PlayerWindow::remove_clip_confirmation()
@@ -873,17 +875,17 @@ bool PlayerWindow::remove_clip_confirmation()
 
 std::unique_ptr<ClipUserData> PlayerWindow::get_clip_user_data()
 {
-    std::unique_ptr<ClipUserData> data = std::make_unique<ClipUserData>();
+    std::unique_ptr<ClipUserData> user_data = std::make_unique<ClipUserData>();
 
-    data->begin = get_loop_a();
-    data->end = get_loop_b();
+    user_data->begin = get_loop_a();
+    user_data->end = get_loop_b();
 
-    data->subtitles.resize(NUM_SUBS_VIEWS);
+    user_data->subtitles.resize(NUM_SUBS_VIEWS);
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
-        data->subtitles[i] = m_subtitle_views[i]->get_text();
+        user_data->subtitles[i] = m_subtitle_views[i]->get_text();
 
-    data->is_favorite = ui.actAddToFavorite->isChecked();
-    return data;
+    user_data->is_favorite = ui.actAddToFavorite->isChecked();
+    return user_data;
 }
 
 void PlayerWindow::update_insert_button(int index, int value)
@@ -1372,7 +1374,6 @@ void AddingClipState::on_save_clip()
 {
     m_pw->save_new_clip();
 
-    Ui::PlayerWindow& ui = m_pw->ui;
     m_pw->m_video_widget->set_time(m_pw->get_loop_a());
     m_pw->m_video_widget->play();
 

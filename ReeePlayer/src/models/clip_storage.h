@@ -9,7 +9,7 @@ class Library;
 
 namespace srs
 {
-    class ICardFactory;
+    class IFactory;
 }
 
 using ReadClipException = std::exception;
@@ -118,7 +118,7 @@ public:
 
 bool export_txt(const std::vector<Clip*>&, const QString& filename);
 
-File* load_file(Library* library, const QString& path, const srs::ICardFactory* card_factory);
+File* load_file(Library* library, const QString& path, const srs::IFactory* card_factory);
 void save_file(const File* file);
 
 #endif // !ICLIP_H

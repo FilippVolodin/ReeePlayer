@@ -10,7 +10,7 @@ ClipModel::ClipModel(QObject* parent)
 
 int ClipModel::rowCount(const QModelIndex&) const
 {
-    return m_clips ? m_clips->size() : 0;
+    return m_clips ? ssize(*m_clips) : 0;
 }
 
 int ClipModel::columnCount(const QModelIndex&) const

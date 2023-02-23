@@ -7,7 +7,7 @@ bool is_speed_equal(float speed1, float speed2)
     return std::abs(speed1 - speed2) < 0.1;
 }
 
-constexpr float SILENCE_SPEEDS[] = { 0.0, 0.5, 1.01, 1.5, 2.0, 2.5, 3.0, 5.0 };
+constexpr float SILENCE_SPEEDS[] = { 0.0f, 0.5f, 1.01f, 1.5f, 2.0f, 2.5f, 3.0f, 5.0f };
 
 JumpCutterSettingsDialog::JumpCutterSettingsDialog(QWidget *parent)
     : QDialog(parent)

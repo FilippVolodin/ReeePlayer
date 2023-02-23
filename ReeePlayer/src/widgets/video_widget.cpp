@@ -306,8 +306,7 @@ bool VideoWidget::at_end() const
 
 void VideoWidget::set_audio_track(int track_index)
 {
-    int res = libvlc_audio_set_track(m_vlc_mp, track_index);
-    int temp = 0;
+    libvlc_audio_set_track(m_vlc_mp, track_index);
 }
 
 void VideoWidget::prepare_to_destroy()

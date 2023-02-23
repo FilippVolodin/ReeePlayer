@@ -35,7 +35,7 @@ Library::~Library()
     delete m_root;
 }
 
-void Library::load(const srs::ICardFactory* card_factory)
+void Library::load(const srs::IFactory* card_factory)
 {
     m_block_notifications = true;
 
@@ -131,7 +131,7 @@ void Library::save(const Clip* clip)
     m_changed_files.insert(clip->get_file());
 }
 
-LibraryItem* Library::scan_folder(const QString& path, bool is_root, const srs::ICardFactory* card_factory)
+LibraryItem* Library::scan_folder(const QString& path, bool is_root, const srs::IFactory* card_factory)
 {
     QDir dir(path);
     dir.setFilter(

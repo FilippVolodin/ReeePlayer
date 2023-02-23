@@ -172,7 +172,7 @@ int BaseClipQueue::overdue_count() const
     return 0;
 }
 
-void BaseClipQueue::repeat(int rating)
+void BaseClipQueue::repeat(int /*rating*/)
 {
 }
 
@@ -338,15 +338,15 @@ void RepeatingClipQueue::repeat(int rating)
     }
 }
 
-AddingClipsQueue::AddingClipsQueue(Library* library, File* file, const srs::ICardFactory* factory)
-    : BaseClipQueue(library, file), m_file(file), m_factory(factory)
+AddingClipsQueue::AddingClipsQueue(Library* library, File* file, const srs::IFactory* factory)
+    : BaseClipQueue(library, file), m_file(file), m_srs_factory(factory)
 {
 }
 
 void AddingClipsQueue::set_clip_user_data(std::unique_ptr<ClipUserData> user_data)
 {
     Clip* new_clip = new Clip();
-    srs::ICardUPtr card = m_factory->create();
+    srs::ICardUPtr card = m_srs_factory->create_card();
     new_clip->set_card(std::move(card));
     new_clip->generate_uid();
     new_clip->set_adding_time(now());

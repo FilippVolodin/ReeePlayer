@@ -34,10 +34,6 @@ void JumpCutter::read_volumes(const QString& filename)
     m_max_volume.clear();
     m_max_volume.reserve(size);
 
-    const int window_size = 20;
-    int sum = 0;
-    int count = 0;
-
     for (int chunk = 0; chunk < size; chunk++)
     {
         int8_t v;
@@ -225,14 +221,8 @@ std::vector<uint8_t> read_wav(QString filename, std::function<void(QString)> log
     log("Start waveform generation");
 
     int sample_rate = audioFile.getSampleRate();
-    int bit_depth = audioFile.getBitDepth();
-
-    int num_samples = audioFile.getNumSamplesPerChannel();
     double length = audioFile.getLengthInSeconds();
-
     int num_channels = audioFile.getNumChannels();
-    bool isMono = audioFile.isMono();
-    bool isStereo = audioFile.isStereo();
 
     const int num_chunks = static_cast<int>(length / chunk_length_ms * 1000);
 

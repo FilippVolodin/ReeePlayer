@@ -24,7 +24,7 @@ public:
     void set_margin_after(int);
 private:
     bool m_enabled = true;
-    float m_voice_prob_th = 0.02;
+    float m_voice_prob_th = 0.02f;
     int m_non_voice_volume = 100;
     float m_non_voice_speed = 0.0;
     int m_min_non_voice_interval = 300;
