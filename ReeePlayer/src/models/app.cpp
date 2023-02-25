@@ -178,7 +178,7 @@ void App::save_subtitle_priority(const QString& video_file, const SubsCollection
     m_settings->setValue("main/subs_priority", res.join("/"));
 }
 
-const srs::IFactory* App::get_card_factory() const
+const srs::IFactory* App::get_srs_factory() const
 {
     return m_card_factory.get();
 }

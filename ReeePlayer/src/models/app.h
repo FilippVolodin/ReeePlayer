@@ -41,7 +41,7 @@ public:
     SubsCollection get_subtitles(const QString& video_file);
     void save_subtitle_priority(const QString& video_file, const SubsCollection&);
 
-    const srs::IFactory* get_card_factory() const;
+    const srs::IFactory* get_srs_factory() const;
 private:
     SubsCollection get_subtitles(const QString& video_file, const QString& priorities);
 

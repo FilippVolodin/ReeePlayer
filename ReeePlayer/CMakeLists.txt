@@ -52,6 +52,7 @@ target_sources(ReeePlayer PRIVATE
     src/widgets/search_dialog.cpp
     src/widgets/export_dialog.cpp
     src/widgets/clips_view.cpp
+    src/widgets/star_widget.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -71,7 +72,12 @@ target_sources(ReeePlayer PRIVATE
     src/models/srs.cpp
 )
 	
-target_include_directories(ReeePlayer PRIVATE 3rdparty/vlc/include src src/models)
+target_include_directories(ReeePlayer PRIVATE
+    3rdparty/vlc/include
+    src
+    src/models
+    src/widgets
+)
 
 target_precompile_headers(ReeePlayer PUBLIC src/pch.h)
 

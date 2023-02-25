@@ -16,6 +16,7 @@ class IVideoWidget;
 class VAD;
 class VADSettings;
 class JumpCutterSettingsDialog;
+class StarWidget;
 class IClipQueue;
 struct ClipUserData;
 
@@ -23,6 +24,11 @@ namespace qsubs
 {
     class ISubtitles;
     class ICue;
+}
+
+namespace srs
+{
+    class IModel;
 }
 
 class PlayerWindow;
@@ -236,11 +242,11 @@ private:
     bool m_showed = false;
 
     App* m_app;
-    Library* m_library;
     std::shared_ptr<IClipQueue> m_clip_queue;
     std::shared_ptr<Waveform> m_waveform;
     std::shared_ptr<VAD> m_vad;
     std::shared_ptr<JumpCutterSettings> m_jc_settings;
+    std::unique_ptr<srs::IModel> m_srs_model;
 
     ClipInfoDialog* m_clip_info_dialog;
     JumpCutterSettingsDialog* m_jc_dialog;
@@ -278,9 +284,9 @@ private:
     QLabel* m_lbl_clip_stats;
     QLabel* m_lbl_info;
 
-    QColor m_default_bg;
-
     QButtonGroup* m_rate_btn_group;
+
+    StarWidget* m_star_widget = nullptr;
 };
 
 #endif // !PLAYER_WINDOW_H

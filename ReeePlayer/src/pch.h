@@ -51,6 +51,7 @@
 #include <QUuid>
 #include <QProgressDialog>
 #include <QTableView>
+#include <QToolTip>
 
 #include <algorithm>
 #include <optional>

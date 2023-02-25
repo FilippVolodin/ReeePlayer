@@ -18,6 +18,7 @@
 #include <time.h>
 #include <srs_interfaces.h>
 #include <srs.h>
+#include <star_widget.h>
 
 struct PlaybackRateItem
 {
@@ -142,6 +143,9 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
         w = video_widget;
     }
 
+    // TODO move
+    m_srs_model = m_app->get_srs_factory()->create_model();
+
     auto sp = w->sizePolicy();
     sp.setVerticalStretch(5);
     w->setSizePolicy(sp);
@@ -162,9 +166,6 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 
     ui.dockWidget1->toggleViewAction()->setText("Show/hide subtitles 1");
     ui.dockWidget2->toggleViewAction()->setText("Show/hide subtitles 2");
-
-    m_default_bg = palette().color(QPalette::Window);
-    m_library = m_app->get_library();
 
     for (const qsubs::ICue*& cue : m_cues)
         cue = nullptr;
@@ -341,6 +342,10 @@ void PlayerWindow::setup_actions()
 
     connect(ui.waveform, &WaveformView::wheel_event, [this](int time, QWheelEvent* event) {
         m_ui_state->on_wheel_event(time, event); });
+
+    m_star_widget = new StarWidget(this);
+    m_star_widget->set_ratings({ "Again", "Hard", "Medium", "Easy" });
+    ui.toolBar->addWidget(m_star_widget);
 };
 
 void PlayerWindow::setup_player_events()
@@ -1173,6 +1178,7 @@ void UIState::activate()
     m_pw->m_edt_loop_a_action->setVisible(false);
     m_pw->m_edt_loop_b_action->setVisible(false);
 
+    m_pw->m_star_widget->setVisible(false);
     //QPalette p = m_pw->palette();
     //QColor bg = m_pw->m_default_bg;
     //p.setColor(QPalette::Window, bg);
@@ -1546,6 +1552,8 @@ void RepeatingClipState::activate()
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
+
+    m_pw->m_star_widget->setVisible(true);
 
     m_pw->m_video_widget->get_widget()->setFocus();
     

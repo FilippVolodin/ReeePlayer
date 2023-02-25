@@ -538,7 +538,7 @@ void MainWindow::watch(File* file)
     pw->set_vad(vad);
 
     std::shared_ptr<IClipQueue> queue =
-        std::make_shared<AddingClipsQueue>(m_app->get_library(), file, m_app->get_card_factory());
+        std::make_shared<AddingClipsQueue>(m_app->get_library(), file, m_app->get_srs_factory());
     pw->run(Mode::Watching, queue);
 }
 
