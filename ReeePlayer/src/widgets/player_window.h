@@ -47,6 +47,7 @@ public:
     virtual void play() {};
     virtual void set_time(int) {}
 
+    virtual void on_next_clip() {}
     virtual void on_close() {}
     virtual void on_save_clip() {}
     virtual void on_cancel_clip() {}
@@ -120,6 +121,7 @@ public:
     void activate() override;
 
     void play() override;
+    void on_next_clip() override;
     void on_remove_clip() override;
     void on_player_timer_triggered(int) override;
 };
@@ -197,6 +199,8 @@ private:
 
     void on_vad_progress_updated(int, int);
 
+    void on_rating_changed(int);
+
     void set_slider_value(int value);
 
     void set_duration(int);
@@ -205,7 +209,6 @@ private:
     void set_state(std::shared_ptr<UIState>);
 
     void show_video();
-
     void show_clip();
 
     bool remove_clip_confirmation();
@@ -229,8 +232,8 @@ private:
 
     void save_new_clip();
     void save_current_clip();
-
     bool remove_clip();
+    void next_clip();
 
     void jumpcutter(int);
     void load_jc_settings();
@@ -277,6 +280,7 @@ private:
 
     QShortcut* m_forward_shortcut;
     QShortcut* m_backward_shortcut;
+    QShortcut* m_return_shortcut;
     QShortcut* m_escape_shortcut;
     QShortcut* m_show_subtitles0_shortcut;
     QShortcut* m_show_subtitles1_shortcut;
@@ -287,6 +291,7 @@ private:
     QButtonGroup* m_rate_btn_group;
 
     StarWidget* m_star_widget = nullptr;
+    QAction* m_star_widget_action = nullptr;
 };
 
 #endif // !PLAYER_WINDOW_H

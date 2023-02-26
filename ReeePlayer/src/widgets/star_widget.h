@@ -17,6 +17,10 @@ public:
 
     int get_rating() const;
     void set_rating(int);
+
+signals:
+    void rating_changed(int);
+
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;

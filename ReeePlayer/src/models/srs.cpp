@@ -5,12 +5,14 @@
 
 int srs::Model::get_default_rating(int replays_count) const
 {
-    int rating = 4 - replays_count;
-    if (rating < 0)
-        rating = 0;
-    else if (rating > 3)
-        rating = 3;
-    return rating;
+    if (replays_count <= 2)
+        return 3;
+    else if (replays_count <= 4)
+        return 2;
+    else if (replays_count <= 6)
+        return 1;
+    else
+        return 0;
 }
 
 srs::Factory::Factory()

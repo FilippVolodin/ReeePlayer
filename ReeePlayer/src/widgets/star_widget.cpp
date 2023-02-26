@@ -52,6 +52,7 @@ int StarWidget::get_rating() const
 void StarWidget::set_rating(int rating)
 {
     m_star_count = rating;
+    update();
 }
 
 void StarWidget::paintEvent(QPaintEvent *)
@@ -86,6 +87,7 @@ void StarWidget::mouseReleaseEvent(QMouseEvent *event)
     if (star != -1)
     {
         m_star_count = star;
+        emit rating_changed(m_star_count);
         update();
     }
 

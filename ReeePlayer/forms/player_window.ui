@@ -321,7 +321,7 @@ QSlider::sub-page:horizontal {
      <normaloff>:/MainWindow/save_clip</normaloff>:/MainWindow/save_clip</iconset>
    </property>
    <property name="text">
-    <string>Save Clip</string>
+    <string>Save</string>
    </property>
    <property name="toolTip">
     <string>Save Clip</string>
@@ -336,10 +336,10 @@ QSlider::sub-page:horizontal {
      <normaloff>:/MainWindow/cancel_clip</normaloff>:/MainWindow/cancel_clip</iconset>
    </property>
    <property name="text">
-    <string>Cancel Clip</string>
+    <string>Cancel</string>
    </property>
    <property name="toolTip">
-    <string>Cancel Clip</string>
+    <string>Cancel</string>
    </property>
    <property name="shortcut">
     <string>Del</string>
@@ -351,7 +351,7 @@ QSlider::sub-page:horizontal {
      <normaloff>:/MainWindow/delete</normaloff>:/MainWindow/delete</iconset>
    </property>
    <property name="text">
-    <string>Remove Clip</string>
+    <string>Remove</string>
    </property>
    <property name="toolTip">
     <string>Remove Clip</string>
@@ -366,7 +366,7 @@ QSlider::sub-page:horizontal {
      <normaloff>:/MainWindow/prev</normaloff>:/MainWindow/prev</iconset>
    </property>
    <property name="text">
-    <string>Prev Clip</string>
+    <string>Prev</string>
    </property>
    <property name="toolTip">
     <string>Prev Clip</string>
@@ -381,13 +381,10 @@ QSlider::sub-page:horizontal {
      <normaloff>:/MainWindow/next</normaloff>:/MainWindow/next</iconset>
    </property>
    <property name="text">
-    <string>Next Clip</string>
+    <string>Next</string>
    </property>
    <property name="toolTip">
     <string>Next Clip</string>
-   </property>
-   <property name="shortcut">
-    <string>Return</string>
    </property>
   </action>
   <action name="actRepeatClip">

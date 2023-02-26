@@ -29,12 +29,12 @@ struct PlaybackRateItem
 
 PlaybackRateItem PLAYBACK_ITEMS[] =
 {
-    {0.5f,  "0.5", Qt::Key_5},
-    {0.6f,  "0.6", Qt::Key_6},
-    {0.7f,  "0.7", Qt::Key_7},
-    {0.8f,  "0.8", Qt::Key_8},
-    {0.9f,  "0.9", Qt::Key_9},
-    {1.0f,  "1",   Qt::Key_0},
+    {0.5f,  ".5", Qt::Key_5},
+    {0.6f,  ".6", Qt::Key_6},
+    {0.7f,  ".7", Qt::Key_7},
+    {0.8f,  ".8", Qt::Key_8},
+    {0.9f,  ".9", Qt::Key_9},
+    {1.0f,  " 1 ", Qt::Key_0},
     {1.25f, "1.2", Qt::Key_Minus},
     {1.5f,  "1.5", Qt::Key_Equal},
     {2.0f,  "2.0", Qt::Key_BracketRight},
@@ -345,8 +345,9 @@ void PlayerWindow::setup_actions()
 
     m_star_widget = new StarWidget(this);
     m_star_widget->set_ratings({ "Again", "Hard", "Medium", "Easy" });
-    ui.toolBar->addWidget(m_star_widget);
-};
+    m_star_widget_action = ui.toolBar->addWidget(m_star_widget);
+    connect(m_star_widget, &StarWidget::rating_changed, this, &PlayerWindow::on_rating_changed);
+}
 
 void PlayerWindow::setup_player_events()
 {
@@ -409,6 +410,12 @@ void PlayerWindow::setup_shortcuts()
     connect(m_backward_shortcut, &QShortcut::activated,
         [this]() { rewind(-2000); });
 
+    QKeySequence ret;
+    m_return_shortcut = new QShortcut(this);
+    m_return_shortcut->setKeys({ tr("Return"), tr("Ctrl+Return") });
+    connect(m_return_shortcut, &QShortcut::activated,
+        [this]() { m_ui_state->on_next_clip(); });
+
     for (auto it = LOOP_KEYS.begin(); it != LOOP_KEYS.end(); ++it)
     {
         QKeySequence key = it.key();
@@ -435,13 +442,14 @@ void PlayerWindow::setup_playback_rates()
     m_rate_btn_group = new QButtonGroup(this);
     m_rate_btn_group->setExclusive(true);
     int id = 0;
+    QFontMetrics fm(font());
     for (const auto& item : PLAYBACK_ITEMS)
     {
         QPushButton* b = new QPushButton(this);
         b->setText(item.text);
         b->setToolTip(QString("Hotkey: %1").arg(item.key.toString()));
         b->setCheckable(true);
-        b->setMaximumWidth(30);
+        b->setMaximumWidth(fm.horizontalAdvance(item.text) + 15);
         b->setFocusPolicy(Qt::NoFocus);
         m_rate_btn_group->addButton(b);
         m_rate_btn_group->setId(b, id);
@@ -481,8 +489,6 @@ void PlayerWindow::on_actPrevClip_triggered()
         m_clip_queue->set_clip_user_data(get_clip_user_data());
         m_clip_queue->save_library();
 
-        m_video_widget->get_widget()->setFocus();
-
         m_clip_queue->prev();
         show_clip();
     }
@@ -490,23 +496,14 @@ void PlayerWindow::on_actPrevClip_triggered()
 
 void PlayerWindow::on_actNextClip_triggered()
 {
-    m_clip_queue->set_clip_user_data(get_clip_user_data());
-
-    if (!m_clip_queue->has_next())
+    if (m_clip_queue->has_next())
     {
-        // We didn't repeat clip in this session
-        m_clip_queue->repeat(3);
+        m_clip_queue->set_clip_user_data(get_clip_user_data());
+        m_clip_queue->save_library();
 
-        const TodayClipStat* stat = m_clip_queue->get_today_clip_stat();
-        m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(stat->get_repeated_count()));
+        m_clip_queue->next();
+        show_clip();
     }
-
-    m_video_widget->get_widget()->setFocus();
-
-    m_clip_queue->save_library();
-
-    m_clip_queue->next();
-    show_clip();
 }
 
 void PlayerWindow::on_actRemoveClip_triggered()
@@ -531,6 +528,9 @@ void PlayerWindow::on_actPlayPause_triggered()
 void PlayerWindow::on_actRepeatClip_triggered()
 {
     ++m_num_repeats;
+    int rating = m_srs_model->get_default_rating(m_num_repeats);
+    m_star_widget->set_rating(rating + 1);
+
     m_video_widget->play(get_loop_a(), get_loop_b(), 1);
 }
 
@@ -703,6 +703,11 @@ void PlayerWindow::on_vad_progress_updated(int ready_chunks, int total_chunks)
     }
 }
 
+void PlayerWindow::on_rating_changed(int)
+{
+    next_clip();
+}
+
 void PlayerWindow::set_slider_value(int value)
 {
     ui.slider->blockSignals(true);
@@ -854,6 +859,10 @@ void PlayerWindow::show_clip()
         m_subtitle_views[i]->set_text(clip_data->subtitles[i]);
     }
 
+    ui.actPrevClip->setEnabled(m_clip_queue->has_prev());
+    ui.actNextClip->setEnabled(m_clip_queue->has_next());
+
+    // TODO move from here
     if (m_mode == Mode::Repeating)
     {
         int remains = m_clip_queue->overdue_count();
@@ -864,9 +873,17 @@ void PlayerWindow::show_clip()
         else
             m_lbl_info->clear();
 
-        ui.actPrevClip->setEnabled(m_clip_queue->has_prev());
+        const TodayClipStat* stat = m_clip_queue->get_today_clip_stat();
+        m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(stat->get_repeated_count()));
+
+        m_star_widget_action->setVisible(!m_clip_queue->has_next());
+        m_return_shortcut->setEnabled(!m_clip_queue->has_next());
+
+        m_num_repeats = 1;
+        int rating = m_srs_model->get_default_rating(m_num_repeats);
+        m_star_widget->set_rating(rating + 1);
     }
-    m_num_repeats = 1;
+    m_video_widget->get_widget()->setFocus();
 }
 
 bool PlayerWindow::remove_clip_confirmation()
@@ -1061,6 +1078,20 @@ bool PlayerWindow::remove_clip()
     return false;
 }
 
+void PlayerWindow::next_clip()
+{
+    save_current_clip();
+
+    if (!m_clip_queue->has_next())
+    {
+        int rating = m_star_widget->get_rating();
+        m_clip_queue->repeat(rating - 1);
+    }
+
+    m_clip_queue->next();
+    show_clip();
+}
+
 void PlayerWindow::jumpcutter(int t)
 {
     if (!m_vad || !m_jc_settings || !m_jc_settings->is_enabled())
@@ -1178,7 +1209,9 @@ void UIState::activate()
     m_pw->m_edt_loop_a_action->setVisible(false);
     m_pw->m_edt_loop_b_action->setVisible(false);
 
-    m_pw->m_star_widget->setVisible(false);
+    m_pw->m_star_widget_action->setVisible(false);
+
+    m_pw->m_return_shortcut->setEnabled(false);
     //QPalette p = m_pw->palette();
     //QColor bg = m_pw->m_default_bg;
     //p.setColor(QPalette::Window, bg);
@@ -1478,7 +1511,6 @@ void WatchingClipState::activate()
     ui.btnPlay->setDefaultAction(ui.actRepeatClip);
 
     ui.actSaveClip->setVisible(true);
-    ui.actCancelClip->setVisible(true);
 
     ui.actAddToFavorite->setVisible(true);
 
@@ -1553,7 +1585,7 @@ void RepeatingClipState::activate()
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
 
-    m_pw->m_star_widget->setVisible(true);
+    m_pw->m_star_widget_action->setVisible(true);
 
     m_pw->m_video_widget->get_widget()->setFocus();
     
@@ -1566,13 +1598,17 @@ void RepeatingClipState::activate()
         m_pw->m_subtitle_views[i]->set_show_always(v.isNull() ? true : v.toBool());
     }
 
-    const TodayClipStat* stat = m_pw->m_clip_queue->get_today_clip_stat();
-    m_pw->m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(stat->get_repeated_count()));
+    m_pw->m_return_shortcut->setEnabled(true);
 }
 
 void RepeatingClipState::play()
 {
     m_pw->m_video_widget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
+}
+
+void RepeatingClipState::on_next_clip()
+{
+    m_pw->next_clip();
 }
 
 void RepeatingClipState::on_remove_clip()
