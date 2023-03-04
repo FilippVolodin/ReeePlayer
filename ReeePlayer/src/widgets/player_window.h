@@ -108,6 +108,7 @@ public:
     void activate() override;
 
     void play() override;
+    void on_close() override;
     void on_save_clip() override;
     void on_cancel_clip() override;
     void on_remove_clip() override;
@@ -121,6 +122,7 @@ public:
     void activate() override;
 
     void play() override;
+    void on_close() override;
     void on_next_clip() override;
     void on_remove_clip() override;
     void on_player_timer_triggered(int) override;

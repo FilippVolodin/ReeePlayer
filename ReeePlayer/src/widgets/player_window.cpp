@@ -1538,6 +1538,11 @@ void WatchingClipState::play()
     m_pw->m_video_widget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
 }
 
+void WatchingClipState::on_close()
+{
+    m_pw->save_current_clip();
+}
+
 void WatchingClipState::on_save_clip()
 {
     m_pw->save_current_clip();
@@ -1604,6 +1609,11 @@ void RepeatingClipState::activate()
 void RepeatingClipState::play()
 {
     m_pw->m_video_widget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
+}
+
+void RepeatingClipState::on_close()
+{
+    m_pw->save_current_clip();
 }
 
 void RepeatingClipState::on_next_clip()
