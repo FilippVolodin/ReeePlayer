@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1052</width>
-    <height>769</height>
+    <width>1412</width>
+    <height>1075</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -157,7 +157,7 @@ QSlider::sub-page:horizontal {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1052</width>
+     <width>1412</width>
      <height>22</height>
     </rect>
    </property>
@@ -281,6 +281,20 @@ QSlider::sub-page:horizontal {
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockJC">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>VAD Settings</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_31">
+    <layout class="QFormLayout" name="formLayout"/>
+   </widget>
+  </widget>
   <action name="actPlayPause">
    <property name="checkable">
     <bool>true</bool>
@@ -402,18 +416,6 @@ QSlider::sub-page:horizontal {
     <string>Space</string>
    </property>
   </action>
-  <action name="actJumpCutterSettings">
-   <property name="icon">
-    <iconset resource="mainwindow.qrc">
-     <normaloff>:/MainWindow/settings</normaloff>:/MainWindow/settings</iconset>
-   </property>
-   <property name="text">
-    <string>JumpCutter Settings</string>
-   </property>
-   <property name="toolTip">
-    <string>JumpCutter</string>
-   </property>
-  </action>
   <action name="actShowWaveform">
    <property name="checkable">
     <bool>true</bool>
@@ -427,21 +429,6 @@ QSlider::sub-page:horizontal {
    </property>
    <property name="toolTip">
     <string>Show Waveform</string>
-   </property>
-  </action>
-  <action name="actJumpCutter">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="mainwindow.qrc">
-     <normaloff>:/MainWindow/jumpcutter</normaloff>:/MainWindow/jumpcutter</iconset>
-   </property>
-   <property name="text">
-    <string>JumpCutter</string>
-   </property>
-   <property name="toolTip">
-    <string>Activate JumpCutter</string>
    </property>
   </action>
   <action name="actAddToFavorite">

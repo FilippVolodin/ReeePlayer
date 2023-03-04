@@ -4,6 +4,9 @@ public:
     bool is_enabled() const;
     void set_enabled(bool);
 
+    bool is_activated() const;
+    void set_activated(bool);
+
     int get_non_voice_volume() const;
     void set_non_voice_volume(int);
 
@@ -24,6 +27,7 @@ public:
     void set_margin_after(int);
 private:
     bool m_enabled = true;
+    bool m_activated = true;
     float m_voice_prob_th = 0.02f;
     int m_non_voice_volume = 100;
     float m_non_voice_speed = 0.0;

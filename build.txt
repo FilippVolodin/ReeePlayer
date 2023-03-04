@@ -12,6 +12,7 @@ yt-dlp
 
 mkdir qt6-build
 cd qt6-build
+"c:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
 ..\qt6\configure -webengine-proprietary-codecs -release -prefix ../install
 cmake --build .
 cmake --install .

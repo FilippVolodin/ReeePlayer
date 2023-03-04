@@ -15,7 +15,7 @@ class JumpCutterSettings;
 class IVideoWidget;
 class VAD;
 class VADSettings;
-class JumpCutterSettingsDialog;
+class JCSettingsWidget;
 class StarWidget;
 class IClipQueue;
 struct ClipUserData;
@@ -165,6 +165,7 @@ private:
     void setup_slider();
     void setup_shortcuts();
     void setup_playback_rates();
+    void setup_jc_settings();
     void restore_state();
 
     void on_actAddClip_triggered();
@@ -175,7 +176,6 @@ private:
     void on_actRemoveClip_triggered();
     void on_actPlayPause_triggered();
     void on_actRepeatClip_triggered();
-    void on_actJumpCutterSettings_triggered();
     void on_actShowWaveform_triggered(bool);
     void on_actJumpCutter_triggered(bool);
 
@@ -254,7 +254,7 @@ private:
     std::unique_ptr<srs::IModel> m_srs_model;
 
     ClipInfoDialog* m_clip_info_dialog;
-    JumpCutterSettingsDialog* m_jc_dialog;
+    JCSettingsWidget* m_jc_settings_widget;
 
     Mode m_mode;
 

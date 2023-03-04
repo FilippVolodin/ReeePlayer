@@ -287,6 +287,16 @@ void JumpCutterSettings::set_enabled(bool enabled)
     m_enabled = enabled;
 }
 
+bool JumpCutterSettings::is_activated() const
+{
+    return m_activated;
+}
+
+void JumpCutterSettings::set_activated(bool activated)
+{
+    m_activated = activated;
+}
+
 int JumpCutterSettings::get_non_voice_volume() const
 {
     return m_non_voice_volume;

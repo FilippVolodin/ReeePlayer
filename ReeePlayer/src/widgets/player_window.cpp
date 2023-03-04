@@ -11,7 +11,6 @@
 #include "models/vad.h"
 #include "models/waveform.h"
 #include "waveform_view.h"
-#include "jumpcutter_settings_dialog.h"
 #include "video_widget.h"
 #include "web_video_widget.h"
 #include "emitter.h"
@@ -19,6 +18,7 @@
 #include <srs_interfaces.h>
 #include <srs.h>
 #include <star_widget.h>
+#include <jc_settings_widget.h>
 
 struct PlaybackRateItem
 {
@@ -166,6 +166,7 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 
     ui.dockWidget1->toggleViewAction()->setText("Show/hide subtitles 1");
     ui.dockWidget2->toggleViewAction()->setText("Show/hide subtitles 2");
+    ui.dockJC->toggleViewAction()->setText("Show/hide JC Settings");
 
     for (const qsubs::ICue*& cue : m_cues)
         cue = nullptr;
@@ -189,6 +190,8 @@ QMenu* PlayerWindow::createPopupMenu()
     QMenu* menu = new QMenu(this);
     menu->addAction(ui.dockWidget1->toggleViewAction());
     menu->addAction(ui.dockWidget2->toggleViewAction());
+    if (m_mode == Mode::Watching)
+        menu->addAction(ui.dockJC->toggleViewAction());
     return menu;
 }
 
@@ -288,14 +291,6 @@ void PlayerWindow::setup_actions()
     ui.toolBar->addAction(ui.actShowWaveform);
     connect(ui.actShowWaveform, &QAction::triggered,
         this, &PlayerWindow::on_actShowWaveform_triggered);
-
-    ui.toolBar->addAction(ui.actJumpCutter);
-    connect(ui.actJumpCutter, &QAction::triggered,
-        this, &PlayerWindow::on_actJumpCutter_triggered);
-
-    ui.toolBar->addAction(ui.actJumpCutterSettings);
-    connect(ui.actJumpCutterSettings, &QAction::triggered,
-        this, &PlayerWindow::on_actJumpCutterSettings_triggered);
 
     m_edt_loop_a = new SpinBox(this);
     m_edt_loop_a_action = ui.toolBar->addWidget(m_edt_loop_a);
@@ -461,6 +456,36 @@ void PlayerWindow::setup_playback_rates()
         this, &PlayerWindow::on_set_playback_rate);
 }
 
+void PlayerWindow::setup_jc_settings()
+{
+    load_jc_settings();
+    if (m_vad)
+    {
+        m_vad->apply_settings(get_vad_settings());
+        bool jc_enabled = m_app->get_setting("jumpcutter", "activated", true).toBool();
+        m_jc_settings->set_activated(jc_enabled);
+    }
+    else
+    {
+        m_jc_settings->set_enabled(false);
+    }
+
+    m_jc_settings_widget = new JCSettingsWidget(this);
+    m_jc_settings_widget->set_settings(m_jc_settings);
+    connect(m_jc_settings_widget, &JCSettingsWidget::applied,
+        [this]()
+        {
+            m_jc_settings = m_jc_settings_widget->get_settings();
+            if (m_vad)
+                m_vad->apply_settings(get_vad_settings());
+        });
+
+    ui.dockJC->setWidget(m_jc_settings_widget);
+
+    bool show_vad_setting = m_app->get_setting("gui", "show_vad_settings", true).toBool();
+    ui.dockJC->setVisible(show_vad_setting);
+}
+
 void PlayerWindow::restore_state()
 {
     QByteArray ss = m_app->get_setting("gui", WINDOW_STATE_KEY).toByteArray();
@@ -534,26 +559,10 @@ void PlayerWindow::on_actRepeatClip_triggered()
     m_video_widget->play(get_loop_a(), get_loop_b(), 1);
 }
 
-void PlayerWindow::on_actJumpCutterSettings_triggered()
-{
-    m_jc_dialog->show();
-}
-
 void PlayerWindow::on_actShowWaveform_triggered(bool value)
 {
     ui.waveform->setVisible(value);
     m_app->set_setting("gui", "show_waveform", value);
-}
-
-void PlayerWindow::on_actJumpCutter_triggered(bool value)
-{
-    m_app->set_setting("jumpcutter", "enabled", value);
-    m_jc_settings->set_enabled(value);
-    if (!value)
-    {
-        m_video_widget->set_rate(m_playback_rate);
-        m_video_widget->set_volume(100);
-    }
 }
 
 void PlayerWindow::on_player_time_changed(int time)
@@ -798,21 +807,7 @@ void PlayerWindow::show_video()
     }
     ui.waveform->set_vad(m_vad.get());
     
-    load_jc_settings();
-    if (m_vad)
-        m_vad->apply_settings(get_vad_settings());
-
-    m_jc_dialog = new JumpCutterSettingsDialog(this);
-    m_jc_dialog->set_settings(m_jc_settings);
-    connect(m_jc_dialog, &JumpCutterSettingsDialog::applied,
-        [this]()
-        {
-            m_jc_settings = m_jc_dialog->get_settings();
-            save_jc_settings();
-            if (m_vad)
-                m_vad->apply_settings(get_vad_settings());
-        });
-
+    setup_jc_settings();
     startTimer(25);
 
     m_video_widget->play();
@@ -943,7 +938,7 @@ void PlayerWindow::set_playback_rate(int index, bool play)
 
     m_playback_rate = PLAYBACK_ITEMS[index].rate;
 
-    if (!m_jc_settings || !m_jc_settings->is_enabled())
+    if (!m_jc_settings || !m_jc_settings->is_activated())
     {
         m_video_widget->set_rate(m_playback_rate);
     }
@@ -1035,7 +1030,7 @@ int PlayerWindow::get_loop_b() const
 void PlayerWindow::rewind(int delta_ms)
 {
     int new_time;
-    if (m_vad && m_jc_settings->is_enabled() && m_jc_settings->is_non_voice_skipping())
+    if (m_vad && m_jc_settings->is_activated() && m_jc_settings->is_non_voice_skipping())
     {
         new_time = m_vad->rewind(m_video_widget->get_time(), delta_ms);
     }
@@ -1094,7 +1089,7 @@ void PlayerWindow::next_clip()
 
 void PlayerWindow::jumpcutter(int t)
 {
-    if (!m_vad || !m_jc_settings || !m_jc_settings->is_enabled())
+    if (!m_vad || !m_jc_settings || !m_jc_settings->is_activated())
         return;
 
     bool current_interval_is_loud = m_vad->is_voice(t);
@@ -1136,6 +1131,7 @@ void PlayerWindow::jumpcutter(int t)
 void PlayerWindow::load_jc_settings()
 {
     m_jc_settings = std::make_shared<JumpCutterSettings>();
+    m_jc_settings->set_activated(m_app->get_setting("jumpcutter", "activated", true).toBool());
     m_jc_settings->set_voice_prob_th(m_app->get_setting("jumpcutter", "voice_prob_th", 0.5).toFloat());
     m_jc_settings->set_non_voice_volume(m_app->get_setting("jumpcutter", "non_voice_volume", 100).toFloat());
     m_jc_settings->set_non_voice_speed(m_app->get_setting("jumpcutter", "non_voice_speed", 2.0).toFloat());
@@ -1146,6 +1142,7 @@ void PlayerWindow::load_jc_settings()
 
 void PlayerWindow::save_jc_settings()
 {
+    m_app->set_setting("jumpcutter", "activated", m_jc_settings->is_activated());
     m_app->set_setting("jumpcutter", "voice_prob_th", m_jc_settings->get_voice_prob_th());
     m_app->set_setting("jumpcutter", "non_voice_volume", m_jc_settings->get_non_voice_volume());
     m_app->set_setting("jumpcutter", "non_voice_speed", m_jc_settings->get_non_voice_speed());
@@ -1199,8 +1196,6 @@ void UIState::activate()
     ui.actAddClip->setVisible(false);
 
     ui.actShowWaveform->setVisible(false);
-    ui.actJumpCutter->setVisible(false);
-    ui.actJumpCutterSettings->setVisible(false);
     ui.actAddToFavorite->setVisible(false);
     ui.actAddToFavorite->setChecked(false);
 
@@ -1236,8 +1231,6 @@ void WatchingState::activate()
     ui.btnPlay->setDefaultAction(ui.actPlayPause);
 
     ui.actShowWaveform->setVisible(true);
-    ui.actJumpCutter->setVisible(true);
-    ui.actJumpCutterSettings->setVisible(true);
 
     for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
     {
@@ -1265,19 +1258,6 @@ void WatchingState::activate()
         ui.waveform->setVisible(false);
     }
 
-    if (m_pw->m_vad)
-    {
-        bool jc_enabled = m_pw->m_app->get_setting("jumpcutter", "enabled", true).toBool();
-        ui.actJumpCutter->setChecked(jc_enabled);
-        m_pw->m_jc_settings->set_enabled(jc_enabled);
-    }
-    else
-    {
-        ui.actJumpCutter->setEnabled(false);
-        ui.actJumpCutter->setChecked(false);
-        m_pw->m_jc_settings->set_enabled(false);
-    }
-
     const TodayClipStat* stat = m_pw->m_clip_queue->get_today_clip_stat();
     QString lbl = QString("Added today: %1 (%2)")
         .arg(stat->get_added_count_for_file())
@@ -1288,6 +1268,8 @@ void WatchingState::activate()
 void WatchingState::on_close()
 {
     m_pw->save_player_time();
+    m_pw->save_jc_settings();
+    m_pw->m_app->set_setting("gui", "show_vad_settings", m_pw->ui.dockJC->isVisible());
 }
 
 void WatchingState::on_time_changed(int time)
@@ -1345,7 +1327,7 @@ void AddingClipState::activate()
 
     Ui::PlayerWindow& ui = m_pw->ui;
 
-    m_pw->m_jc_settings->set_enabled(false);
+    m_pw->m_jc_settings->set_activated(false);
     m_pw->set_playback_rate(DEFAULT_PLAYBACK_RATE_INDEX);
 
     ui.actRepeatClip->setVisible(true);
@@ -1355,6 +1337,8 @@ void AddingClipState::activate()
     ui.actCancelClip->setVisible(true);
 
     ui.actAddToFavorite->setVisible(true);
+
+    ui.dockJC->setVisible(false);
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
@@ -1514,6 +1498,8 @@ void WatchingClipState::activate()
 
     ui.actAddToFavorite->setVisible(true);
 
+    ui.dockJC->setVisible(false);
+
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
 
@@ -1586,6 +1572,8 @@ void RepeatingClipState::activate()
     ui.actNextClip->setVisible(true);
 
     ui.actAddToFavorite->setVisible(true);
+
+    ui.dockJC->setVisible(false);
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);

@@ -43,7 +43,7 @@ target_sources(ReeePlayer PRIVATE
 	src/widgets/subtitles_text_edit.cpp	
 	src/widgets/waiting_dialog.cpp	
 	src/widgets/waveform_view.cpp	
-    src/widgets/jumpcutter_settings_dialog.cpp
+    src/widgets/jc_settings_widget.cpp
     src/widgets/video_download_dialog.cpp
     src/widgets/emitter.cpp
     src/widgets/about_window.cpp
