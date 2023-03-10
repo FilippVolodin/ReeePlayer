@@ -72,9 +72,18 @@ void SearchDialog::on_btnRepeat_clicked()
     if (!m_clips || m_clips->empty())
         return;
 
-    std::shared_ptr<IClipQueue> session =
-        std::make_shared<RepeatingClipQueue>(m_app->get_library(), *m_clips.get());
-    get_player_window()->run(Mode::Repeating, session);
+    std::shared_ptr<IClipQueue> queue =
+        std::make_shared<RepeatingClipQueueV2>(m_app->get_library(), *m_clips.get());
+
+    if (queue->overdue_count() != 0)
+    {
+        get_player_window()->run(Mode::Repeating, queue);
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Information"),
+            tr("No clips to repeat"));
+    }
 }
 
 void SearchDialog::on_edtText_returnPressed()
@@ -114,9 +123,18 @@ void SearchDialog::on_repeat_selected_triggered()
     if (clips.empty())
         return;
 
-    std::shared_ptr<IClipQueue> session =
-        std::make_shared<RepeatingClipQueue>(m_app->get_library(), clips);
-    get_player_window()->run(Mode::Repeating, session);
+    std::shared_ptr<IClipQueue> queue =
+        std::make_shared<RepeatingClipQueueV2>(m_app->get_library(), clips);
+
+    if (queue->overdue_count() != 0)
+    {
+        get_player_window()->run(Mode::Repeating, queue);
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Information"),
+            tr("No clips to repeat"));
+    }
 }
 
 void SearchDialog::search(const QString& text)

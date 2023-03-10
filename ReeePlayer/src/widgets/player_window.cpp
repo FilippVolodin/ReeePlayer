@@ -405,7 +405,6 @@ void PlayerWindow::setup_shortcuts()
     connect(m_backward_shortcut, &QShortcut::activated,
         [this]() { rewind(-2000); });
 
-    QKeySequence ret;
     m_return_shortcut = new QShortcut(this);
     m_return_shortcut->setKeys({ tr("Return"), tr("Ctrl+Return") });
     connect(m_return_shortcut, &QShortcut::activated,
@@ -822,7 +821,7 @@ void PlayerWindow::show_video()
     }
 }
 
-void PlayerWindow::show_clip()
+void PlayerWindow::show_clip(bool clip_changed)
 {
     const ClipUserData* clip_data = m_clip_queue->get_clip_user_data();
     //std::unique_ptr<IFileData> file_data = m_clip_session->get_file_data();
@@ -836,47 +835,59 @@ void PlayerWindow::show_clip()
         return;
     }
 
-    QString filename = m_clip_queue->get_file_path();
-    m_video_widget->set_file_name(filename, true);
-
-    set_playback_rate(DEFAULT_PLAYBACK_RATE_INDEX);
-
-    m_video_widget->play(clip_data->begin, clip_data->end, 1);
-
-    m_edt_loop_a->setValue(clip_data->begin);
-    m_edt_loop_b->setValue(clip_data->end);
-
-    ui.actAddToFavorite->setChecked(clip_data->is_favorite);
-
-    for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
+    if (clip_changed)
     {
-        m_subtitle_views[i]->next();
-        m_subtitle_views[i]->set_text(clip_data->subtitles[i]);
-    }
+        QString filename = m_clip_queue->get_file_path();
+        m_video_widget->set_file_name(filename, true);
 
-    ui.actPrevClip->setEnabled(m_clip_queue->has_prev());
-    ui.actNextClip->setEnabled(m_clip_queue->has_next());
+        set_playback_rate(DEFAULT_PLAYBACK_RATE_INDEX);
+
+        m_video_widget->play(clip_data->begin, clip_data->end, 1);
+
+        m_edt_loop_a->setValue(clip_data->begin);
+        m_edt_loop_b->setValue(clip_data->end);
+
+        ui.actAddToFavorite->setChecked(clip_data->is_favorite);
+
+        for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
+        {
+            m_subtitle_views[i]->next();
+            m_subtitle_views[i]->set_text(clip_data->subtitles[i]);
+        }
+
+        ui.actPrevClip->setEnabled(m_clip_queue->has_prev());
+        ui.actNextClip->setEnabled(m_clip_queue->has_next());
+    }
 
     // TODO move from here
     if (m_mode == Mode::Repeating)
     {
+        QString filename = m_clip_queue->get_file_path();
         int remains = m_clip_queue->overdue_count();
         setWindowTitle(QString("[%1] %2").arg(remains).arg(filename));
-
-        if (remains == 0)
-            m_lbl_info->setText("Clips repeated");
-        else
-            m_lbl_info->clear();
 
         const TodayClipStat* stat = m_clip_queue->get_today_clip_stat();
         m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(stat->get_repeated_count()));
 
-        m_star_widget_action->setVisible(!m_clip_queue->has_next());
-        m_return_shortcut->setEnabled(!m_clip_queue->has_next());
+        bool is_reviewing = m_clip_queue->is_reviewing();
+        m_star_widget_action->setVisible(is_reviewing);
+        m_return_shortcut->setEnabled(is_reviewing);
 
         m_num_repeats = 1;
         int rating = m_srs_model->get_default_rating(m_num_repeats);
         m_star_widget->set_rating(rating + 1);
+
+        if (remains == 0)
+        {
+            m_lbl_info->setText("Clips repeated");
+            if (!m_done_dialog_showed)
+            {
+                QMessageBox::information(this, tr("Information"), tr("You have repeated all the clips"));
+                m_done_dialog_showed = true;
+            }
+        }
+        else
+            m_lbl_info->clear();
     }
     m_video_widget->get_widget()->setFocus();
 }
@@ -1075,16 +1086,17 @@ bool PlayerWindow::remove_clip()
 
 void PlayerWindow::next_clip()
 {
-    save_current_clip();
+    m_clip_queue->set_clip_user_data(get_clip_user_data());
 
-    if (!m_clip_queue->has_next())
+    if (m_clip_queue->is_reviewing())
     {
         int rating = m_star_widget->get_rating();
         m_clip_queue->repeat(rating - 1);
     }
+    m_clip_queue->save_library();
 
-    m_clip_queue->next();
-    show_clip();
+    bool clip_changed = m_clip_queue->next();
+    show_clip(clip_changed);
 }
 
 void PlayerWindow::jumpcutter(int t)

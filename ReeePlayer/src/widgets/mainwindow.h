@@ -71,6 +71,8 @@ private:
     void repeat(std::vector<File*>);
     void download_to(const QString& dir);
 
+    void update_clips();
+
     std::vector<const LibraryItem*> get_selected_items() const;
     std::vector<File*> get_selected_files() const;
 

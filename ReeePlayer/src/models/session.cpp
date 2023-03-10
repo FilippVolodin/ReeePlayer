@@ -20,6 +20,19 @@ bool ClipPriorityCmp::operator()(const Clip* lhs, const Clip* rhs)
     return p1 > p2;
 }
 
+struct Overdue
+{
+    Overdue(TimePoint cur_time) noexcept
+        : cur_time(cur_time)
+    {
+    }
+
+    bool operator()(const Clip* clip) const
+    {
+        return clip->get_card() != nullptr ? clip->get_card()->is_due(cur_time) : false;
+    }
+    TimePoint cur_time;
+};
 
 TodayClipStat::TodayClipStat(const Library* library, const File* file)
 {
@@ -108,7 +121,9 @@ BaseClipQueue::BaseClipQueue(Library* library, const File* file) :
 
 const ClipUserData* BaseClipQueue::get_clip_user_data() const
 {
-    return get_current_clip()->get_user_data();
+    if (m_current_clip == nullptr)
+        return nullptr;
+    return m_current_clip->get_user_data();
 }
 
 void BaseClipQueue::set_clip_user_data(std::unique_ptr<ClipUserData> data)
@@ -124,7 +139,9 @@ void BaseClipQueue::remove()
     Clip* clip = get_current_clip();
     File* file = clip->get_file();
     file->remove_clip(clip);
-    clip = nullptr;
+    m_library->save(file);
+    m_library->save();
+    set_current_clip(nullptr);
 }
 
 const QString BaseClipQueue::get_file_path() const
@@ -145,6 +162,11 @@ void BaseClipQueue::set_file_user_data(std::unique_ptr<FileUserData> data)
         file->set_user_data(std::move(data));
         m_library->save(file);
     }
+}
+
+bool BaseClipQueue::is_reviewing() const
+{
+    return false;
 }
 
 bool BaseClipQueue::has_next() const
@@ -336,6 +358,176 @@ void RepeatingClipQueue::repeat(int rating)
         clip->add_repeat(cur);
         get_today_clip_stat()->inc_repeated();
     }
+}
+
+RepeatingClipQueueV2::RepeatingClipQueueV2(Library* library, const std::vector<File*>& files)
+    : BaseClipQueue(library)
+{
+    Overdue overdue(now());
+    for (const File* file : files)
+    {
+        const Clips& clips = file->get_clips();
+        std::ranges::copy_if(clips, std::back_inserter(m_clips), overdue);
+    }
+    std::ranges::sort(m_clips, ClipPriorityCmp(now()));
+
+    if (!m_clips.empty())
+    {
+        m_show_it = std::begin(m_clips);
+        m_review_it = std::begin(m_clips);
+        set_current_clip(*m_show_it);
+    }
+    else
+    {
+        m_show_it = std::end(m_clips);
+        m_review_it = std::end(m_clips);
+    }
+}
+
+RepeatingClipQueueV2::RepeatingClipQueueV2(Library* library, const std::vector<Clip*>& clips)
+    : BaseClipQueue(library)
+{
+    std::ranges::copy_if(clips, std::back_inserter(m_clips), Overdue(now()));
+    std::ranges::sort(m_clips, ClipPriorityCmp(now()));
+
+    if (!m_clips.empty())
+    {
+        m_show_it = std::begin(m_clips);
+        m_review_it = std::begin(m_clips);
+        set_current_clip(*m_show_it);
+    }
+    else
+    {
+        m_show_it = std::end(m_clips);
+        m_review_it = std::end(m_clips);
+    }
+}
+
+RepeatingClipQueueV2::~RepeatingClipQueueV2()
+{
+}
+
+void RepeatingClipQueueV2::remove()
+{
+    //if (m_clips.empty())
+    //    return;
+
+    //const Clip* current_clip = get_current_clip();
+    //if (current_clip == nullptr)
+    //    return;
+
+    //if (m_showing_clip_index < 0 || m_showing_clip_index >= m_clips.size())
+    //    return;
+
+    //m_clips.erase(std::next(m_clips.begin(), m_showing_clip_index));
+
+    //BaseClipQueue::remove();
+
+    //if (m_showing_clip_index < m_rewieved_clip_index)
+    //    --m_rewieved_clip_index;
+
+    //if (m_showing_clip_index >= m_clips.size() && !m_clips.empty())
+    //    m_showing_clip_index = m_clips.size() - 1;
+
+    //if (m_showing_clip_index >= 0 && m_showing_clip_index < m_clips.size())
+    //    set_current_clip(m_clips[m_showing_clip_index]);
+}
+
+bool RepeatingClipQueueV2::is_reviewing() const
+{
+    return m_show_it == m_review_it;
+}
+
+bool RepeatingClipQueueV2::has_next() const
+{
+    //if (m_showing_clip_index + 1 >= m_clips.size())
+    //    return false;
+
+    //return m_showing_clip_index < m_rewieved_clip_index;
+
+    return find_next() != std::end(m_clips);
+}
+
+bool RepeatingClipQueueV2::has_prev() const
+{
+    //return m_showing_clip_index > 0;
+
+    return find_prev() != std::end(m_clips);
+}
+
+bool RepeatingClipQueueV2::next()
+{
+    //if (!has_next())
+    //    return false;
+
+    //++m_showing_clip_index;
+    //set_current_clip(m_clips[m_showing_clip_index]);
+    //return true;
+
+    It it = find_next();
+    if (it == std::end(m_clips))
+        return false;
+
+    m_show_it = it;
+    set_current_clip(*m_show_it);
+    return true;
+}
+
+bool RepeatingClipQueueV2::prev()
+{
+    //if (!has_prev())
+    //    return false;
+
+    //--m_showing_clip_index;
+    //set_current_clip(m_clips[m_showing_clip_index]);
+    //return true;
+
+    It it = find_prev();
+    if (it == std::end(m_clips))
+        return false;
+
+    m_show_it = it;
+    set_current_clip(*m_show_it);
+    return true;
+}
+
+int RepeatingClipQueueV2::overdue_count() const
+{
+    return std::distance(m_review_it, std::end(m_clips));
+}
+
+void RepeatingClipQueueV2::repeat(int rating)
+{
+    if (!is_reviewing())
+        return;
+
+    TimePoint cur = now();
+    Clip* clip = get_current_clip();
+    if (clip->get_card() != nullptr)
+    {
+        clip->get_card()->repeat(cur, rating);
+        clip->add_repeat(cur);
+        get_today_clip_stat()->inc_repeated();
+    }
+
+    ++m_review_it;
+}
+
+RepeatingClipQueueV2::It RepeatingClipQueueV2::find_prev() const
+{
+    RIt rit = std::make_reverse_iterator(m_show_it);
+    rit = std::find_if(rit, std::rend(m_clips), [](const Clip*) {return true; });
+    return rit != std::rend(m_clips) ? std::prev(rit.base()) : std::end(m_clips);
+}
+
+RepeatingClipQueueV2::It RepeatingClipQueueV2::find_next() const
+{
+    if (m_show_it == m_review_it)
+        return std::end(m_clips);
+
+    auto begin = std::next(m_show_it);
+    auto it = std::find_if(std::next(m_show_it), m_review_it, [](const Clip*) {return true; });
+    return it == m_review_it ? m_review_it : it;
 }
 
 AddingClipsQueue::AddingClipsQueue(Library* library, File* file, const srs::IFactory* factory)

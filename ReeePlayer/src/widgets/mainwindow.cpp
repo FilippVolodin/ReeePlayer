@@ -344,22 +344,7 @@ void MainWindow::on_videos_doubleClicked(const QModelIndex& index)
 
 void MainWindow::on_videos_selection_changed()
 {
-    ClipsPtr clips = std::make_shared<std::vector<Clip*>>();
-
-    QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
-    if (list.size() == 1)
-    {
-        const QModelIndex& index = list.first();
-        const LibraryItem* item = m_library_tree->get_item(index);
-        if (item->get_item_type() == ItemType::File)
-        {
-            const Clips cs = item->get_file()->get_clips();
-            clips->reserve(cs.size());
-            std::copy(cs.begin(), cs.end(), std::back_inserter(*clips));
-        }
-    }
-    m_clips_model->set_clips(clips);
-    ui.tblClips->resizeRowsToContents();
+    update_clips();
 }
 
 void MainWindow::on_tblClips_doubleClicked(const QModelIndex& index)
@@ -371,6 +356,7 @@ void MainWindow::on_tblClips_doubleClicked(const QModelIndex& index)
         std::make_shared<WatchClipQueue>(m_app->get_library(), clip);
 
     getPlayerWindow()->run(Mode::WatchingClip, queue);
+    update_clips();
 }
 
 void MainWindow::on_player_window_destroyed()
@@ -540,26 +526,19 @@ void MainWindow::watch(File* file)
     std::shared_ptr<IClipQueue> queue =
         std::make_shared<AddingClipsQueue>(m_app->get_library(), file, m_app->get_srs_factory());
     pw->run(Mode::Watching, queue);
+    update_clips();
 }
 
 void MainWindow::repeat(std::vector<File*> files)
 {
-    bool has_clips = false;
-    for (const File* file : files)
-    {
-        if (file->get_num_clips() != 0)
-        {
-            has_clips = true;
-            break;
-        }
-    }
-
-    if (has_clips)
+    std::shared_ptr<IClipQueue> queue =
+        std::make_shared<RepeatingClipQueueV2>(m_app->get_library(), files);
+    
+    if (queue->overdue_count() != 0)
     {
         hide();
-        std::shared_ptr<IClipQueue> queue =
-            std::make_shared<RepeatingClipQueue>(m_app->get_library(), files);
         getPlayerWindow()->run(Mode::Repeating, queue);
+        update_clips();
     }
     else
     {
@@ -583,6 +562,26 @@ void MainWindow::download_to(const QString& dir)
         m_app->set_setting("download", "resolution", vdd.get_resolution());
         open_dir(m_app->get_library()->get_root_path());
     }
+}
+
+void MainWindow::update_clips()
+{
+    ClipsPtr clips = std::make_shared<std::vector<Clip*>>();
+
+    QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
+    if (list.size() == 1)
+    {
+        const QModelIndex& index = list.first();
+        const LibraryItem* item = m_library_tree->get_item(index);
+        if (item->get_item_type() == ItemType::File)
+        {
+            const Clips cs = item->get_file()->get_clips();
+            clips->reserve(cs.size());
+            std::copy(cs.begin(), cs.end(), std::back_inserter(*clips));
+        }
+    }
+    m_clips_model->set_clips(clips);
+    ui.tblClips->resizeRowsToContents();
 }
 
 std::vector<const LibraryItem*> MainWindow::get_selected_items() const

@@ -211,7 +211,7 @@ private:
     void set_state(std::shared_ptr<UIState>);
 
     void show_video();
-    void show_clip();
+    void show_clip(bool clip_changed = true);
 
     bool remove_clip_confirmation();
 
@@ -267,6 +267,7 @@ private:
     float m_playback_rate = 1.0;
 
     int m_num_repeats = 0;
+    bool m_done_dialog_showed = false;
 
     std::vector<QString> m_subtitle_files;
     SubtitlesView* m_subtitle_views[NUM_SUBS_VIEWS];
