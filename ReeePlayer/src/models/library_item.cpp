@@ -306,7 +306,8 @@ void LibraryItem::get_clips(std::vector<Clip*>& clips)
     }
 }
 
-void LibraryItem::find_clips(QStringView str, int max_clips, bool fav, std::vector<Clip*>& clips) const
+void LibraryItem::find_clips(QStringView str, int max_clips, bool fav,
+    bool removed, std::vector<Clip*>& clips) const
 {
     if (max_clips != 0 && clips.size() >= max_clips)
         return;
@@ -320,6 +321,9 @@ void LibraryItem::find_clips(QStringView str, int max_clips, bool fav, std::vect
             for (const QString& text : user_data->subtitles)
             {
                 if (fav && !user_data->is_favorite)
+                    continue;
+
+                if (removed != clip->is_removed())
                     continue;
 
                 if (str.isEmpty() || text.contains(str, Qt::CaseInsensitive))
@@ -337,7 +341,7 @@ void LibraryItem::find_clips(QStringView str, int max_clips, bool fav, std::vect
     {
         for (LibraryItem* item : m_child_items)
         {
-            item->find_clips(str, max_clips, fav, clips);
+            item->find_clips(str, max_clips, fav, removed, clips);
             if (max_clips != 0 && clips.size() >= max_clips)
                 break;
         }

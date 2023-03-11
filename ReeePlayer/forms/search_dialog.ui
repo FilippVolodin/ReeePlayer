@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1003</width>
-    <height>612</height>
+    <width>1032</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,6 +50,13 @@
       <widget class="QCheckBox" name="chkFavorite">
        <property name="text">
         <string>Favorites Only</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkRemoved">
+       <property name="text">
+        <string>In recycle bin</string>
        </property>
       </widget>
      </item>

@@ -44,6 +44,11 @@ public:
     const std::vector<TimePoint>& get_repeats() const;
     void set_repeats(std::vector<TimePoint>);
 
+    bool is_removed() const;
+    TimePoint get_removal_time() const;
+    void set_removal_time(TimePoint);
+    void restore();
+
     const ClipUserData* get_user_data() const;
     void set_user_data(std::unique_ptr<ClipUserData>);
 
@@ -56,8 +61,9 @@ private:
     QString m_uid;
     TimePoint m_added;
     std::vector<TimePoint> m_repeats;
-    srs::ICardUPtr m_card;
     std::unique_ptr<ClipUserData> m_user_data;
+    std::optional<TimePoint> m_removed;
+    srs::ICardUPtr m_card;
 
     void set_file(File*);
 };

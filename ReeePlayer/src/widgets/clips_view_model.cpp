@@ -64,6 +64,13 @@ QVariant ClipModel::data(const QModelIndex & index, int role) const
         default: return QVariant();
         }
     }
+    case Qt::FontRole:
+    {
+        QFont font;
+        if (clip->is_removed())
+            font.setItalic(true);
+        return font;
+    }
     };
     return QVariant();
 }

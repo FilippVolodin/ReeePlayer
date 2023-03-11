@@ -26,7 +26,7 @@ SearchDialog::SearchDialog(App* app, std::vector<const LibraryItem*> items, QWid
     proxy_model->setSourceModel(m_clips_model);
     ui.tblClips->setModel(proxy_model);
 
-    ui.tblClips->setColumnWidth(0, 20);
+    ui.tblClips->setColumnWidth(0, 30);
     ui.tblClips->setColumnWidth(1, 300);
     ui.tblClips->setColumnWidth(2, 300);
     ui.tblClips->setColumnWidth(3, 80);
@@ -141,7 +141,8 @@ void SearchDialog::search(const QString& text)
 {
     m_clips = std::make_shared<std::vector<Clip*>>();
     for (const LibraryItem* item : m_items)
-        item->find_clips(text, 0, ui.chkFavorite->isChecked(), *m_clips);
+        item->find_clips(text, 0,
+            ui.chkFavorite->isChecked(), ui.chkRemoved->isChecked(), *m_clips);
 
     m_clips_model->set_clips(m_clips);
     ui.tblClips->resizeRowsToContents();

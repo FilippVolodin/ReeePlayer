@@ -575,9 +575,10 @@ void MainWindow::update_clips()
         const LibraryItem* item = m_library_tree->get_item(index);
         if (item->get_item_type() == ItemType::File)
         {
-            const Clips cs = item->get_file()->get_clips();
-            clips->reserve(cs.size());
-            std::copy(cs.begin(), cs.end(), std::back_inserter(*clips));
+            const Clips& cs = item->get_file()->get_clips();
+            //clips->reserve(cs.size());
+            std::copy_if(cs.begin(), cs.end(), std::back_inserter(*clips),
+                [](Clip* clip) {return !clip->is_removed(); });
         }
     }
     m_clips_model->set_clips(clips);

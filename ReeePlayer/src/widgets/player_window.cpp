@@ -320,6 +320,7 @@ void PlayerWindow::setup_actions()
     connect(ui.actNextClip, &QAction::triggered,
         this, &PlayerWindow::on_actNextClip_triggered);
 
+    ui.actRemoveClip->setIconText(QString());
     ui.toolBar->addAction(ui.actRemoveClip);
     connect(ui.actRemoveClip, &QAction::triggered,
         this, &PlayerWindow::on_actRemoveClip_triggered);
@@ -530,9 +531,10 @@ void PlayerWindow::on_actNextClip_triggered()
     }
 }
 
-void PlayerWindow::on_actRemoveClip_triggered()
+void PlayerWindow::on_actRemoveClip_triggered(bool value)
 {
-    m_ui_state->on_remove_clip();
+    m_clip_queue->set_removed(value);
+    //m_ui_state->on_remove_clip();
 }
 
 void PlayerWindow::on_actPlayPause_triggered()
@@ -848,6 +850,7 @@ void PlayerWindow::show_clip(bool clip_changed)
         m_edt_loop_b->setValue(clip_data->end);
 
         ui.actAddToFavorite->setChecked(clip_data->is_favorite);
+        ui.actRemoveClip->setChecked(m_clip_queue->get_clip()->is_removed());
 
         for (int i = 0; i < NUM_SUBS_VIEWS; ++i)
         {
@@ -894,11 +897,12 @@ void PlayerWindow::show_clip(bool clip_changed)
 
 bool PlayerWindow::remove_clip_confirmation()
 {
-    int ret = QMessageBox::warning(this, tr("Confirmation"),
-        tr("Remove clip?"), QMessageBox::Ok | QMessageBox::Cancel,
-        QMessageBox::Cancel);
+    //int ret = QMessageBox::warning(this, tr("Confirmation"),
+    //    tr("Remove clip?"), QMessageBox::Ok | QMessageBox::Cancel,
+    //    QMessageBox::Cancel);
 
-    return ret == QMessageBox::Ok;
+    //return ret == QMessageBox::Ok;
+    return true;
 }
 
 std::unique_ptr<ClipUserData> PlayerWindow::get_clip_user_data()
@@ -1062,31 +1066,27 @@ void PlayerWindow::rewind(int delta_ms)
     }
 }
 
-void PlayerWindow::save_new_clip()
+void PlayerWindow::save_clip(bool save_library)
 {
     m_clip_queue->set_clip_user_data(get_clip_user_data());
-    m_clip_queue->save_library();
-}
-
-void PlayerWindow::save_current_clip()
-{
-    m_clip_queue->set_clip_user_data(get_clip_user_data());
-    m_clip_queue->save_library();
+    m_clip_queue->set_removed(ui.actRemoveClip->isChecked());
+    if (save_library)
+        m_clip_queue->save_library();
 }
 
 bool PlayerWindow::remove_clip()
 {
-    if (remove_clip_confirmation())
-    {
-        m_clip_queue->remove();
-        return true;
-    }
+    //if (remove_clip_confirmation())
+    //{
+    //    m_clip_queue->remove(true);
+    //    return true;
+    //}
     return false;
 }
 
 void PlayerWindow::next_clip()
 {
-    m_clip_queue->set_clip_user_data(get_clip_user_data());
+    save_clip(false);
 
     if (m_clip_queue->is_reviewing())
     {
@@ -1407,7 +1407,7 @@ void AddingClipState::play()
 
 void AddingClipState::on_save_clip()
 {
-    m_pw->save_new_clip();
+    m_pw->save_clip(true);
 
     m_pw->m_video_widget->set_time(m_pw->get_loop_a());
     m_pw->m_video_widget->play();
@@ -1506,9 +1506,10 @@ void WatchingClipState::activate()
     ui.actRepeatClip->setVisible(true);
     ui.btnPlay->setDefaultAction(ui.actRepeatClip);
 
-    ui.actSaveClip->setVisible(true);
+    //ui.actSaveClip->setVisible(true);
 
     ui.actAddToFavorite->setVisible(true);
+    ui.actRemoveClip->setVisible(true);
 
     ui.dockJC->setVisible(false);
 
@@ -1524,11 +1525,6 @@ void WatchingClipState::activate()
             QString(SHOW_SUBTITLES_KEY).arg(i).arg("watching_clip"));
         m_pw->m_subtitle_views[i]->set_show_always(v.isNull() ? true : v.toBool());
     }
-
-    //QPalette p = m_pw->palette();
-    //QColor bg = m_pw->m_default_bg;
-    //p.setColor(QPalette::Window, bg);
-    //m_pw->setPalette(p);
 }
 
 void WatchingClipState::play()
@@ -1538,12 +1534,12 @@ void WatchingClipState::play()
 
 void WatchingClipState::on_close()
 {
-    m_pw->save_current_clip();
+    m_pw->save_clip(true);
 }
 
 void WatchingClipState::on_save_clip()
 {
-    m_pw->save_current_clip();
+    m_pw->save_clip(true);
     m_pw->close();
 }
 
@@ -1613,7 +1609,7 @@ void RepeatingClipState::play()
 
 void RepeatingClipState::on_close()
 {
-    m_pw->save_current_clip();
+    m_pw->save_clip(true);
 }
 
 void RepeatingClipState::on_next_clip()

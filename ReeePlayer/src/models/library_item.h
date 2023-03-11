@@ -51,7 +51,7 @@ public:
     void remove_childs(int row, int count);
 
     void get_clips(std::vector<Clip*>&);
-    void find_clips(QStringView str, int max_clips, bool fav, std::vector<Clip*>&) const;
+    void find_clips(QStringView str, int max_clips, bool fav, bool removed, std::vector<Clip*>&) const;
 
     template<typename FileFunc>
     void iterate_files(FileFunc ff) const

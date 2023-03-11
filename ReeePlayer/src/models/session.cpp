@@ -29,7 +29,10 @@ struct Overdue
 
     bool operator()(const Clip* clip) const
     {
-        return clip->get_card() != nullptr ? clip->get_card()->is_due(cur_time) : false;
+        if (clip->get_card() == nullptr)
+            return false;
+
+        return clip->get_card()->is_due(cur_time) && !clip->is_removed();
     }
     TimePoint cur_time;
 };
@@ -119,6 +122,11 @@ BaseClipQueue::BaseClipQueue(Library* library, const File* file) :
 {
 }
 
+const Clip* BaseClipQueue::get_clip() const
+{
+    return m_current_clip;
+}
+
 const ClipUserData* BaseClipQueue::get_clip_user_data() const
 {
     if (m_current_clip == nullptr)
@@ -134,14 +142,17 @@ void BaseClipQueue::set_clip_user_data(std::unique_ptr<ClipUserData> data)
     m_library->save(clip);
 }
 
-void BaseClipQueue::remove()
+void BaseClipQueue::set_removed(bool value)
 {
     Clip* clip = get_current_clip();
-    File* file = clip->get_file();
-    file->remove_clip(clip);
-    m_library->save(file);
-    m_library->save();
-    set_current_clip(nullptr);
+    if (clip != nullptr)
+    {
+        if (value)
+            clip->set_removal_time(now());
+        else
+            clip->restore();
+        m_library->save(clip);
+    }
 }
 
 const QString BaseClipQueue::get_file_path() const
@@ -270,27 +281,6 @@ RepeatingClipQueue::~RepeatingClipQueue()
 {
 }
 
-void RepeatingClipQueue::remove()
-{
-    const Clip* clip = get_current_clip();
-    int showed_num = std::count(
-        m_showed_clips.begin(),
-        m_showed_clips.begin() + m_showing_clip_index + 1,
-        clip
-    );
-    m_showing_clip_index -= showed_num;
-
-    m_showed_clips.erase(
-        std::remove(m_showed_clips.begin(), m_showed_clips.end(), clip),
-        m_showed_clips.end());
-
-    auto it = std::find(m_clips.begin(), m_clips.end(), clip);
-    if (it != m_clips.end())
-        m_clips.erase(it);
-
-    BaseClipQueue::remove();
-}
-
 bool RepeatingClipQueue::has_next() const
 {
     return m_showing_clip_index + 1 < m_showed_clips.size();
@@ -407,32 +397,6 @@ RepeatingClipQueueV2::~RepeatingClipQueueV2()
 {
 }
 
-void RepeatingClipQueueV2::remove()
-{
-    //if (m_clips.empty())
-    //    return;
-
-    //const Clip* current_clip = get_current_clip();
-    //if (current_clip == nullptr)
-    //    return;
-
-    //if (m_showing_clip_index < 0 || m_showing_clip_index >= m_clips.size())
-    //    return;
-
-    //m_clips.erase(std::next(m_clips.begin(), m_showing_clip_index));
-
-    //BaseClipQueue::remove();
-
-    //if (m_showing_clip_index < m_rewieved_clip_index)
-    //    --m_rewieved_clip_index;
-
-    //if (m_showing_clip_index >= m_clips.size() && !m_clips.empty())
-    //    m_showing_clip_index = m_clips.size() - 1;
-
-    //if (m_showing_clip_index >= 0 && m_showing_clip_index < m_clips.size())
-    //    set_current_clip(m_clips[m_showing_clip_index]);
-}
-
 bool RepeatingClipQueueV2::is_reviewing() const
 {
     return m_show_it == m_review_it;
@@ -515,19 +479,18 @@ void RepeatingClipQueueV2::repeat(int rating)
 
 RepeatingClipQueueV2::It RepeatingClipQueueV2::find_prev() const
 {
-    RIt rit = std::make_reverse_iterator(m_show_it);
-    rit = std::find_if(rit, std::rend(m_clips), [](const Clip*) {return true; });
-    return rit != std::rend(m_clips) ? std::prev(rit.base()) : std::end(m_clips);
+    if (m_show_it != std::begin(m_clips))
+        return std::prev(m_show_it);
+    else 
+        return std::end(m_clips);
 }
 
 RepeatingClipQueueV2::It RepeatingClipQueueV2::find_next() const
 {
     if (m_show_it == m_review_it)
         return std::end(m_clips);
-
-    auto begin = std::next(m_show_it);
-    auto it = std::find_if(std::next(m_show_it), m_review_it, [](const Clip*) {return true; });
-    return it == m_review_it ? m_review_it : it;
+    
+    return std::next(m_show_it);
 }
 
 AddingClipsQueue::AddingClipsQueue(Library* library, File* file, const srs::IFactory* factory)

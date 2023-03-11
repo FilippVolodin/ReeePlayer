@@ -64,6 +64,26 @@ void Clip::set_repeats(std::vector<TimePoint> repeats)
     m_repeats = std::move(repeats);
 }
 
+bool Clip::is_removed() const
+{
+    return m_removed.has_value();
+}
+
+TimePoint Clip::get_removal_time() const
+{
+    return m_removed.value_or(TimePoint{});
+}
+
+void Clip::set_removal_time(TimePoint time)
+{
+    m_removed = time;
+}
+
+void Clip::restore()
+{
+    m_removed.reset();
+}
+
 //QString Clip::get_subtitle(int index) const
 //{
 //    if (index >= 0 && index < m_subtitles.size())
@@ -347,7 +367,9 @@ File* load_file(Library* library, const QString& path, const srs::IFactory* card
                     }
                     clip->set_repeats(std::move(repeats));
                 }
-                
+                if (json_clip.contains("removed") && json_clip["removed"].isDouble())
+                    clip->set_removal_time(TimePoint(Duration(json_clip["removed"].toInteger())));
+
                 clip->set_user_data(read_clip_user_data(json_clip, version));
 
                 file->add_clip(clip);
@@ -390,6 +412,9 @@ void save_file(const File* file)
         {
             json_clip["repeats"] = repeats_arr;
         }
+
+        if (clip->is_removed())
+            json_clip["removed"] = clip->get_removal_time().time_since_epoch().count();
 
         QJsonObject json_card;
         if (clip->get_card() != nullptr)

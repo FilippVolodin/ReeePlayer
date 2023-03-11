@@ -44,9 +44,10 @@ class IClipQueue
 public:
     virtual ~IClipQueue();
 
+    virtual const Clip* get_clip() const = 0;
     virtual const ClipUserData* get_clip_user_data() const = 0;
     virtual void set_clip_user_data(std::unique_ptr<ClipUserData>) = 0;
-    virtual void remove() = 0;
+    virtual void set_removed(bool) = 0;
 
     virtual const QString get_file_path() const = 0;
     virtual const FileUserData* get_file_user_data() const = 0;
@@ -71,10 +72,11 @@ class BaseClipQueue : public IClipQueue
 public:
     BaseClipQueue(Library*);
 
-    void remove() override;
-
+    const Clip* get_clip() const override;
     const ClipUserData* get_clip_user_data() const override;
     void set_clip_user_data(std::unique_ptr<ClipUserData>) override;
+
+    void set_removed(bool) override;
 
     const QString get_file_path() const override;
     const FileUserData* get_file_user_data() const override;
@@ -116,8 +118,6 @@ public:
     RepeatingClipQueue(Library*, const std::vector<Clip*>&);
     ~RepeatingClipQueue();
 
-    void remove() override;
-
     bool has_next() const override;
     bool has_prev()  const override;
     bool next() override;
@@ -137,8 +137,6 @@ public:
     RepeatingClipQueueV2(Library*, const std::vector<File*>&);
     RepeatingClipQueueV2(Library*, const std::vector<Clip*>&);
     ~RepeatingClipQueueV2();
-
-    void remove() override;
 
     bool is_reviewing() const override;
     bool has_next() const override;

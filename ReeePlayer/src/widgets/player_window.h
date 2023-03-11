@@ -173,7 +173,7 @@ private:
     void on_actCancelClip_triggered();
     void on_actPrevClip_triggered();
     void on_actNextClip_triggered();
-    void on_actRemoveClip_triggered();
+    void on_actRemoveClip_triggered(bool);
     void on_actPlayPause_triggered();
     void on_actRepeatClip_triggered();
     void on_actShowWaveform_triggered(bool);
@@ -232,8 +232,7 @@ private:
 
     void rewind(int);
 
-    void save_new_clip();
-    void save_current_clip();
+    void save_clip(bool save_library);
     bool remove_clip();
     void next_clip();
 

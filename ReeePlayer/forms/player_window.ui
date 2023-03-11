@@ -360,15 +360,19 @@ QSlider::sub-page:horizontal {
    </property>
   </action>
   <action name="actRemoveClip">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="mainwindow.qrc">
-     <normaloff>:/MainWindow/delete</normaloff>:/MainWindow/delete</iconset>
+     <normaloff>:/MainWindow/remove_clip</normaloff>
+     <normalon>:/MainWindow/restore_clip</normalon>:/MainWindow/remove_clip</iconset>
    </property>
    <property name="text">
     <string>Remove</string>
    </property>
    <property name="toolTip">
-    <string>Remove Clip</string>
+    <string>Move clip into recycle bin</string>
    </property>
    <property name="shortcut">
     <string>Del</string>
