@@ -144,7 +144,7 @@
     </size>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -168,7 +168,7 @@
      <normaloff>:/MainWindow/open_project</normaloff>:/MainWindow/open_project</iconset>
    </property>
    <property name="text">
-    <string>Open Directory</string>
+    <string>Open Dir</string>
    </property>
    <property name="toolTip">
     <string>Open Directory</string>
@@ -192,7 +192,7 @@
      <normaloff>:/MainWindow/reload</normaloff>:/MainWindow/reload</iconset>
    </property>
    <property name="text">
-    <string>Reload Directory</string>
+    <string>Reload Dir</string>
    </property>
    <property name="toolTip">
     <string>Reload Directory</string>
@@ -232,10 +232,10 @@
      <normaloff>:/MainWindow/stats</normaloff>:/MainWindow/stats</iconset>
    </property>
    <property name="text">
-    <string>Show Stats</string>
+    <string>Stats</string>
    </property>
    <property name="toolTip">
-    <string>Show Stats</string>
+    <string>Show  Statistics</string>
    </property>
   </action>
   <action name="actCreateBackup">

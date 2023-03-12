@@ -56,6 +56,8 @@ void Library::load(const srs::IFactory* card_factory)
         }
     };
     m_root->iterate_clips(set_uid);
+
+    m_root->update_clips_count();
     
     for (const File* file : changed_files)
         save(file);

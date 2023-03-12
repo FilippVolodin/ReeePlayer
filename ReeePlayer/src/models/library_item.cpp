@@ -162,7 +162,11 @@ QVariant LibraryItem::data(int column, int role) const
         }
         case 1:
         {
-            return m_cached_clips_count; // get_clips_count();
+            return m_clips_count;
+        }
+        case 2:
+        {
+            return m_due_count;
         }
         default:
             break;
@@ -217,50 +221,67 @@ bool LibraryItem::is_expanded() const
     return m_expanded;
 }
 
-int LibraryItem::get_clips_count(bool force) const
+void LibraryItem::update_clips_count()
 {
-    if (m_cached_clips_count != -1 && !force)
-        return m_cached_clips_count;
-        
-    m_cached_clips_count = 0;
+    update_clips_count_internal(now());
+}
+
+void LibraryItem::update_clips_count_internal(TimePoint now)
+{
+    m_clips_count = 0;
+    m_due_count = 0;
     if (get_item_type() == ItemType::File)
     {
-        m_cached_clips_count = m_file->get_num_clips();
+        iterate_clips(
+            [this, now](const Clip* clip)
+            {
+                if (!clip->is_removed())
+                {
+                    ++this->m_clips_count;
+                    if (clip->get_card() != nullptr && clip->get_card()->is_due(now))
+                        ++this->m_due_count;
+                }
+            }
+        );
     }
     else if (get_item_type() == ItemType::Folder)
     {
         for (LibraryItem* item : m_child_items)
-            m_cached_clips_count += item->get_clips_count(force);
-    }
-    return m_cached_clips_count;
-}
-
-void LibraryItem::update_clips_count_up()
-{
-    m_cached_clips_count = get_clips_count(true);
-
-    LibraryItem* p = parent();
-    while (p != nullptr)
-    {
-        if (p->get_item_type() == ItemType::File)
         {
-            p->m_cached_clips_count = m_file->get_num_clips();
+            item->update_clips_count_internal(now);
+            m_clips_count += item->m_clips_count;
+            m_due_count += item->m_due_count;
         }
-        else if (p->get_item_type() == ItemType::Folder)
-        {
-            p->m_cached_clips_count = 0;
-            for (LibraryItem* item : p->m_child_items)
-                p->m_cached_clips_count += item->get_clips_count();
-        }
-        p = p->parent();
     }
 }
+
+
+//void LibraryItem::update_clips_count_up()
+//{
+//    m_cached_clips_count = update_clips_count();
+//
+//    LibraryItem* p = parent();
+//    while (p != nullptr)
+//    {
+//        p->m_cached_clips_count = p->update_clips_count();
+//        //if (p->get_item_type() == ItemType::File)
+//        //{
+//        //    p->m_cached_clips_count = m_file->get_num_clips();
+//        //}
+//        //else if (p->get_item_type() == ItemType::Folder)
+//        //{
+//        //    p->m_cached_clips_count = 0;
+//        //    for (LibraryItem* item : p->m_child_items)
+//        //        p->m_cached_clips_count += item->update_clips_count();
+//        //}
+//        p = p->parent();
+//    }
+//}
 
 void LibraryItem::append_child(LibraryItem* item)
 {
     item->m_parent = this;
     m_child_items.push_back(item);
-    update_clips_count_up();
 }
 
 void LibraryItem::append_childs(const std::vector<LibraryItem*>& items)
@@ -270,7 +291,6 @@ void LibraryItem::append_childs(const std::vector<LibraryItem*>& items)
 
     m_child_items.reserve(m_child_items.size() + items.size());
     std::copy(items.begin(), items.end(), std::back_inserter(m_child_items));
-    update_clips_count_up();
 }
 
 void LibraryItem::insert_child(LibraryItem* item, int pos)
@@ -278,7 +298,6 @@ void LibraryItem::insert_child(LibraryItem* item, int pos)
     item->m_parent = this;
 
     m_child_items.insert(m_child_items.begin() + pos, item);
-    update_clips_count_up();
 }
 
 void LibraryItem::insert_childs(const std::vector<LibraryItem*>& items, int pos)
@@ -288,8 +307,6 @@ void LibraryItem::insert_childs(const std::vector<LibraryItem*>& items, int pos)
 
     m_child_items.insert(m_child_items.begin() + pos,
         items.begin(), items.end());
-
-    update_clips_count_up();
 }
 
 void LibraryItem::remove_childs(int row, int count)
@@ -300,8 +317,6 @@ void LibraryItem::remove_childs(int row, int count)
         delete *it;
 
     m_child_items.erase(begin, end);
-
-    update_clips_count_up();
 }
 
 void LibraryItem::get_clips(std::vector<Clip*>& clips)

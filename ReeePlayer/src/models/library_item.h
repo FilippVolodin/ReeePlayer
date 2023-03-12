@@ -43,8 +43,8 @@ public:
     void expand(bool);
     bool is_expanded() const;
 
-    int get_clips_count(bool deep = false) const;
-    void update_clips_count_up();
+    int get_clips_count() const;
+    void update_clips_count();
 
     void append_child(LibraryItem*);
     void append_childs(const std::vector<LibraryItem*>&);
@@ -65,6 +65,7 @@ public:
     void iterate_clips(ConstClipFunc cf) const;
 private:
     void get_ids(std::vector<int>&) const;
+    void update_clips_count_internal(TimePoint);
 
     //QHash<int, DomItem *> childItems;
     QString m_name;
@@ -75,7 +76,8 @@ private:
     Qt::CheckState m_checked = Qt::Unchecked;
     ItemType m_item_type;
     int m_id = -1;
-    mutable int m_cached_clips_count = -1;
+    int m_clips_count = 0;
+    int m_due_count = 0;
     bool m_expanded;
     //Qt::ItemFlags m_item_flags;
 };

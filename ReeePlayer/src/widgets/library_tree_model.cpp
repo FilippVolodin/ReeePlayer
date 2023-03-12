@@ -14,7 +14,7 @@ LibraryTree::~LibraryTree()
 
 int LibraryTree::columnCount(const QModelIndex&) const
 {
-    return 2;
+    return 3;
 }
 
 void LibraryTree::set_library(Library* library)
@@ -87,6 +87,8 @@ QVariant LibraryTree::headerData(int section, Qt::Orientation orientation,
             return tr("Name");
         case 1:
             return tr("Clips");
+        case 2:
+            return tr("Due");
         default:
             break;
         }

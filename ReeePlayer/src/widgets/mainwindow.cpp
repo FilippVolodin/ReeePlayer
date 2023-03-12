@@ -133,7 +133,8 @@ MainWindow::MainWindow(App* app, QWidget *parent)
     ui.videos->setModel(m_library_tree.get());
 
     ui.videos->setColumnWidth(0, 500);
-    //ui.videos->setColumnWidth(1, 300);
+    ui.videos->setColumnWidth(1, 50);
+    ui.videos->setColumnWidth(2, 50);
 
     connect(ui.videos, &QTreeView::expanded,
         this, &MainWindow::on_library_view_expanded);
@@ -367,7 +368,7 @@ void MainWindow::on_player_window_destroyed()
     LibraryItem* root = m_library_tree->get_item(ui.videos->rootIndex());
     if (root != nullptr)
     {
-        root->update_clips_count_up();
+        root->update_clips_count();
     }
 }
 
