@@ -250,7 +250,6 @@ private:
     std::shared_ptr<Waveform> m_waveform;
     std::shared_ptr<VAD> m_vad;
     std::shared_ptr<JumpCutterSettings> m_jc_settings;
-    std::unique_ptr<srs::IModel> m_srs_model;
 
     ClipInfoDialog* m_clip_info_dialog;
     JCSettingsWidget* m_jc_settings_widget;

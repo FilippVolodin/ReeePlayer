@@ -156,6 +156,24 @@ srs::fsrs::RecordLog srs::fsrs::FSRS::repeat(CardPrivate card, TimePoint now) co
     return s.record_log(card, now);
 }
 
+
+bool srs::fsrs::FSRS::use_rating() const
+{
+    return true;
+}
+
+int srs::fsrs::FSRS::get_default_rating(int replays_count) const
+{
+    if (replays_count <= 2)
+        return 3;
+    else if (replays_count <= 4)
+        return 2;
+    else if (replays_count <= 6)
+        return 1;
+    else
+        return 0;
+}
+
 void srs::fsrs::FSRS::init_ds(SchedulingCards& s) const
 {
     s.again.difficulty = init_difficulty(Rating::Again);
@@ -230,9 +248,13 @@ float srs::fsrs::FSRS::next_forget_stability(float d, float s, float r) const
             p.w[12]);
 }
 
-srs::fsrs::Card::Card(const FSRS& fsrs) : m_fsrs(fsrs)
+srs::fsrs::Card::Card(const FSRS* fsrs) : m_fsrs(fsrs)
 {
+}
 
+const srs::IModel* srs::fsrs::Card::get_model() const
+{
+    return m_fsrs;
 }
 
 void srs::fsrs::Card::read(const QJsonObject& json)
@@ -306,7 +328,7 @@ bool srs::fsrs::Card::is_due(TimePoint now) const
 
 void srs::fsrs::Card::repeat(TimePoint now, int rating)
 {
-    RecordLog record_log = m_fsrs.repeat(m_p, now);
+    RecordLog record_log = m_fsrs->repeat(m_p, now);
     if (rating < 0)
         rating = 0;
     else if (rating >= +Rating::COUNT)

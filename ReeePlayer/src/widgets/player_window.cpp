@@ -15,7 +15,6 @@
 #include "web_video_widget.h"
 #include "emitter.h"
 #include <time.h>
-#include <srs_interfaces.h>
 #include <srs.h>
 #include <star_widget.h>
 #include <jc_settings_widget.h>
@@ -142,9 +141,6 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
         m_video_widget = video_widget;
         w = video_widget;
     }
-
-    // TODO move
-    m_srs_model = m_app->get_srs_factory()->create_model();
 
     auto sp = w->sizePolicy();
     sp.setVerticalStretch(5);
@@ -553,8 +549,16 @@ void PlayerWindow::on_actPlayPause_triggered()
 
 void PlayerWindow::on_actRepeatClip_triggered()
 {
+    const Clip* clip = m_clip_queue->get_clip();
+    if (!clip)
+        return;
+
+    const srs::ICard* card = clip->get_card();
+    if (!card)
+        return;
+
     ++m_num_repeats;
-    int rating = m_srs_model->get_default_rating(m_num_repeats);
+    int rating = card->get_model()->get_default_rating(m_num_repeats);
     m_star_widget->set_rating(rating + 1);
 
     m_video_widget->play(get_loop_a(), get_loop_b(), 1);
@@ -873,12 +877,22 @@ void PlayerWindow::show_clip(bool clip_changed)
         m_lbl_clip_stats->setText(QString("Repeated today: %1").arg(stat->get_repeated_count()));
 
         bool is_reviewing = m_clip_queue->is_reviewing();
-        m_star_widget_action->setVisible(is_reviewing);
         m_return_shortcut->setEnabled(is_reviewing);
 
         m_num_repeats = 1;
-        int rating = m_srs_model->get_default_rating(m_num_repeats);
-        m_star_widget->set_rating(rating + 1);
+
+        const Clip* clip = m_clip_queue->get_clip();
+        const srs::ICard* card = clip->get_card();
+        bool use_rating = false;
+        if (card)
+        {
+            const srs::IModel* model = card->get_model();
+            use_rating = model->use_rating();
+            int rating = card->get_model()->get_default_rating(m_num_repeats);
+            m_star_widget->set_rating(rating + 1);
+        }
+
+        m_star_widget_action->setVisible(is_reviewing && use_rating);
 
         if (remains == 0)
         {

@@ -66,7 +66,7 @@ target_sources(ReeePlayer PRIVATE
 	src/models/vad.cpp
 	src/models/waveform.cpp	
     src/models/time_types.cpp    
-    src/models/srs_interfaces.cpp    
+    src/models/srs_icard.cpp    
     src/models/srs_simple.cpp
     src/models/srs_fsrs.cpp
     src/models/srs.cpp

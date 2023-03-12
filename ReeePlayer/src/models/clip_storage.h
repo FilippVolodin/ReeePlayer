@@ -2,7 +2,7 @@
 #define ICLIP_H
 
 #include <time_types.h>
-#include <srs_interfaces.h>
+#include <srs_icard.h>
 
 class File;
 class Library;

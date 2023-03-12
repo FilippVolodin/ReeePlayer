@@ -3,38 +3,23 @@
 #include <srs_simple.h>
 #include <srs_fsrs.h>
 
-int srs::Model::get_default_rating(int replays_count) const
-{
-    if (replays_count <= 2)
-        return 3;
-    else if (replays_count <= 4)
-        return 2;
-    else if (replays_count <= 6)
-        return 1;
-    else
-        return 0;
-}
-
 srs::Factory::Factory()
+    : m_simple_model(std::make_unique<simple::Simple>()),
+    m_fsrs_model(std::make_unique<fsrs::FSRS>())
 {
 }
 
 srs::ICardUPtr srs::Factory::create_card() const
 {
-    return std::make_unique<srs::fsrs::Card>(m_fsrs);
+    return std::make_unique<srs::fsrs::Card>(m_fsrs_model.get());
 }
 
 srs::ICardUPtr srs::Factory::create_card(const QString& type) const
 {
     if (type == "simple")
-        return std::make_unique<srs::simple::Card>();
+        return std::make_unique<srs::simple::Card>(m_simple_model.get());
     else if (type == "fsrs")
-        return std::make_unique<srs::fsrs::Card>(m_fsrs);
+        return std::make_unique<srs::fsrs::Card>(m_fsrs_model.get());
     else
         return nullptr;
-}
-
-std::unique_ptr<srs::IModel> srs::Factory::create_model() const
-{
-    return std::make_unique<Model>();
 }

@@ -1,7 +1,7 @@
 #ifndef SRS_FSRS_H
 #define SRS_FSRS_H
 
-#include <srs_interfaces.h>
+#include <srs_icard.h>
 
 namespace srs::fsrs
 {
@@ -79,9 +79,12 @@ namespace srs::fsrs
         -0.12f, 0.8f, 2.f, -0.2f, 0.2f, 1.f };
     };
 
-    class FSRS
+    class FSRS : public IModel
     {
     public:
+        bool use_rating() const override;
+        int get_default_rating(int replays_count) const override;
+
         fsrs::RecordLog repeat(CardPrivate card, TimePoint now) const;
     private:
         void init_ds(SchedulingCards& s) const;
@@ -99,7 +102,9 @@ namespace srs::fsrs
     class Card : public srs::ICard
     {
     public:
-        Card(const FSRS&);
+        Card(const FSRS*);
+
+        const IModel* get_model() const override;
 
         void read(const QJsonObject&) override;
         void write(QJsonObject&) const override;
@@ -108,7 +113,7 @@ namespace srs::fsrs
         bool is_due(TimePoint now) const override;
         void repeat(TimePoint now, int rating) override;
     private:
-        const FSRS& m_fsrs;
+        const FSRS* m_fsrs;
         CardPrivate m_p;
     };
 }

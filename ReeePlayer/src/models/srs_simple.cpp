@@ -59,9 +59,24 @@ namespace srs::simple
     }
 }
 
-srs::simple::Card::Card()
+bool srs::simple::Simple::use_rating() const
 {
+    return false;
+}
 
+int srs::simple::Simple::get_default_rating(int replays_count) const
+{
+    return 0;
+}
+
+srs::simple::Card::Card(const Simple* simple)
+    : m_simple(simple)
+{
+}
+
+const srs::IModel* srs::simple::Card::get_model() const
+{
+    return m_simple;
 }
 
 void srs::simple::Card::read(const QJsonObject& json)

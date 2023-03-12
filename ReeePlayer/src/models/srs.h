@@ -1,24 +1,20 @@
 #ifndef SRS_H
 #define SRS_H
 
-#include <srs_interfaces.h>
-#include <srs_fsrs.h>
-
 namespace srs
 {
-    class IModel
+    class ICard;
+    using ICardUPtr = std::unique_ptr<ICard>;
+    
+    namespace simple
     {
-    public:
-        virtual ~IModel() = default;
+        class Simple;
+    }
 
-        virtual int get_default_rating(int replays_count) const = 0;
-    };
-
-    class Model : public IModel
+    namespace fsrs
     {
-    public:
-        int get_default_rating(int replays_count) const override;
-    };
+        class FSRS;
+    }
 
     class IFactory
     {
@@ -27,8 +23,6 @@ namespace srs
 
         virtual ICardUPtr create_card() const = 0;
         virtual ICardUPtr create_card(const QString& type) const = 0;
-
-        virtual std::unique_ptr<IModel> create_model() const = 0;
     };
 
     class Factory : public IFactory
@@ -38,10 +32,9 @@ namespace srs
 
         ICardUPtr create_card() const override;
         ICardUPtr create_card(const QString& type) const override;
-
-        std::unique_ptr<IModel> create_model() const override;
     private:
-        srs::fsrs::FSRS m_fsrs;
+        std::unique_ptr<srs::simple::Simple> m_simple_model;
+        std::unique_ptr<srs::fsrs::FSRS> m_fsrs_model;
     };
 }
 

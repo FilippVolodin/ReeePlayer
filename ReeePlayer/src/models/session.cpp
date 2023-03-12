@@ -4,7 +4,7 @@
 #include "clip_storage.h"
 #include "app.h"
 #include "library.h"
-#include <srs_interfaces.h>
+#include <srs_icard.h>
 
 ClipPriorityCmp::ClipPriorityCmp(TimePoint cur_time)
     : m_cur_time(cur_time)
