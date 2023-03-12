@@ -247,7 +247,7 @@ bool VideoWidget::is_playing() const
 bool VideoWidget::is_stopped() const
 {
     libvlc_media_t* m = libvlc_media_player_get_media(m_vlc_mp);
-    return m == nullptr || libvlc_media_get_state(m) == libvlc_Stopped;
+    return !m || libvlc_media_get_state(m) == libvlc_Stopped;
 }
 
 void VideoWidget::set_time(int value)

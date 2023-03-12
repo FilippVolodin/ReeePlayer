@@ -41,7 +41,7 @@ void Library::load(const srs::IFactory* card_factory)
 
     m_root = new LibraryItem();
     LibraryItem* dir_item = scan_folder(m_root_path, true, card_factory);
-    if (dir_item != nullptr)
+    if (dir_item)
         m_root->append_child(dir_item);
 
     m_block_notifications = false;
@@ -110,7 +110,7 @@ LibraryItem* Library::scan_folder(const QString& path, bool is_root, const srs::
         {
             LibraryItem* dir_item =
                 scan_folder(file_info.canonicalFilePath(), false, card_factory);
-            if (dir_item != nullptr)
+            if (dir_item)
             {
                 dir_item->set_parent(cur_item);
                 dir_items.push_back(dir_item);
@@ -159,7 +159,7 @@ std::vector<File*> get_files(const std::vector<const LibraryItem*>& items)
     {
         const LibraryItem* p = item->parent();
         bool parent_selected = false;
-        while (p != nullptr && !parent_selected)
+        while (p && !parent_selected)
         {
             if (items_set.find(p) != items_set.end())
                 parent_selected = true;
@@ -183,7 +183,7 @@ std::vector<LibraryItem*> get_disjoint_items(const std::vector<LibraryItem*>& it
     {
         LibraryItem* p = item->parent();
         bool parent_selected = false;
-        while (p != nullptr && !parent_selected)
+        while (p && !parent_selected)
         {
             if (items_set.find(p) != items_set.end())
                 parent_selected = true;

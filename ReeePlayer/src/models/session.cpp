@@ -13,9 +13,9 @@ ClipPriorityCmp::ClipPriorityCmp(TimePoint cur_time)
 
 bool ClipPriorityCmp::operator()(const Clip* lhs, const Clip* rhs)
 {
-    float p1 = lhs->get_card() != nullptr ?
+    float p1 = lhs->get_card() ?
         lhs->get_card()->get_priority(m_cur_time) : 0.0f;
-    float p2 = rhs->get_card() != nullptr ?
+    float p2 = rhs->get_card() ?
         rhs->get_card()->get_priority(m_cur_time) : 0.0f;
     return p1 > p2;
 }
@@ -29,7 +29,7 @@ struct Overdue
 
     bool operator()(const Clip* clip) const
     {
-        if (clip->get_card() == nullptr)
+        if (!clip->get_card())
             return false;
 
         return clip->get_card()->is_due(cur_time) && !clip->is_removed();
@@ -76,7 +76,7 @@ TodayClipStat::TodayClipStat(const Library* library, const File* file)
 
     m_repeated_count = std::accumulate(files.begin(), files.end(), 0, today_repeated_count);
     m_added_count = std::accumulate(files.begin(), files.end(), 0, today_added_count);
-    if (file != nullptr)
+    if (file)
         m_added_count_for_file = today_added_count(0, file);
 }
 
@@ -129,7 +129,7 @@ const Clip* BaseClipQueue::get_clip() const
 
 const ClipUserData* BaseClipQueue::get_clip_user_data() const
 {
-    if (m_current_clip == nullptr)
+    if (!m_current_clip)
         return nullptr;
     return m_current_clip->get_user_data();
 }
@@ -137,7 +137,7 @@ const ClipUserData* BaseClipQueue::get_clip_user_data() const
 void BaseClipQueue::set_clip_user_data(std::unique_ptr<ClipUserData> data)
 {
     Clip* clip = get_current_clip();
-    if (clip != nullptr)
+    if (clip)
         clip->set_user_data(std::move(data));
     m_library->save(clip);
 }
@@ -145,7 +145,7 @@ void BaseClipQueue::set_clip_user_data(std::unique_ptr<ClipUserData> data)
 void BaseClipQueue::set_removed(bool value)
 {
     Clip* clip = get_current_clip();
-    if (clip != nullptr)
+    if (clip)
     {
         if (value)
             clip->set_removal_time(now());
@@ -168,7 +168,7 @@ const FileUserData* BaseClipQueue::get_file_user_data() const
 void BaseClipQueue::set_file_user_data(std::unique_ptr<FileUserData> data)
 {
     File* file = get_current_file();
-    if (file != nullptr)
+    if (file)
     {
         file->set_user_data(std::move(data));
         m_library->save(file);
@@ -237,7 +237,7 @@ void BaseClipQueue::set_current_clip(Clip* clip)
 const File* BaseClipQueue::get_current_file() const
 {
     const Clip* clip = get_current_clip();
-    if (clip != nullptr)
+    if (clip)
         return clip->get_file();
     else
         return nullptr;
@@ -246,7 +246,7 @@ const File* BaseClipQueue::get_current_file() const
 File* BaseClipQueue::get_current_file()
 {
     Clip* clip = get_current_clip();
-    if (clip != nullptr)
+    if (clip)
         return clip->get_file();
     else
         return nullptr;
@@ -332,7 +332,7 @@ int RepeatingClipQueue::overdue_count() const
 
     auto need_to_repeat = [cur_time](const Clip* clip) -> bool
     {
-        return clip->get_card() != nullptr ? clip->get_card()->is_due(cur_time) : false;
+        return clip->get_card() ? clip->get_card()->is_due(cur_time) : false;
     };
 
     return std::count_if(m_clips.begin(), m_clips.end(), need_to_repeat);
@@ -342,7 +342,7 @@ void RepeatingClipQueue::repeat(int rating)
 {
     TimePoint cur = now();
     Clip* clip = get_current_clip();
-    if (clip->get_card() != nullptr)
+    if (clip->get_card())
     {
         clip->get_card()->repeat(cur, rating);
         clip->add_repeat(cur);
@@ -467,7 +467,7 @@ void RepeatingClipQueueV2::repeat(int rating)
 
     TimePoint cur = now();
     Clip* clip = get_current_clip();
-    if (clip->get_card() != nullptr)
+    if (clip->get_card())
     {
         clip->get_card()->repeat(cur, rating);
         clip->add_repeat(cur);

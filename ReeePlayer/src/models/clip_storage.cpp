@@ -382,7 +382,7 @@ void save_file(const File* file)
 
     QJsonObject json_file_user_data;
     const FileUserData* file_user_data = file->get_user_data();
-    if (file_user_data != nullptr)
+    if (file_user_data)
     {
         json_file_user_data["player_time"] = file->get_user_data()->player_time;
         json_file_user_data["length"] = file->get_user_data()->length;
@@ -410,7 +410,7 @@ void save_file(const File* file)
             json_clip["removed"] = clip->get_removal_time().time_since_epoch().count();
 
         QJsonObject json_card;
-        if (clip->get_card() != nullptr)
+        if (clip->get_card())
             clip->get_card()->write(json_card);
         json_clip["card"] = json_card;
 

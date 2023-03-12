@@ -24,7 +24,7 @@ App::App()
 
 App::~App()
 {
-    if (m_library != nullptr)
+    if (m_library)
     {
         std::map<QString, bool> expanded_map;
         get_expanded(m_library->get_root(), expanded_map);

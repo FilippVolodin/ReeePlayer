@@ -13,7 +13,7 @@ SubtitlesView::SubtitlesView(QWidget *parent)
     toolbar->setIconSize(QSize(18, 18));
     
     QBoxLayout* lo = dynamic_cast<QBoxLayout*>(layout());
-    if (lo != nullptr)
+    if (lo)
     {
         lo->insertWidget(0, toolbar);
     }

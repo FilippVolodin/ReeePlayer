@@ -15,7 +15,7 @@ VAD::VAD(const QString& vad_file)
 void VAD::new_conn()
 {
     qDebug("new_conn");
-    if (m_sock != nullptr)
+    if (m_sock)
         return;
     m_sock = m_server->nextPendingConnection();
     connect(m_sock, &QTcpSocket::readyRead, this, &VAD::ready_read);

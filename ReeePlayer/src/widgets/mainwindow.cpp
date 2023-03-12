@@ -208,7 +208,7 @@ void MainWindow::open_dir(const QString& dir)
 
         m_app->open_dir(dir);
         Library* library = m_app->get_library();
-        if (library != nullptr)
+        if (library)
         {
             m_library_tree->set_library(library);
 
@@ -366,7 +366,7 @@ void MainWindow::on_player_window_destroyed()
 
     show();
     LibraryItem* root = m_library_tree->get_item(ui.videos->rootIndex());
-    if (root != nullptr)
+    if (root)
     {
         root->update_clips_count();
     }
@@ -451,7 +451,7 @@ void MainWindow::set_default_ui(State state)
 
 PlayerWindow* MainWindow::getPlayerWindow()
 {
-    if (m_player_window == nullptr)
+    if (!m_player_window)
     {
         m_player_window = new PlayerWindow(m_app);
         m_player_window->setAttribute(Qt::WA_DeleteOnClose);

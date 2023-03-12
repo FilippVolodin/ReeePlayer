@@ -125,10 +125,10 @@ QModelIndex LibraryTree::parent(const QModelIndex &child) const
 
 int LibraryTree::rowCount(const QModelIndex &parent) const
 {
-    if (m_library == nullptr)
+    if (!m_library)
         return 0;
 
-    if (m_library->get_root() == nullptr)
+    if (!m_library->get_root())
         return 0;
 
     if (parent.column() > 0)

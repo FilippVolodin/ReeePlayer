@@ -147,7 +147,7 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
     w->setSizePolicy(sp);
 
     QBoxLayout* lo = dynamic_cast<QBoxLayout*>(ui.centralwidget->layout());
-    if (lo != nullptr)
+    if (lo)
         lo->insertWidget(0, w);
     else
         lo->addWidget(w);
@@ -673,11 +673,11 @@ void PlayerWindow::on_subtitles_insert_clicked(int index, int value)
     const qsubs::ISubtitles* subs = m_subtitles[index].get();
     const qsubs::ICue* cue = m_cues[index];
 
-    if (subs != nullptr && cue != nullptr)
+    if (subs && cue)
     {
         int idx = cue->get_index() + value;
         const qsubs::ICue* n_cue = subs->get_cue(idx);
-        if (n_cue != nullptr)
+        if (n_cue)
         {
             QString text = m_subtitle_views[index]->get_text();
             if (value < 0)
@@ -819,7 +819,7 @@ void PlayerWindow::show_video()
     m_video_widget->set_rate(1.0);
 
     const FileUserData* file_user_data = m_clip_queue->get_file_user_data();
-    if (file_user_data != nullptr)
+    if (file_user_data)
     {
         int time = file_user_data->player_time;
         if (time > 0)
@@ -831,7 +831,7 @@ void PlayerWindow::show_clip(bool clip_changed)
 {
     const ClipUserData* clip_data = m_clip_queue->get_clip_user_data();
     //std::unique_ptr<IFileData> file_data = m_clip_session->get_file_data();
-    if (clip_data == nullptr)
+    if (!clip_data)
     {
         m_video_widget->stop();
         set_state(std::make_shared<VideoNotLoadedState>(this));
@@ -938,11 +938,11 @@ void PlayerWindow::update_insert_button(int index, int value)
 {
     const qsubs::ISubtitles* subs = m_subtitles[index].get();
     QString text;
-    if (subs != nullptr && m_cues[index] != nullptr)
+    if (subs && m_cues[index])
     {
         int idx = m_cues[index]->get_index() + value;
         const qsubs::ICue* cue = subs->get_cue(idx);
-        if (cue != nullptr)
+        if (cue)
         {
             text = cue->get_text();
         }
@@ -994,13 +994,13 @@ void PlayerWindow::update_cue(int index)
     int time = m_video_widget->get_time();
     const qsubs::ISubtitles* subs = m_subtitles[index].get();
     const qsubs::ICue* cue = nullptr;
-    if (subs != nullptr)
+    if (subs)
     {
         int offset = m_subtitle_views[index]->get_offset();
         cue = subs->pick_cue(time + offset, false);
     }
 
-    if (cue != nullptr)
+    if (cue)
     {
         if (m_cues[index] != cue)
         {
@@ -1393,7 +1393,7 @@ void AddingClipState::activate()
     int b = std::min(m_pw->m_video_widget->get_length(), time + 1000);
     for (const qsubs::ICue* cue : m_pw->m_cues)
     {
-        if (cue != nullptr)
+        if (cue)
         {
             a = cue->get_start_time();
             b = cue->get_end_time();

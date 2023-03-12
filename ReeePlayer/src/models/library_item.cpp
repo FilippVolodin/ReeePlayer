@@ -72,7 +72,7 @@ const LibraryItem* LibraryItem::child(int i) const
 
 int LibraryItem::row() const
 {
-    if (m_parent != nullptr)
+    if (m_parent)
     {
         auto it = std::find(
             m_parent->m_child_items.begin(),
@@ -238,7 +238,7 @@ void LibraryItem::update_clips_count_internal(TimePoint now)
                 if (!clip->is_removed())
                 {
                     ++this->m_clips_count;
-                    if (clip->get_card() != nullptr && clip->get_card()->is_due(now))
+                    if (clip->get_card() && clip->get_card()->is_due(now))
                         ++this->m_due_count;
                 }
             }
@@ -254,29 +254,6 @@ void LibraryItem::update_clips_count_internal(TimePoint now)
         }
     }
 }
-
-
-//void LibraryItem::update_clips_count_up()
-//{
-//    m_cached_clips_count = update_clips_count();
-//
-//    LibraryItem* p = parent();
-//    while (p != nullptr)
-//    {
-//        p->m_cached_clips_count = p->update_clips_count();
-//        //if (p->get_item_type() == ItemType::File)
-//        //{
-//        //    p->m_cached_clips_count = m_file->get_num_clips();
-//        //}
-//        //else if (p->get_item_type() == ItemType::Folder)
-//        //{
-//        //    p->m_cached_clips_count = 0;
-//        //    for (LibraryItem* item : p->m_child_items)
-//        //        p->m_cached_clips_count += item->update_clips_count();
-//        //}
-//        p = p->parent();
-//    }
-//}
 
 void LibraryItem::append_child(LibraryItem* item)
 {

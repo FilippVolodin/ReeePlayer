@@ -105,7 +105,7 @@ void VideoTreeView::show_context_menu(const QPoint& pos)
 
     }
 
-    if (download_action != nullptr)
+    if (download_action)
     {
         menu.addSeparator();
         menu.addAction(download_action);

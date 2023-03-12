@@ -64,7 +64,7 @@ void WaveformView::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 
-    if (m_waveform == nullptr)
+    if (!m_waveform)
         return;
 
     const std::vector<uint8_t>& volumes = m_waveform->get_max_volumes();
