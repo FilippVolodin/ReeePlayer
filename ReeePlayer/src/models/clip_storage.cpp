@@ -152,11 +152,6 @@ File::File(Library* library, const QString& path)
 {
 }
 
-File::~File()
-{
-    qDeleteAll(m_clips);
-}
-
 Library* File::get_library()
 {
     return m_library;
@@ -172,27 +167,26 @@ QString File::get_path() const
     return m_path;
 }
 
-int File::get_num_clips() const
+int File::get_num_clips(bool count_removed) const
 {
-    return m_clips.size();
+    if (count_removed)
+        return m_clips.size();
+
+    return std::accumulate(std::begin(m_clips), std::end(m_clips), 0,
+        [](int cnt, const auto& clip) {return cnt + (!clip->is_removed() ? 1 : 0); });
 }
 
-const Clips& File::get_clips() const
-{
-    return m_clips;
-}
-
-void File::add_clip(Clip* clip)
+void File::add_clip(std::unique_ptr<Clip> clip)
 {
     clip->set_file(this);
-    m_clips.push_back(clip);
+    m_clips.push_back(std::move(clip));
 }
 
 void File::remove_clip(Clip* clip)
 {
     for (auto it = m_clips.begin(); it != m_clips.end(); ++it)
     {
-        if (*it == clip)
+        if (it->get() == clip)
         {
             m_clips.erase(it);
             break;
@@ -314,9 +308,9 @@ std::unique_ptr<ClipUserData> read_clip_user_data(const QJsonObject& json_clip, 
         return read_clip_user_data(json_clip);
 }
 
-File* load_file(Library* library, const QString& path, const srs::IFactory* card_factory)
+std::unique_ptr<File> load_file(Library* library, const QString& path, const srs::IFactory* card_factory)
 {
-    File* file = new File(library, path);
+    std::unique_ptr<File> file = std::make_unique<File>(library, path);
     QFileInfo info(path);
     QString json_file = info.absolutePath() + "/" + info.completeBaseName() + ".user.json";
 
@@ -345,8 +339,7 @@ File* load_file(Library* library, const QString& path, const srs::IFactory* card
                 int res = true;
                 QJsonObject json_clip = json_clips[i].toObject();
 
-                // TODO possible leak
-                Clip* clip = new Clip();
+                std::unique_ptr<Clip> clip = std::make_unique<Clip>();
 
                 srs::ICardUPtr card = read_card(json_clip, version, card_factory);
                 clip->set_card(std::move(card));
@@ -372,7 +365,7 @@ File* load_file(Library* library, const QString& path, const srs::IFactory* card
 
                 clip->set_user_data(read_clip_user_data(json_clip, version));
 
-                file->add_clip(clip);
+                file->add_clip(std::move(clip));
             }
             catch (srs::ReadException)
             {

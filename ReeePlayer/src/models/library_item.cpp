@@ -24,7 +24,6 @@ LibraryItem::LibraryItem(const QString& path, LibraryItem* parent)
 LibraryItem::~LibraryItem()
 {
     qDeleteAll(m_child_items);
-    delete m_file;
 }
 
 void LibraryItem::get_ids(std::vector<int>& ids) const
@@ -40,7 +39,12 @@ void LibraryItem::get_ids(std::vector<int>& ids) const
     }
 }
 
-LibraryItem* LibraryItem::parent() const
+LibraryItem* LibraryItem::parent()
+{
+    return m_parent;
+}
+
+const LibraryItem* LibraryItem::parent() const
 {
     return m_parent;
 }
@@ -50,7 +54,15 @@ void LibraryItem::set_parent(LibraryItem* parent)
     m_parent = parent;
 }
 
-LibraryItem* LibraryItem::child(int i) const
+LibraryItem* LibraryItem::child(int i)
+{
+    if (i < 0 || i >= m_child_items.size())
+        return nullptr;
+
+    return m_child_items[i];
+}
+
+const LibraryItem* LibraryItem::child(int i) const
 {
     if (i < 0 || i >= m_child_items.size())
         return nullptr;
@@ -80,12 +92,12 @@ int LibraryItem::num_children() const
 
 File* LibraryItem::get_file()
 {
-    return m_file;
+    return m_file.get();
 }
 
 const File* LibraryItem::get_file() const
 {
-    return m_file;
+    return m_file.get();
 }
 
 QString LibraryItem::get_name() const
@@ -109,7 +121,7 @@ void LibraryItem::get_files(std::vector<File*>& files) const
     }
     else
     {
-        files.push_back(m_file);
+        files.push_back(m_file.get());
     }
 }
 
@@ -150,7 +162,7 @@ QVariant LibraryItem::data(int column, int role) const
         }
         case 1:
         {
-            return get_clips_count();
+            return m_cached_clips_count; // get_clips_count();
         }
         default:
             break;
@@ -207,38 +219,38 @@ bool LibraryItem::is_expanded() const
 
 int LibraryItem::get_clips_count(bool force) const
 {
-    if (m_clips_count != -1 && !force)
-        return m_clips_count;
+    if (m_cached_clips_count != -1 && !force)
+        return m_cached_clips_count;
         
-    m_clips_count = 0;
+    m_cached_clips_count = 0;
     if (get_item_type() == ItemType::File)
     {
-        m_clips_count = m_file->get_num_clips();
+        m_cached_clips_count = m_file->get_num_clips();
     }
     else if (get_item_type() == ItemType::Folder)
     {
         for (LibraryItem* item : m_child_items)
-            m_clips_count += item->get_clips_count(force);
+            m_cached_clips_count += item->get_clips_count(force);
     }
-    return m_clips_count;
+    return m_cached_clips_count;
 }
 
 void LibraryItem::update_clips_count_up()
 {
-    m_clips_count = get_clips_count(true);
+    m_cached_clips_count = get_clips_count(true);
 
     LibraryItem* p = parent();
     while (p != nullptr)
     {
         if (p->get_item_type() == ItemType::File)
         {
-            p->m_clips_count = m_file->get_num_clips();
+            p->m_cached_clips_count = m_file->get_num_clips();
         }
         else if (p->get_item_type() == ItemType::Folder)
         {
-            p->m_clips_count = 0;
+            p->m_cached_clips_count = 0;
             for (LibraryItem* item : p->m_child_items)
-                p->m_clips_count += item->get_clips_count();
+                p->m_cached_clips_count += item->get_clips_count();
         }
         p = p->parent();
     }
@@ -296,7 +308,7 @@ void LibraryItem::get_clips(std::vector<Clip*>& clips)
 {
     if (get_item_type() == ItemType::File)
     {
-        const Clips& file_clips = m_file->get_clips();
+        auto file_clips = m_file->get_clips();
         clips.insert(clips.end(), file_clips.begin(), file_clips.end());
     }
     else if (get_item_type() == ItemType::Folder)
@@ -306,44 +318,58 @@ void LibraryItem::get_clips(std::vector<Clip*>& clips)
     }
 }
 
-void LibraryItem::find_clips(QStringView str, int max_clips, bool fav,
-    bool removed, std::vector<Clip*>& clips) const
+void LibraryItem::iterate_files(FileFunc ff)
 {
-    if (max_clips != 0 && clips.size() >= max_clips)
-        return;
-
     if (get_item_type() == ItemType::File)
     {
-        const Clips& file_clips = m_file->get_clips();
-        for (Clip* clip : file_clips)
-        {
-            const ClipUserData* user_data = clip->get_user_data();
-            for (const QString& text : user_data->subtitles)
-            {
-                if (fav && !user_data->is_favorite)
-                    continue;
-
-                if (removed != clip->is_removed())
-                    continue;
-
-                if (str.isEmpty() || text.contains(str, Qt::CaseInsensitive))
-                {
-                    clips.push_back(clip);
-                    break;
-                }
-            }
-
-            if (max_clips != 0 && clips.size() >= max_clips)
-                break;
-        }
+        ff(m_file.get());
     }
     else if (get_item_type() == ItemType::Folder)
     {
         for (LibraryItem* item : m_child_items)
-        {
-            item->find_clips(str, max_clips, fav, removed, clips);
-            if (max_clips != 0 && clips.size() >= max_clips)
-                break;
-        }
+            item->iterate_files(ff);
+    }
+}
+
+void LibraryItem::iterate_files(ConstFileFunc ff) const
+{
+    if (get_item_type() == ItemType::File)
+    {
+        ff(m_file.get());
+    }
+    else if (get_item_type() == ItemType::Folder)
+    {
+        for (const LibraryItem* item : m_child_items)
+            item->iterate_files(ff);
+    }
+}
+
+void LibraryItem::iterate_clips(ClipFunc f)
+{
+    if (get_item_type() == ItemType::File)
+    {
+        auto file_clips = m_file->get_clips();
+        for (Clip* clip : file_clips)
+            f(clip);
+    }
+    else if (get_item_type() == ItemType::Folder)
+    {
+        for (LibraryItem* item : m_child_items)
+            item->iterate_clips(f);
+    }
+}
+
+void LibraryItem::iterate_clips(ConstClipFunc f) const
+{
+    if (get_item_type() == ItemType::File)
+    {
+        auto file_clips = m_file->get_clips();
+        for (Clip* clip : file_clips)
+            f(clip);
+    }
+    else if (get_item_type() == ItemType::Folder)
+    {
+        for (const LibraryItem* item : m_child_items)
+            item->iterate_clips(f);
     }
 }

@@ -73,7 +73,7 @@ private:
 
     void update_clips();
 
-    std::vector<const LibraryItem*> get_selected_items() const;
+    std::vector<LibraryItem*> get_selected_items() const;
     std::vector<File*> get_selected_files() const;
 
     Ui::MainWindowClass ui;

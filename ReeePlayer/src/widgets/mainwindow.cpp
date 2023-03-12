@@ -279,7 +279,7 @@ void MainWindow::on_stats_on_selected_triggered()
 
 void MainWindow::on_actSearchClips_triggered()
 {
-    std::vector<const LibraryItem*> items = { m_app->get_library()->get_root() };
+    std::vector<LibraryItem*> items = { m_app->get_library()->get_root() };
     SearchDialog* w = new SearchDialog(m_app, items,  this);
     w->show();
 }
@@ -572,11 +572,10 @@ void MainWindow::update_clips()
     if (list.size() == 1)
     {
         const QModelIndex& index = list.first();
-        const LibraryItem* item = m_library_tree->get_item(index);
+        LibraryItem* item = m_library_tree->get_item(index);
         if (item->get_item_type() == ItemType::File)
         {
-            const Clips& cs = item->get_file()->get_clips();
-            //clips->reserve(cs.size());
+            auto cs = item->get_file()->get_clips();
             std::copy_if(cs.begin(), cs.end(), std::back_inserter(*clips),
                 [](Clip* clip) {return !clip->is_removed(); });
         }
@@ -585,14 +584,14 @@ void MainWindow::update_clips()
     ui.tblClips->resizeRowsToContents();
 }
 
-std::vector<const LibraryItem*> MainWindow::get_selected_items() const
+std::vector<LibraryItem*> MainWindow::get_selected_items() const
 {
     QModelIndexList list = ui.videos->selectionModel()->selectedIndexes();
-    std::vector<const LibraryItem*> items;
+    std::vector<LibraryItem*> items;
     items.reserve(list.size());
     for (const QModelIndex& index : list)
     {
-        const LibraryItem* item = m_library_tree->get_item(index);
+        LibraryItem* item = m_library_tree->get_item(index);
         items.push_back(item);
     }
     return get_disjoint_items(items);

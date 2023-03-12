@@ -8,7 +8,7 @@
 #include "export_dialog.h"
 #include "clips_view.h"
 
-SearchDialog::SearchDialog(App* app, std::vector<const LibraryItem*> items, QWidget *parent) :
+SearchDialog::SearchDialog(App* app, std::vector<LibraryItem*> items, QWidget *parent) :
     m_app(app),
     m_items(std::move(items)),
     QDialog(parent)
@@ -39,7 +39,7 @@ SearchDialog::SearchDialog(App* app, std::vector<const LibraryItem*> items, QWid
     int file_num = 0;
     for (const LibraryItem* item : m_items)
     {
-        item->iterate_files([&file_num](File*) {file_num++; });
+        item->iterate_files([&file_num](const File*) {file_num++; });
     }
 
     bool search_everywhere = m_items.size() == 1 && m_items[0] == m_app->get_library()->get_root();
@@ -140,9 +140,37 @@ void SearchDialog::on_repeat_selected_triggered()
 void SearchDialog::search(const QString& text)
 {
     m_clips = std::make_shared<std::vector<Clip*>>();
-    for (const LibraryItem* item : m_items)
-        item->find_clips(text, 0,
-            ui.chkFavorite->isChecked(), ui.chkRemoved->isChecked(), *m_clips);
+    auto find = [
+        &clips = *m_clips.get(),
+            &text,
+            fav = ui.chkFavorite->isChecked(),
+            removed = ui.chkRemoved->isChecked()
+    ] (Clip* clip)
+    {
+        const ClipUserData* user_data = clip->get_user_data();
+        for (const QString& srt : user_data->subtitles)
+        {
+            if (fav && !user_data->is_favorite)
+                continue;
+
+            if (removed != clip->is_removed())
+                continue;
+
+            if (text.isEmpty() || srt.contains(text, Qt::CaseInsensitive))
+            {
+                clips.push_back(clip);
+                break;
+            }
+        }
+    };
+    
+    for (LibraryItem* item : m_items)
+        item->iterate_clips(find);
+
+
+    //for (const LibraryItem* item : m_items)
+    //    item->find_clips(text, 0,
+    //        ui.chkFavorite->isChecked(), ui.chkRemoved->isChecked(), *m_clips);
 
     m_clips_model->set_clips(m_clips);
     ui.tblClips->resizeRowsToContents();

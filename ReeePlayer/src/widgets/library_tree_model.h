@@ -24,7 +24,8 @@ public:
 
     void set_library(Library*);
 
-    LibraryItem* get_item(const QModelIndex& index) const;
+    LibraryItem* get_item(const QModelIndex& index);
+    const LibraryItem* get_item(const QModelIndex& index) const;
 
     void expanded(const QModelIndex &index);
     void collapsed(const QModelIndex &index);

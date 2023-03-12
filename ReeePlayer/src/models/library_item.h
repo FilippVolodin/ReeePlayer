@@ -14,8 +14,10 @@ public:
     LibraryItem() = default;
     LibraryItem(const QString& path, LibraryItem* parent = nullptr);
     ~LibraryItem();
-    LibraryItem* child(int i) const;
-    LibraryItem* parent() const;
+    LibraryItem* child(int i);
+    const LibraryItem* child(int i) const;
+    LibraryItem* parent();
+    const LibraryItem* parent() const;
     void set_parent(LibraryItem*);
     int row() const;
     int num_children() const;
@@ -51,63 +53,29 @@ public:
     void remove_childs(int row, int count);
 
     void get_clips(std::vector<Clip*>&);
-    void find_clips(QStringView str, int max_clips, bool fav, bool removed, std::vector<Clip*>&) const;
 
-    template<typename FileFunc>
-    void iterate_files(FileFunc ff) const
-    {
-        if (get_item_type() == ItemType::File)
-        {
-            ff(m_file);
-        }
-        else if (get_item_type() == ItemType::Folder)
-        {
-            for (LibraryItem* item : m_child_items)
-                item->iterate_files(ff);
-        }
-    }
-    template<typename FileFunc>
-    void iterate_files(FileFunc ff)
-    {
-        if (get_item_type() == ItemType::File)
-        {
-            ff(m_file);
-        }
-        else if (get_item_type() == ItemType::Folder)
-        {
-            for (LibraryItem* item : m_child_items)
-                item->iterate_files(ff);
-        }
-    }
+    using FileFunc = std::function<void(File*)>;
+    using ConstFileFunc = std::function<void(const File*)>;
+    using ClipFunc = std::function<void(Clip*)>;
+    using ConstClipFunc = std::function<void(const Clip*)>;
 
-    template<typename ClipFunc>
-    void iterate_clips(ClipFunc cf)
-    {
-        if (get_item_type() == ItemType::File)
-        {
-            const Clips& file_clips = m_file->get_clips();
-            for (Clip* clip : file_clips)
-                cf(clip);
-        }
-        else if (get_item_type() == ItemType::Folder)
-        {
-            for (LibraryItem* item : m_child_items)
-                item->iterate_clips(cf);
-        }
-    }
+    void iterate_files(FileFunc cf);
+    void iterate_files(ConstFileFunc cf) const;
+    void iterate_clips(ClipFunc cf);
+    void iterate_clips(ConstClipFunc cf) const;
 private:
     void get_ids(std::vector<int>&) const;
 
     //QHash<int, DomItem *> childItems;
     QString m_name;
     QString m_dir_path;
-    File* m_file = nullptr;
+    std::unique_ptr<File> m_file;
     std::vector<LibraryItem*> m_child_items;
     LibraryItem *m_parent = nullptr;
     Qt::CheckState m_checked = Qt::Unchecked;
     ItemType m_item_type;
     int m_id = -1;
-    mutable int m_clips_count = -1;
+    mutable int m_cached_clips_count = -1;
     bool m_expanded;
     //Qt::ItemFlags m_item_flags;
 };

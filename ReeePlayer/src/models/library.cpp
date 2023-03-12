@@ -61,47 +61,6 @@ void Library::load(const srs::IFactory* card_factory)
         save(file);
 }
 
-//void Library::clip_added(Clip* clip)
-//{
-//    if (!m_block_notifications)
-//        m_changed_files.insert(clip->get_file());
-//}
-//
-//void Library::clip_changed(Clip* clip)
-//{
-//    if (!m_block_notifications)
-//        m_changed_files.insert(clip->get_file());
-//}
-//
-//void Library::file_changed(File* file)
-//{
-//    if (!m_block_notifications)
-//        m_changed_files.insert(file);
-//}
-//
-//void Library::clip_removed(Clip* clip)
-//{
-//    if (!m_block_notifications)
-//    {
-//        emit clip_removed_sig(clip);
-//        m_changed_files.insert(clip->get_file());
-//    }
-//}
-
-std::vector<Clip*> Library::get_all_clips() const
-{
-    std::vector<Clip*> clips;
-    m_root->get_clips(clips);
-    return clips;
-}
-
-//std::vector<Clip*> Library::find_clips(QStringView str, int max_clips) const
-//{
-//    std::vector<Clip*> clips;
-//    m_root->find_clips(str, max_clips, clips);
-//    return clips;
-//}
-
 LibraryItem* Library::get_root() const
 {
     return m_root;
@@ -213,14 +172,14 @@ std::vector<File*> get_files(const std::vector<const LibraryItem*>& items)
     return files;
 }
 
-std::vector<const LibraryItem*> get_disjoint_items(const std::vector<const LibraryItem*>& items)
+std::vector<LibraryItem*> get_disjoint_items(const std::vector<LibraryItem*>& items)
 {
-    std::set<const LibraryItem*> items_set(items.begin(), items.end());
+    std::set<LibraryItem*> items_set(items.begin(), items.end());
 
-    std::vector<const LibraryItem*> disjoint_items;
-    for (const LibraryItem* item : items)
+    std::vector<LibraryItem*> disjoint_items;
+    for (LibraryItem* item : items)
     {
-        const LibraryItem* p = item->parent();
+        LibraryItem* p = item->parent();
         bool parent_selected = false;
         while (p != nullptr && !parent_selected)
         {

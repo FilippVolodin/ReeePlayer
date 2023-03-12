@@ -15,7 +15,7 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
-    SearchDialog(App* app, std::vector<const LibraryItem*> items, QWidget *parent = Q_NULLPTR);
+    SearchDialog(App* app, std::vector<LibraryItem*> items, QWidget *parent = Q_NULLPTR);
     ~SearchDialog();
 public slots:
     void on_btnSearch_clicked();
@@ -35,7 +35,7 @@ private:
     Ui::SearchDialog ui;
 
     App* m_app;
-    std::vector<const LibraryItem*> m_items;
+    std::vector<LibraryItem*> m_items;
     ClipModel* m_clips_model;
     ClipsPtr m_clips;
 };

@@ -263,9 +263,9 @@ RepeatingClipQueue::RepeatingClipQueue(Library* library, const std::vector<File*
     m_showed_clips.clear();
     m_showing_clip_index = -1;
 
-    for (const File* file : files)
+    for (File* file : files)
     {
-        const Clips& clips = file->get_clips();
+        auto clips = file->get_clips();
         m_clips.insert(m_clips.end(), clips.begin(), clips.end());
     }
     next();
@@ -354,9 +354,9 @@ RepeatingClipQueueV2::RepeatingClipQueueV2(Library* library, const std::vector<F
     : BaseClipQueue(library)
 {
     Overdue overdue(now());
-    for (const File* file : files)
+    for (File* file : files)
     {
-        const Clips& clips = file->get_clips();
+        auto clips = file->get_clips();
         std::ranges::copy_if(clips, std::back_inserter(m_clips), overdue);
     }
     std::ranges::sort(m_clips, ClipPriorityCmp(now()));
@@ -500,15 +500,16 @@ AddingClipsQueue::AddingClipsQueue(Library* library, File* file, const srs::IFac
 
 void AddingClipsQueue::set_clip_user_data(std::unique_ptr<ClipUserData> user_data)
 {
-    Clip* new_clip = new Clip();
+    std::unique_ptr<Clip> new_clip = std::make_unique<Clip>();
     srs::ICardUPtr card = m_srs_factory->create_card();
     new_clip->set_card(std::move(card));
     new_clip->generate_uid();
     new_clip->set_adding_time(now());
-    m_file->add_clip(new_clip);
+    new_clip->set_user_data(std::move(user_data));
 
-    set_current_clip(new_clip);
-    BaseClipQueue::set_clip_user_data(std::move(user_data));
+    Clip* clip = new_clip.get();
+    m_file->add_clip(std::move(new_clip));
+    set_current_clip(clip);
 
     get_today_clip_stat()->inc_added();
 }

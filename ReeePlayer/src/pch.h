@@ -59,6 +59,7 @@
 #include <stack>
 #include <thread>
 #include <chrono>
+#include <ranges>
 
 #if defined(_MSC_VER)
 #include <BaseTsd.h>

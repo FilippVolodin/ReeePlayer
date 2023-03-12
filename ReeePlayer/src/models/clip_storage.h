@@ -87,21 +87,43 @@ struct FileUserData
     int length = 0;
 };
 
+template<typename T>
+auto uptr_const_indirect(const std::unique_ptr<T>& ptr) -> const T*
+{
+    return ptr.get();
+}
+
+template<typename T>
+auto uptr_indirect(const std::unique_ptr<T>& ptr) -> T*
+{
+    return ptr.get();
+}
+
 class File
 {
 public:
+
     File(Library*, const QString& path);
-    ~File();
+    ~File() = default;
 
     Library* get_library();
     const Library* get_library() const;
 
     QString get_path() const;
 
-    int get_num_clips() const;
-    const Clips& get_clips() const;
+    int get_num_clips(bool count_removed = false) const;
+    auto get_clips() const
+    {
+        return m_clips
+            | std::ranges::views::transform(uptr_const_indirect<Clip>);
+    }
+    auto get_clips()
+    {
+        return m_clips
+            | std::ranges::views::transform(uptr_indirect<Clip>);
+    }
 
-    void add_clip(Clip*);
+    void add_clip(std::unique_ptr<Clip>);
     void remove_clip(Clip*);
 
     const FileUserData* get_user_data() const;
@@ -109,7 +131,7 @@ public:
 
 private:
     QString m_path;
-    Clips m_clips;
+    std::vector<std::unique_ptr<Clip>> m_clips;
     Library* m_library = nullptr;
     std::unique_ptr<FileUserData> m_user_data;
 };
@@ -124,7 +146,7 @@ public:
 
 bool export_txt(const std::vector<Clip*>&, const QString& filename);
 
-File* load_file(Library* library, const QString& path, const srs::IFactory* card_factory);
+std::unique_ptr<File> load_file(Library* library, const QString& path, const srs::IFactory* card_factory);
 void save_file(const File* file);
 
 #endif // !ICLIP_H

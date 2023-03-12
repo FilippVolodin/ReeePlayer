@@ -24,7 +24,15 @@ void LibraryTree::set_library(Library* library)
     endResetModel();
 }
 
-LibraryItem* LibraryTree::get_item(const QModelIndex& index) const
+LibraryItem* LibraryTree::get_item(const QModelIndex& index)
+{
+    if (!index.isValid())
+        return m_library->get_root();
+    else
+        return static_cast<LibraryItem*>(index.internalPointer());
+}
+
+const LibraryItem* LibraryTree::get_item(const QModelIndex& index) const
 {
     if (!index.isValid())
         return m_library->get_root();
@@ -91,9 +99,9 @@ QModelIndex LibraryTree::index(int row, int column, const QModelIndex &parent) c
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    LibraryItem *parentItem = get_item(parent);
+    const LibraryItem *parentItem = get_item(parent);
 
-    LibraryItem *childItem = parentItem->child(row);
+    const LibraryItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     return QModelIndex();
@@ -124,6 +132,6 @@ int LibraryTree::rowCount(const QModelIndex &parent) const
     if (parent.column() > 0)
         return 0;
 
-    LibraryItem* parent_item = get_item(parent);
+    const LibraryItem* parent_item = get_item(parent);
     return parent_item->num_children();
 }
