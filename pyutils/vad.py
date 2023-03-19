@@ -27,10 +27,10 @@ class OnnxWrapper():
         if sr / x.shape[1] > 31.25:
             raise ValueError("Input audio chunk is too short")
 
-        ort_inputs = {'input': x, 'h0': self._h, 'c0': self._c}
+        ort_inputs = {'input': x, 'h': self._h, 'c': self._c, 'sr': np.array(sr, dtype='int64')}
         ort_outs = self.session.run(None, ort_inputs)
         out, self._h, self._c = ort_outs
-        return out[:,1,0]
+        return out[:,0]
 
 parser = argparse.ArgumentParser(description='Generate VAD')
 parser.add_argument('wav_file', type=str, help='Wav-file path to process')
