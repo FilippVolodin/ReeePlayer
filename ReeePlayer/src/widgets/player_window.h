@@ -10,7 +10,6 @@ class File;
 class ClipInfoDialog;
 class App;
 class Library;
-class Waveform;
 class JumpCutterSettings;
 class IVideoWidget;
 class VAD;
@@ -18,7 +17,10 @@ class VADSettings;
 class JCSettingsWidget;
 class StarWidget;
 class IClipQueue;
+class AudioTools;
 struct ClipUserData;
+
+using Waveform = std::vector<uint8_t>;
 
 namespace qsubs
 {
@@ -150,8 +152,6 @@ public:
 
     void run(Mode, std::shared_ptr<IClipQueue>);
 
-    void set_vad(std::shared_ptr<VAD>);
-
     void save_player_time();
 protected:
     void showEvent(QShowEvent *event);
@@ -241,6 +241,8 @@ private:
     void save_jc_settings();
     std::shared_ptr<VADSettings> get_vad_settings() const;
 
+    void update_waveform_ui();
+
     Ui::PlayerWindow ui;
 
     bool m_showed = false;
@@ -249,6 +251,7 @@ private:
     std::shared_ptr<IClipQueue> m_clip_queue;
     std::shared_ptr<Waveform> m_waveform;
     std::shared_ptr<VAD> m_vad;
+    std::unique_ptr<AudioTools> m_audio_tools;
     std::shared_ptr<JumpCutterSettings> m_jc_settings;
 
     ClipInfoDialog* m_clip_info_dialog;

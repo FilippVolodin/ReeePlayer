@@ -64,12 +64,12 @@ target_sources(ReeePlayer PRIVATE
 	src/models/session.cpp
 	src/models/repetition_model.cpp
 	src/models/vad.cpp
-	src/models/waveform.cpp	
     src/models/time_types.cpp    
     src/models/srs_icard.cpp    
     src/models/srs_simple.cpp
     src/models/srs_fsrs.cpp
     src/models/srs.cpp
+    src/models/audio_tools.cpp
 )
 	
 target_include_directories(ReeePlayer PRIVATE

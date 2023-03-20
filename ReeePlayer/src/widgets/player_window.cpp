@@ -9,7 +9,6 @@
 #include "spinbox.h"
 #include "models/jumpcutter.h"
 #include "models/vad.h"
-#include "models/waveform.h"
 #include "waveform_view.h"
 #include "video_widget.h"
 #include "web_video_widget.h"
@@ -18,6 +17,7 @@
 #include <srs.h>
 #include <star_widget.h>
 #include <jc_settings_widget.h>
+#include <audio_tools.h>
 
 struct PlaybackRateItem
 {
@@ -196,12 +196,6 @@ void PlayerWindow::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
     m_mode = mode;
     m_clip_queue = clip_queue;
     show();
-}
-
-void PlayerWindow::set_vad(std::shared_ptr<VAD> vad)
-{
-    m_vad = vad;
-    connect(m_vad.get(), &VAD::progress_updated, this, &PlayerWindow::on_vad_progress_updated);
 }
 
 void PlayerWindow::save_player_time()
@@ -455,16 +449,15 @@ void PlayerWindow::setup_playback_rates()
 void PlayerWindow::setup_jc_settings()
 {
     load_jc_settings();
-    if (m_vad)
-    {
-        m_vad->apply_settings(get_vad_settings());
+    //if (m_vad)
+    //{
         bool jc_enabled = m_app->get_setting("jumpcutter", "activated", true).toBool();
         m_jc_settings->set_activated(jc_enabled);
-    }
-    else
-    {
-        m_jc_settings->set_enabled(false);
-    }
+    //}
+    //else
+    //{
+    //    m_jc_settings->set_enabled(false);
+    //}
 
     m_jc_settings_widget = new JCSettingsWidget(this);
     m_jc_settings_widget->set_settings(m_jc_settings);
@@ -475,7 +468,6 @@ void PlayerWindow::setup_jc_settings()
             if (m_vad)
                 m_vad->apply_settings(get_vad_settings());
         });
-
     ui.dockJC->setWidget(m_jc_settings_widget);
 
     bool show_vad_setting = m_app->get_setting("gui", "show_vad_settings", true).toBool();
@@ -549,18 +541,7 @@ void PlayerWindow::on_actPlayPause_triggered()
 
 void PlayerWindow::on_actRepeatClip_triggered()
 {
-    const Clip* clip = m_clip_queue->get_clip();
-    if (!clip)
-        return;
-
-    const srs::ICard* card = clip->get_card();
-    if (!card)
-        return;
-
-    ++m_num_repeats;
-    int rating = card->get_model()->get_default_rating(m_num_repeats);
-    m_star_widget->set_rating(rating + 1);
-
+    m_ui_state->play();
     m_video_widget->play(get_loop_a(), get_loop_b(), 1);
 }
 
@@ -802,17 +783,26 @@ void PlayerWindow::show_video()
         cmb->blockSignals(false);
     }
     
-    try
-    {
-        m_waveform = std::make_shared<Waveform>(get_vol_file(filename));
-        ui.waveform->set_waveform(m_waveform.get());
-    }
-    catch(std::exception&)
-    {
-    }
-    ui.waveform->set_vad(m_vad.get());
-    
     setup_jc_settings();
+
+    m_audio_tools = std::make_unique<AudioTools>(filename);
+    connect(m_audio_tools.get(), &AudioTools::waveform_is_ready,
+        [this](WaveformPtr waveform)
+        {
+            m_waveform = waveform;
+            ui.waveform->set_waveform(m_waveform.get());
+            update_waveform_ui();
+        });
+
+    connect(m_audio_tools.get(), &AudioTools::vad_is_ready,
+        [this](VADPtr vad)
+        {
+            m_vad = vad;
+            m_vad->apply_settings(get_vad_settings());
+            ui.waveform->set_vad(m_vad.get());
+        });
+    m_audio_tools->request();
+    
     startTimer(25);
 
     m_video_widget->play();
@@ -1187,6 +1177,24 @@ std::shared_ptr<VADSettings> PlayerWindow::get_vad_settings() const
     return vad_settings;
 }
 
+void PlayerWindow::update_waveform_ui()
+{
+    if (m_waveform)
+    {
+        bool show_waveform = m_app->get_setting("gui", "show_waveform", true).toBool();
+        ui.actShowWaveform->setEnabled(true);
+        ui.actShowWaveform->setChecked(show_waveform);
+        ui.waveform->setVisible(show_waveform);
+    }
+    else
+    {
+        ui.actShowWaveform->setEnabled(false);
+        ui.actShowWaveform->setChecked(false);
+        ui.waveform->setVisible(false);
+    }
+
+}
+
 UIState::UIState(PlayerWindow* pw) : m_pw(pw)
 {
 
@@ -1271,18 +1279,9 @@ void WatchingState::activate()
     ui.actAddClip->setVisible(true);
 
     if (m_pw->m_waveform)
-    {
-        bool show_waveform = m_pw->m_app->get_setting("gui", "show_waveform", true).toBool();
-        ui.actShowWaveform->setChecked(show_waveform);
-        ui.waveform->setVisible(show_waveform);
         ui.waveform->set_clip_mode(false);
-    }
-    else
-    {
-        ui.actShowWaveform->setEnabled(false);
-        ui.actShowWaveform->setChecked(false);
-        ui.waveform->setVisible(false);
-    }
+
+    m_pw->update_waveform_ui();
 
     const TodayClipStat* stat = m_pw->m_clip_queue->get_today_clip_stat();
     QString lbl = QString("Added today: %1 (%2)")
@@ -1618,7 +1617,17 @@ void RepeatingClipState::activate()
 
 void RepeatingClipState::play()
 {
-    m_pw->m_video_widget->play(m_pw->get_loop_a(), m_pw->get_loop_b(), 1);
+    const Clip* clip = m_pw->m_clip_queue->get_clip();
+    if (!clip)
+        return;
+
+    const srs::ICard* card = clip->get_card();
+    if (!card)
+        return;
+
+    ++m_pw->m_num_repeats;
+    int rating = card->get_model()->get_default_rating(m_pw->m_num_repeats);
+    m_pw->m_star_widget->set_rating(rating + 1);
 }
 
 void RepeatingClipState::on_close()

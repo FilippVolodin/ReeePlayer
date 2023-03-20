@@ -1,6 +1,13 @@
 #ifndef VAD_H
 #define VAD_H
 
+#include <QObject>
+
+class QString;
+class QTcpServer;
+class QTcpSocket;
+class QProcess;
+
 class VADSettings
 {
 public:
@@ -22,28 +29,24 @@ private:
     int m_margin_after = 100;
 };
 
-class VAD : public QObject
+class VADData : public QObject
 {
     Q_OBJECT
 
 public:
-    VAD(const QString& vad_file);
-    ~VAD();
+
+    VADData(const QString& vad_file);
+    ~VADData();
+
+    bool load_vad();
+
+    const std::vector<uint8_t>& get_data() const;
 
     bool is_ready() const;
 
-    bool run(const QString& wav_file);
+    bool extract(const QString& wav_file);
     void stop();
 
-    int next_interval(int t) const;
-    int next_interval_in_chunks(int ch) const;
-    bool is_voice(int t) const;
-    bool chunk_is_voice(int ch) const;
-    uint8_t chunk_prob(int ch) const;
-    int num_chunks() const;
-    int rewind(int t, int delta) const;
-
-    void apply_settings(std::shared_ptr<VADSettings>);
 signals:
 
     void progress_updated(int, int);
@@ -52,23 +55,49 @@ private slots:
     void new_conn();
     void ready_read();
 private:
-    void load_data();
     void save_data();
-    void process_data();
-    void reprocess_data();
+    void reset();
 
-    std::shared_ptr<VADSettings> m_settings;
     QString m_vad_file;
     std::unique_ptr<QTcpServer> m_server;
     QTcpSocket* m_sock = nullptr;
     QByteArray m_buffer;
-    std::vector<uint8_t> m_vad_data;
-    std::vector<bool> m_processed_vad_data;
     std::unique_ptr<QProcess> m_vad_process;
+
+    std::vector<uint8_t> m_vad_data;
     int m_bytes_received = 0;
     int32_t m_total_num_chunks = -1;
     bool m_new_data_arrived = false;
-    int m_last_voice_chunk = -1;
+};
+
+class VAD : public QObject
+{
+    Q_OBJECT
+
+public:
+    VAD(std::unique_ptr<VADData> vad_data);
+
+    int next_interval(int t) const;
+    int next_interval_in_chunks(int ch) const;
+    bool is_voice(int t) const;
+    bool chunk_is_voice(int ch) const;
+    uint8_t chunk_prob(int ch) const;
+    int num_chunks() const;
+    int num_processed_chunks() const;
+    int rewind(int t, int delta) const;
+
+    void apply_settings(std::shared_ptr<VADSettings>);
+signals:
+
+    void progress_updated(int, int);
+
+private:
+    void process_data();
+    void reprocess_data();
+
+    std::unique_ptr<VADData> m_vad_data;
+    std::shared_ptr<VADSettings> m_settings;
+    std::vector<bool> m_processed_vad_data;
 };
 
 bool is_vad_ready(const QString& filename);

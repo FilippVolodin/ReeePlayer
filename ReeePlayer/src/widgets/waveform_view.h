@@ -3,7 +3,7 @@
 
 #include <qwidget.h>
 
-class Waveform;
+using Waveform = std::vector<uint8_t>;
 class VAD;
 
 class WaveformView : public QWidget

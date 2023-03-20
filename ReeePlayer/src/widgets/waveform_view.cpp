@@ -1,5 +1,4 @@
 #include "waveform_view.h"
-#include "models/waveform.h"
 #include "models/vad.h"
 
 constexpr int chunk_length_ms = 10;
@@ -67,9 +66,7 @@ void WaveformView::paintEvent(QPaintEvent *)
     if (!m_waveform)
         return;
 
-    const std::vector<uint8_t>& volumes = m_waveform->get_max_volumes();
-
-    int length = ssize(volumes) * chunk_length_ms;
+    int length = ssize(*m_waveform) * chunk_length_ms;
 
     double time_window;
 
@@ -112,7 +109,7 @@ void WaveformView::paintEvent(QPaintEvent *)
         brush.setStyle(Qt::SolidPattern);
         brush.setColor(Qt::lightGray);
 
-        while (ch < vad_ch_b && ch < m_vad->num_chunks())
+        while (ch < vad_ch_b && ch < m_vad->num_processed_chunks())
         {
             bool cur_is_voice = m_vad->chunk_is_voice(ch);
             int ch_next = m_vad->next_interval_in_chunks(ch);
@@ -159,10 +156,10 @@ void WaveformView::paintEvent(QPaintEvent *)
     {
         int x = global_x + x0;
         int ch = (double)x / width() * ch_time_window;
-        if (ch < 0 || ch + 2 >= volumes.size())
+        if (ch < 0 || ch + 2 >= (*m_waveform).size())
             continue;
 
-        uint8_t max = *std::max(volumes.begin() + ch, volumes.begin() + ch + 3);
+        uint8_t max = *std::max(begin(*m_waveform) + ch, begin(*m_waveform) + ch + 3);
 
         int y0 = height() * (1.0 - (float)max / 256);
         int y1 = height();

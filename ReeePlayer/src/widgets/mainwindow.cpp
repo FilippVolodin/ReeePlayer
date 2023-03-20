@@ -485,44 +485,46 @@ void MainWindow::save_size(const QString& key, QSize s) const
 
 void MainWindow::watch(File* file)
 {
-    QString media_file = file->get_path();
-    bool vol_exists = is_vol_exist(media_file);
-    std::shared_ptr<VAD> vad = std::make_shared<VAD>(get_vad_file(media_file));
+    //QString media_file = file->get_path();
 
-    if (!vol_exists || !vad->is_ready())
-    {
-        QFutureWatcher<void> future_watcher;
-        WaitingDialog wd;
-        std::function<void(QString)> log = [&](QString info)
-        {
-            QMetaObject::invokeMethod(&wd, "append_info", Q_ARG(QString, info));
-        };
 
-        QObject::connect(&future_watcher, &QFutureWatcher<void>::finished, &wd, &QDialog::accept);
-        QString temp_wav;
-        future_watcher.setFuture(QtConcurrent::run([&]()
-        {
-            temp_wav = create_wav(media_file, log);
-            if (!vol_exists && !temp_wav.isEmpty())
-            {
-                QFileInfo fi(file->get_path());
-                QString vol_filename = fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
-                create_vol_file(temp_wav, vol_filename, log);
-            }
-        }));
+    //bool vol_exists = is_vol_exist(media_file);
+    //std::shared_ptr<VAD> vad = std::make_shared<VAD>(get_vad_file(media_file));
 
-        wd.exec();
+    //if (!vol_exists || !vad->is_ready())
+    //{
+    //    QFutureWatcher<void> future_watcher;
+    //    WaitingDialog wd;
+    //    std::function<void(QString)> log = [&](QString info)
+    //    {
+    //        QMetaObject::invokeMethod(&wd, "append_info", Q_ARG(QString, info));
+    //    };
 
-        future_watcher.waitForFinished();
-        
-        if (!vad->run(temp_wav))
-            vad.reset();
-    }
+    //    QObject::connect(&future_watcher, &QFutureWatcher<void>::finished, &wd, &QDialog::accept);
+    //    QString temp_wav;
+    //    future_watcher.setFuture(QtConcurrent::run([&]()
+    //    {
+    //        temp_wav = create_wav(media_file, log);
+    //        if (!vol_exists && !temp_wav.isEmpty())
+    //        {
+    //            QFileInfo fi(file->get_path());
+    //            QString vol_filename = fi.absolutePath() + "/" + fi.completeBaseName() + ".vol";
+    //            create_vol_file(temp_wav, vol_filename, log);
+    //        }
+    //    }));
+
+    //    wd.exec();
+
+    //    future_watcher.waitForFinished();
+    //    
+    //    if (!vad->run(temp_wav))
+    //        vad.reset();
+    //}
 
     hide();
 
     PlayerWindow* pw = getPlayerWindow();
-    pw->set_vad(vad);
+    //pw->set_vad(vad);
 
     std::shared_ptr<IClipQueue> queue =
         std::make_shared<AddingClipsQueue>(m_app->get_library(), file, m_app->get_srs_factory());
