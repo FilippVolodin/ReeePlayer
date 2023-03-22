@@ -13,9 +13,10 @@ yt-dlp
 mkdir qt6-build
 cd qt6-build
 "c:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-..\qt6\configure -webengine-proprietary-codecs -release -prefix ../install
+..\qt6\configure -webengine-proprietary-codecs -debug-and-release -prefix ../install
 cmake --build .
-cmake --install .
+cmake --install .  --config Debug
+cmake --install .  --config Release
 
 # Build ReeePlayer
 
@@ -36,7 +37,7 @@ cd ..
 
 xcopy "build\ReeePlayer\Release\ReeePlayer.exe" install\
 xcopy "build\Launcher\Release\ReeePlayerLauncher.exe" install\
-xcopy pyutils\dist\pyutils\* install\pyutils\
+xcopy pyutils\dist\pyutils\* install\pyutils\ /s /y
 
 # Copy to install folder:
 # - ffmpeg\ffmpeg.exe
