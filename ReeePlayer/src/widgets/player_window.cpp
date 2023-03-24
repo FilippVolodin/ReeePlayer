@@ -162,7 +162,7 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 
     ui.dockWidget1->toggleViewAction()->setText("Show/hide subtitles 1");
     ui.dockWidget2->toggleViewAction()->setText("Show/hide subtitles 2");
-    ui.dockJC->toggleViewAction()->setText("Show/hide JC Settings");
+    ui.dockJC->toggleViewAction()->setText("Show/hide VAD Settings");
 
     for (const qsubs::ICue*& cue : m_cues)
         cue = nullptr;
@@ -329,6 +329,17 @@ void PlayerWindow::setup_actions()
     connect(ui.waveform, &WaveformView::wheel_event, [this](int time, QWheelEvent* event) {
         m_ui_state->on_wheel_event(time, event); });
 
+    QMenu* menu = new QMenu(this);
+    menu->addAction(ui.dockWidget1->toggleViewAction());
+    menu->addAction(ui.dockWidget2->toggleViewAction());
+    menu->addAction(ui.dockJC->toggleViewAction());
+
+    QToolButton* btn_show_panels = new QToolButton(this);
+    btn_show_panels->setPopupMode(QToolButton::InstantPopup);
+    btn_show_panels->setIcon(QIcon(":/MainWindow/panels"));
+    btn_show_panels->setMenu(menu);
+    ui.toolBar->addWidget(btn_show_panels);
+    
     m_star_widget = new StarWidget(this);
     m_star_widget->set_ratings({ "Again", "Hard", "Medium", "Easy" });
     m_star_widget_action = ui.toolBar->addWidget(m_star_widget);
@@ -472,6 +483,7 @@ void PlayerWindow::setup_jc_settings()
 
     bool show_vad_setting = m_app->get_setting("gui", "show_vad_settings", true).toBool();
     ui.dockJC->setVisible(show_vad_setting);
+    ui.dockJC->widget()->setEnabled(false);
 }
 
 void PlayerWindow::restore_state()
@@ -799,6 +811,9 @@ void PlayerWindow::show_video()
         {
             m_vad = vad;
             m_vad->apply_settings(get_vad_settings());
+
+            ui.dockJC->widget()->setEnabled(true);
+
             ui.waveform->set_vad(m_vad.get());
         });
     m_audio_tools->request();
@@ -1278,6 +1293,8 @@ void WatchingState::activate()
 
     ui.actAddClip->setVisible(true);
 
+    ui.dockJC->widget()->setEnabled(true);
+
     if (m_pw->m_waveform)
         ui.waveform->set_clip_mode(false);
 
@@ -1363,7 +1380,7 @@ void AddingClipState::activate()
 
     ui.actAddToFavorite->setVisible(true);
 
-    ui.dockJC->setVisible(false);
+    ui.dockJC->widget()->setEnabled(false);
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
@@ -1525,6 +1542,7 @@ void WatchingClipState::activate()
     ui.actRemoveClip->setVisible(true);
 
     ui.dockJC->setVisible(false);
+    ui.dockJC->toggleViewAction()->setEnabled(false);
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);
@@ -1595,6 +1613,7 @@ void RepeatingClipState::activate()
     ui.actAddToFavorite->setVisible(true);
 
     ui.dockJC->setVisible(false);
+    ui.dockJC->toggleViewAction()->setEnabled(false);
 
     m_pw->m_edt_loop_a_action->setVisible(true);
     m_pw->m_edt_loop_b_action->setVisible(true);

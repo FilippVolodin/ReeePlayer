@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/MainWindow">
+    <file alias="panels">Resources/panels.png</file>
     <file alias="remove_clip">Resources/empty_trash.png</file>
     <file alias="restore_clip">Resources/full_trash.png</file>
     <file alias="clips_browser">Resources/clips_browser.png</file>
