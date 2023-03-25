@@ -2,6 +2,7 @@
 #define PLAYER_WINDOW_H
 
 #include "ui_player_window.h"
+#include <time_types.h>
 
 constexpr int NUM_SUBS_VIEWS = 2;
 
@@ -268,6 +269,7 @@ private:
     float m_playback_rate = 1.0;
 
     int m_num_repeats = 0;
+    std::vector<Duration> m_due_intervals;
     bool m_done_dialog_showed = false;
 
     std::vector<QString> m_subtitle_files;

@@ -130,8 +130,19 @@ bool srs::simple::Card::is_due(TimePoint now) const
     return now >= (m_repeated + ri) || m_level < 0.001;
 }
 
-void srs::simple::Card::repeat(TimePoint now, int rating)
+TimePoint srs::simple::Card::get_due_date() const
+{
+    return m_repeated + get_repetititon_interval(m_level);
+}
+
+std::vector<Duration> srs::simple::Card::get_due_intervals(TimePoint now) const
+{
+    return { get_repetititon_interval(m_level) };
+}
+
+inline void srs::simple::Card::repeat(TimePoint now, int rating)
 {
     m_level = get_next_level(now - m_repeated, m_level);
     m_repeated = now;
 }
+

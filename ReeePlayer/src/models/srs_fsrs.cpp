@@ -326,6 +326,19 @@ bool srs::fsrs::Card::is_due(TimePoint now) const
     return now > m_p.due;
 }
 
+TimePoint srs::fsrs::Card::get_due_date() const
+{
+    return m_p.due;
+}
+
+std::vector<Duration> srs::fsrs::Card::get_due_intervals(TimePoint now) const
+{
+    RecordLog record_log = m_fsrs->repeat(m_p, now);
+    auto its = record_log |
+        std::views::transform([now](const auto& i) {return i.card.due - now; });
+    return std::vector(std::begin(its), std::end(its));
+}
+
 void srs::fsrs::Card::repeat(TimePoint now, int rating)
 {
     RecordLog record_log = m_fsrs->repeat(m_p, now);

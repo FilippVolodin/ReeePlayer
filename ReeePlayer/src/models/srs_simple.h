@@ -24,6 +24,8 @@ namespace srs::simple
 
         float get_priority(TimePoint now) const override;
         bool is_due(TimePoint now) const override;
+        TimePoint get_due_date() const override;
+        std::vector<Duration> get_due_intervals(TimePoint now) const override;
         void repeat(TimePoint now, int rating) override;
     private:
         const Simple* m_simple;

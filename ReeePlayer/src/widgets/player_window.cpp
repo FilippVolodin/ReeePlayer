@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "player_window.h"
 #include <qsubtitles.h>
-#include "models/repetition_model.h"
 #include "models/session.h"
 #include "models/clip_storage.h"
 #include "models/library.h"
@@ -895,6 +894,10 @@ void PlayerWindow::show_clip(bool clip_changed)
             use_rating = model->use_rating();
             int rating = card->get_model()->get_default_rating(m_num_repeats);
             m_star_widget->set_rating(rating + 1);
+
+            m_due_intervals = card->get_due_intervals(now());
+            QString s = get_interval_str(m_due_intervals[rating]);
+            m_lbl_info->setText("Due: " + s);
         }
 
         m_star_widget_action->setVisible(is_reviewing && use_rating);
@@ -908,8 +911,8 @@ void PlayerWindow::show_clip(bool clip_changed)
                 m_done_dialog_showed = true;
             }
         }
-        else
-            m_lbl_info->clear();
+        //else
+        //    m_lbl_info->clear();
     }
     m_video_widget->get_widget()->setFocus();
 }
@@ -1647,6 +1650,9 @@ void RepeatingClipState::play()
     ++m_pw->m_num_repeats;
     int rating = card->get_model()->get_default_rating(m_pw->m_num_repeats);
     m_pw->m_star_widget->set_rating(rating + 1);
+
+    QString s = get_interval_str(m_pw->m_due_intervals[rating]);
+    m_pw->m_lbl_info->setText("Due: " + s);
 }
 
 void RepeatingClipState::on_close()

@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "session.h"
-#include "repetition_model.h"
 #include "clip_storage.h"
 #include "app.h"
 #include "library.h"

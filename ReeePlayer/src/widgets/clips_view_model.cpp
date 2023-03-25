@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "clips_view_model.h"
-#include "models/repetition_model.h"
 #include "models/library.h"
 
 ClipModel::ClipModel(QObject* parent)

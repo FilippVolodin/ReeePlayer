@@ -62,7 +62,6 @@ target_sources(ReeePlayer PRIVATE
 	src/models/library.cpp
 	src/models/library_item.cpp
 	src/models/session.cpp
-	src/models/repetition_model.cpp
 	src/models/vad.cpp
     src/models/time_types.cpp    
     src/models/srs_icard.cpp    

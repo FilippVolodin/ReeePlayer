@@ -29,6 +29,8 @@ namespace srs
 
         virtual float get_priority(TimePoint now) const = 0;
         virtual bool is_due(TimePoint now) const = 0;
+        virtual TimePoint get_due_date() const = 0;
+        virtual std::vector<Duration> get_due_intervals(TimePoint now) const = 0;
         virtual void repeat(TimePoint now, int rating) = 0;
     };
 
