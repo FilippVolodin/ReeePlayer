@@ -46,7 +46,7 @@ static bool create_wav(const QString& media_file, const QString& wav_file)
 
     QProcess ffmpeg;
 
-    ffmpeg.start("ffmpeg/ffmpeg", args);
+    ffmpeg.start("utils/ffmpeg", args);
     if (!ffmpeg.waitForStarted(-1))
         throw std::exception();
 

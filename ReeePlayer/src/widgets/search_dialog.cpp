@@ -230,7 +230,7 @@ void SearchDialog::export_clips(const std::vector<Clip*>& clips)
                     << dir.absoluteFilePath(QString("%1.mp3").arg(clip->get_uid()));
 
                 QProcess ffmpeg_process1;
-                ffmpeg_process1.start("ffmpeg/ffmpeg.exe", args1);
+                ffmpeg_process1.start("utils/ffmpeg.exe", args1);
                 ffmpeg_process1.waitForStarted();
                 ffmpeg_process1.waitForFinished();
             }
@@ -245,7 +245,7 @@ void SearchDialog::export_clips(const std::vector<Clip*>& clips)
                     << dir.absoluteFilePath(QString("%1.jpg").arg(clip->get_uid()));
 
                 QProcess ffmpeg_process2;
-                ffmpeg_process2.start("ffmpeg/ffmpeg.exe", args2);
+                ffmpeg_process2.start("utils/ffmpeg.exe", args2);
                 ffmpeg_process2.waitForStarted();
                 ffmpeg_process2.waitForFinished();
             }

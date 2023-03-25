@@ -164,5 +164,5 @@ void VideoDownloadDialog::on_btnDownload_clicked()
         }
     );
 
-    m_yt_dlp->start("yt-dlp.exe", args);
+    m_yt_dlp->start("utils/yt-dlp.exe", args);
 }

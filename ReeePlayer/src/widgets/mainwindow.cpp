@@ -318,7 +318,7 @@ void MainWindow::on_actCreateBackup_triggered()
 
         QProcess zip;
         zip.setWorkingDirectory(root);
-        zip.start("7za", args);
+        zip.start("utils/7za", args);
         bool err = false;
         if (!zip.waitForStarted())
             err = true;

@@ -49,5 +49,5 @@ copy_qt_files.bat
 
 # Create Installer
 
-"install\7za" a -mx=9 installer\ReeePlayer.7z install\*
+"install\utils\7za" a -mx=9 installer\ReeePlayer.7z install\*
 "%ProgramFiles(x86)%\NSIS\makensis.exe" ReeePlayer.nsi
