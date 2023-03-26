@@ -105,6 +105,8 @@ protected:
     virtual File* get_current_file();
 
     TodayClipStat* get_today_clip_stat();
+
+    Library* get_library();
 private:
     Library* m_library;
     Clip* m_current_clip = nullptr;

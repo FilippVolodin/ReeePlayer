@@ -137,16 +137,21 @@ void BaseClipQueue::set_clip_user_data(std::unique_ptr<ClipUserData> data)
 {
     Clip* clip = get_current_clip();
     if (clip)
-        clip->set_user_data(std::move(data));
-    m_library->save(clip);
+    {
+        if (*clip->get_user_data() != *data)
+        {
+            clip->set_user_data(std::move(data));
+            m_library->save(clip);
+        }
+    }
 }
 
-void BaseClipQueue::set_removed(bool value)
+void BaseClipQueue::set_removed(bool removed)
 {
     Clip* clip = get_current_clip();
-    if (clip)
+    if (clip && removed != clip->is_removed())
     {
-        if (value)
+        if (removed)
             clip->set_removal_time(now());
         else
             clip->restore();
@@ -254,6 +259,11 @@ File* BaseClipQueue::get_current_file()
 TodayClipStat* BaseClipQueue::get_today_clip_stat()
 {
     return m_today_clip_stat.get();
+}
+
+Library* BaseClipQueue::get_library()
+{
+    return m_library;
 }
 
 RepeatingClipQueue::RepeatingClipQueue(Library* library, const std::vector<File*>& files)
@@ -470,6 +480,7 @@ void RepeatingClipQueueV2::repeat(int rating)
     {
         clip->get_card()->repeat(cur, rating);
         clip->add_repeat(cur);
+        get_library()->save(clip->get_file());
         get_today_clip_stat()->inc_repeated();
     }
 
@@ -509,6 +520,8 @@ void AddingClipsQueue::set_clip_user_data(std::unique_ptr<ClipUserData> user_dat
     Clip* clip = new_clip.get();
     m_file->add_clip(std::move(new_clip));
     set_current_clip(clip);
+
+    get_library()->save(m_file);
 
     get_today_clip_stat()->inc_added();
 }

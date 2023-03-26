@@ -20,6 +20,8 @@ struct ClipUserData
     std::time_t end = 0;
     std::vector<QString> subtitles;
     bool is_favorite = false;
+
+    auto operator<=>(const ClipUserData&) const = default;
 };
 
 class Clip
