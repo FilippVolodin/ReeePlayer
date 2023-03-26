@@ -339,8 +339,8 @@ void PlayerWindow::setup_actions()
     btn_show_panels->setMenu(menu);
     ui.toolBar->addWidget(btn_show_panels);
     
-    m_star_widget = new StarWidget(this);
-    m_star_widget->set_ratings({ "Again", "Hard", "Medium", "Easy" });
+    m_star_widget = new StarWidget(4, this);
+    m_star_widget->set_rating_names({ "Again", "Hard", "Medium", "Easy" });
     m_star_widget_action = ui.toolBar->addWidget(m_star_widget);
     connect(m_star_widget, &StarWidget::rating_changed, this, &PlayerWindow::on_rating_changed);
 }
@@ -898,6 +898,11 @@ void PlayerWindow::show_clip(bool clip_changed)
             m_due_intervals = card->get_due_intervals(now());
             QString s = get_interval_str(m_due_intervals[rating]);
             m_lbl_info->setText("Due: " + s);
+
+            QStringList dues_list;
+            std::ranges::transform(m_due_intervals, std::back_inserter(dues_list),
+                [](Duration d) {return get_interval_str(d); });
+            m_star_widget->set_rating_comments(dues_list);
         }
 
         m_star_widget_action->setVisible(is_reviewing && use_rating);
@@ -1653,7 +1658,13 @@ void RepeatingClipState::play()
 
     QString s = get_interval_str(m_pw->m_due_intervals[rating]);
     m_pw->m_lbl_info->setText("Due: " + s);
+
+    QStringList dues_list;
+    std::ranges::transform(m_pw->m_due_intervals, std::back_inserter(dues_list),
+        [](Duration d) {return get_interval_str(d); });
+    m_pw->m_star_widget->set_rating_comments(dues_list);
 }
+
 
 void RepeatingClipState::on_close()
 {

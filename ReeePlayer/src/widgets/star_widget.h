@@ -9,11 +9,12 @@ class StarWidget : public QWidget
 public:
     enum class EditMode { Editable, ReadOnly };
 
-    StarWidget(QWidget* parent = nullptr);
+    StarWidget(int star_count, QWidget* parent = nullptr);
 
     QSize sizeHint() const override;
 
-    void set_ratings(const QStringList&);
+    void set_rating_names(const QStringList&);
+    void set_rating_comments(const QStringList&);
 
     int get_rating() const;
     void set_rating(int);
@@ -36,6 +37,7 @@ private:
     QPolygonF diamond_polygon;
 
     QStringList m_ratings;
+    QStringList m_comments;
     int m_star_count = 5;
     int m_on_fly_star_count = 5;
     int m_max_star_count = 5;

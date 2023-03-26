@@ -31,7 +31,8 @@ SearchDialog::SearchDialog(App* app, std::vector<LibraryItem*> items, QWidget *p
     ui.tblClips->setColumnWidth(2, 300);
     ui.tblClips->setColumnWidth(3, 80);
     ui.tblClips->setColumnWidth(4, 40);
-    ui.tblClips->setColumnWidth(5, 500);
+    ui.tblClips->setColumnWidth(5, 100);
+    ui.tblClips->setColumnWidth(6, 500);
 
     connect(ui.tblClips, &QTableView::doubleClicked,
         this, &SearchDialog::on_tblClips_doubleClicked);

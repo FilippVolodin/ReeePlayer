@@ -3,8 +3,8 @@
 
 constexpr int PaintingScaleFactor = 30;
 
-StarWidget::StarWidget(QWidget *parent)
-    : QWidget(parent)
+StarWidget::StarWidget(int star_count, QWidget *parent)
+    : QWidget(parent), m_star_count(star_count), m_max_star_count(star_count)
 {
     setMouseTracking(true);
     setAutoFillBackground(true);
@@ -37,11 +37,16 @@ QSize StarWidget::sizeHint() const
     return PaintingScaleFactor * QSize(m_max_star_count, 1);
 }
 
-void StarWidget::set_ratings(const QStringList& ratings)
+void StarWidget::set_rating_names(const QStringList& ratings)
 {
     m_ratings = ratings;
-    m_max_star_count = std::ssize(m_ratings);
-    m_star_count = m_max_star_count;
+    m_ratings.resize(m_max_star_count);
+}
+
+void StarWidget::set_rating_comments(const QStringList& comments)
+{
+    m_comments = comments;
+    m_comments.resize(m_max_star_count);
 }
 
 int StarWidget::get_rating() const
@@ -71,7 +76,12 @@ void StarWidget::mouseMoveEvent(QMouseEvent *event)
 
         QPoint screen_pos = mapToGlobal(event->pos());
         screen_pos += QPoint(10, 10);
-        QToolTip::showText(screen_pos, m_ratings[star - 1]);
+
+        QString text = m_ratings[star - 1];
+        QString comment = m_comments[star - 1];
+        if (!comment.isEmpty())
+            text += QString(" (%1)").arg(comment);
+        QToolTip::showText(screen_pos, text);
 
         m_is_on_fly = true;
         m_on_fly_star_count = star;

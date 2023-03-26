@@ -14,7 +14,7 @@ int ClipModel::rowCount(const QModelIndex&) const
 
 int ClipModel::columnCount(const QModelIndex&) const
 {
-    return m_show_path ? 6 : 5;
+    return m_show_path ? 7 : 6;
 }
 
 QVariant ClipModel::data(const QModelIndex & index, int role) const
@@ -46,6 +46,14 @@ QVariant ClipModel::data(const QModelIndex & index, int role) const
         }
         case 4: return clip->get_repeats().size();
         case 5:
+        {
+            const srs::ICard* card = clip->get_card();
+            if (card)
+            {
+                return get_interval_str(card->get_due_date() - now());
+            }
+        }
+        case 6:
         {
             const Library* library = clip->get_file()->get_library();
             QString root_path = library->get_root_path();
@@ -87,7 +95,8 @@ QVariant ClipModel::headerData(int section, Qt::Orientation orientation, int rol
             case 2: return tr("Text 2");
             case 3: return tr("Added");
             case 4: return tr("Reps");
-            case 5: return tr("Path");
+            case 5: return tr("Due");
+            case 6: return tr("Path");
             default: break;
             }
         }
