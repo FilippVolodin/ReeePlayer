@@ -919,6 +919,11 @@ void PlayerWindow::show_clip(bool clip_changed)
         //else
         //    m_lbl_info->clear();
     }
+    else if (m_mode == Mode::WatchingClip)
+    {
+        QString filename = m_clip_queue->get_file_path();
+        setWindowTitle(filename);
+    }
     m_video_widget->get_widget()->setFocus();
 }
 
