@@ -7,6 +7,8 @@
 class Project;
 class Library;
 
+class IVideoWidget;
+
 namespace srs
 {
     class IFactory;
@@ -42,6 +44,8 @@ public:
     void save_subtitle_priority(const QString& video_file, const SubsCollection&);
 
     const srs::IFactory* get_srs_factory() const;
+
+    IVideoWidget* get_player_widget(PLAYER_ENGINE);
 private:
     SubsCollection get_subtitles(const QString& video_file, const QString& priorities);
 
@@ -50,6 +54,10 @@ private:
     std::unique_ptr<QSettings> m_settings;
     std::unique_ptr<Library> m_library;
     std::unique_ptr<srs::IFactory> m_card_factory;
+
+    // TODO
+    std::unique_ptr<IVideoWidget> m_vlc_widget;
+    std::unique_ptr<IVideoWidget> m_web_widget;
 };
 
 #endif // !APP_H

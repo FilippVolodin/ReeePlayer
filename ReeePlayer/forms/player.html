@@ -39,8 +39,8 @@ var myVid = document.getElementById("vidObj");
 var source = document.createElement('source');
 myVid.appendChild(source);
 
-function play() {
-    myVid.play();
+async function play() {
+    await myVid.play();
 }
 
 function seek_and_play(time) {
@@ -88,12 +88,12 @@ function get_duration() {
 }
 
 function set_source(filename) {
-    myVid.pause();
+    //myVid.pause();
     source.src = filename;
     myVid.load();
-    myVid.addEventListener('loadeddata', function(){
-        myVid.play();
-    });
+    // myVid.addEventListener('loadeddata', function(){
+    //     myVid.play();
+    // });
 }
 
 function set_audio_track(track_index){

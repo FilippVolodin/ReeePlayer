@@ -6,7 +6,10 @@ class Emitter;
 class IVideoWidget
 {
 public:
+    virtual ~IVideoWidget() = default;
+
     virtual void set_file_name(const QString&, bool auto_play = false) = 0;
+    virtual void unload() = 0;
 
     virtual void play() = 0;
     virtual void play(int from, int to, int repeats) = 0;

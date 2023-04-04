@@ -126,20 +126,8 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 
     PLAYER_ENGINE player_engine = (PLAYER_ENGINE) app->get_setting("main", "player", (int)PLAYER_ENGINE::Web).toInt();
 
-    QWidget* w;
-
-    if (player_engine == PLAYER_ENGINE::VLC)
-    {
-        VideoWidget* video_widget = new VideoWidget(app->get_vlc_instance(), this);
-        m_video_widget = video_widget;
-        w = video_widget;
-    }
-    else
-    {
-        WebVideoWidget* video_widget = new WebVideoWidget(this);
-        m_video_widget = video_widget;
-        w = video_widget;
-    }
+    m_video_widget = m_app->get_player_widget(player_engine);
+    QWidget* w = dynamic_cast<QWidget*>(m_video_widget);
 
     auto sp = w->sizePolicy();
     sp.setVerticalStretch(5);
@@ -177,7 +165,8 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
 
 PlayerWindow::~PlayerWindow()
 {
-    m_video_widget->prepare_to_destroy();
+    m_video_widget->unload();
+    dynamic_cast<QWidget*>(m_video_widget)->setParent(nullptr);
 }
 
 QMenu* PlayerWindow::createPopupMenu()
@@ -382,6 +371,9 @@ void PlayerWindow::setup_slider()
     ui.slider->setStyle(new SliderStyle(ui.slider->style()));
     connect(ui.slider, &QSlider::valueChanged,
         this, &PlayerWindow::on_slider_value_changed);
+
+    if (m_video_widget->get_length() != 0)
+        set_duration(m_video_widget->get_length());
 }
 
 void PlayerWindow::setup_shortcuts()
@@ -816,12 +808,10 @@ void PlayerWindow::show_video()
             ui.waveform->set_vad(m_vad.get());
         });
     m_audio_tools->request();
-    
-    startTimer(25);
 
     m_video_widget->play();
-    m_video_widget->set_rate(1.0);
 
+    //m_video_widget->set_rate(1.0);
     const FileUserData* file_user_data = m_clip_queue->get_file_user_data();
     if (file_user_data)
     {
@@ -829,6 +819,8 @@ void PlayerWindow::show_video()
         if (time > 0)
             m_video_widget->set_time(time);
     }
+
+    startTimer(25);
 }
 
 void PlayerWindow::show_clip(bool clip_changed)

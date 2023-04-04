@@ -24,10 +24,11 @@ private:
 class WebVideoWidget : public QWebEngineView, public IVideoWidget
 {
 public:
-    WebVideoWidget(QWidget* parent);
+    WebVideoWidget(QWidget* parent = nullptr);
     ~WebVideoWidget();
 
     void set_file_name(const QString&, bool auto_play = false) override;
+    void unload() override;
 
     void play() override;
     void play(int from, int to, int repeats) override;

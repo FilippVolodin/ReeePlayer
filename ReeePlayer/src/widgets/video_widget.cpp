@@ -117,51 +117,61 @@ VideoWidget::~VideoWidget()
 
 void VideoWidget::init(libvlc_instance_t* vlc_inst)
 {
-    m_vlc_inst = vlc_inst;
-    m_vlc_mp = libvlc_media_player_new(m_vlc_inst);
+    if (vlc_inst)
+    {
+        m_vlc_inst = vlc_inst;
+        m_vlc_mp = libvlc_media_player_new(m_vlc_inst);
+    }
 
     void* drawable = reinterpret_cast<unsigned __int64*>(this->winId());
     libvlc_media_player_set_hwnd(m_vlc_mp, drawable);
 
-    m_vlc_mp_events = libvlc_media_player_event_manager(m_vlc_mp);
-    libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerOpening,
-        libvlc_mp_callback, this);
-    libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerTimeChanged,
-        libvlc_mp_callback, this);
-    libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerPlaying,
-        libvlc_mp_callback, this);
-    libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerPaused,
-        libvlc_mp_callback, this);
-    libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerStopped,
-        libvlc_mp_callback, this);
-    libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerEndReached,
-        libvlc_mp_callback, this);
-    libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerLengthChanged,
-        libvlc_mp_callback, this);
-
-    libvlc_video_set_mouse_input(m_vlc_mp, 0);
-    libvlc_video_set_key_input(m_vlc_mp, 0);
-
-    libvlc_audio_set_volume(m_vlc_mp, 100);
-
-    //connect(this, &VideoWidget::end_reached,
-    //    this, &VideoWidget::repeat);
-
-    m_timer = new CallBackTimer(10, [this, mp = m_vlc_mp]()
+    if (vlc_inst)
     {
-        emit m_emitter->timer_triggered(this->m_timer->get_time());
-    });
 
-    connect(get_emitter(), &Emitter::playing, [this]()
-    {
-        this->m_timer->start();
-    });
-    connect(get_emitter(), &Emitter::paused, [t = m_timer]() {t->stop();  });
-    connect(get_emitter(), &Emitter::stopped, [t = m_timer]() {t->stop();  });
+        m_vlc_mp_events = libvlc_media_player_event_manager(m_vlc_mp);
+        libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerOpening,
+            libvlc_mp_callback, this);
+        libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerTimeChanged,
+            libvlc_mp_callback, this);
+        libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerPlaying,
+            libvlc_mp_callback, this);
+        libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerPaused,
+            libvlc_mp_callback, this);
+        libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerStopped,
+            libvlc_mp_callback, this);
+        libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerEndReached,
+            libvlc_mp_callback, this);
+        libvlc_event_attach(m_vlc_mp_events, libvlc_MediaPlayerLengthChanged,
+            libvlc_mp_callback, this);
+
+        libvlc_video_set_mouse_input(m_vlc_mp, 0);
+        libvlc_video_set_key_input(m_vlc_mp, 0);
+
+        libvlc_audio_set_volume(m_vlc_mp, 100);
+
+        //connect(this, &VideoWidget::end_reached,
+        //    this, &VideoWidget::repeat);
+
+        m_timer = new CallBackTimer(10, [this, mp = m_vlc_mp]()
+            {
+                emit m_emitter->timer_triggered(this->m_timer->get_time());
+            });
+
+        connect(get_emitter(), &Emitter::playing, [this]()
+            {
+                this->m_timer->start();
+            });
+        connect(get_emitter(), &Emitter::paused, [t = m_timer]() {t->stop();  });
+        connect(get_emitter(), &Emitter::stopped, [t = m_timer]() {t->stop();  });
+    }
 }
 
 void VideoWidget::set_file_name(const QString& file_name, bool)
 {
+    void* drawable = reinterpret_cast<unsigned __int64*>(this->winId());
+    libvlc_media_player_set_hwnd(m_vlc_mp, drawable);
+
     if (m_file_name == file_name)
         return;
 
@@ -186,6 +196,13 @@ void VideoWidget::set_file_name(const QString& file_name, bool)
     libvlc_media_player_set_media(m_vlc_mp, vlc_media);
     libvlc_media_parse(vlc_media);
     libvlc_media_release(vlc_media);
+}
+
+void VideoWidget::unload()
+{
+    //libvlc_media_player_set_media(m_vlc_mp, nullptr);
+    m_file_name.clear();
+    pause();
 }
 
 void VideoWidget::play()

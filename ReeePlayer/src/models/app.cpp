@@ -3,6 +3,9 @@
 
 #include "library.h"
 
+#include "video_widget.h"
+#include "web_video_widget.h"
+
 App::App()
 {
     const char * const vlc_args[] =
@@ -12,6 +15,9 @@ App::App()
         "--no-spu",
     };
     m_vlc_inst = libvlc_new(3, vlc_args);
+
+    m_vlc_widget = std::make_unique<VideoWidget>(m_vlc_inst);
+    m_web_widget = std::make_unique<WebVideoWidget>();
 
     QStringList paths = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     if (!paths.isEmpty())
@@ -46,6 +52,9 @@ App::~App()
             }
         }
     }
+
+    m_vlc_widget->prepare_to_destroy();
+    m_web_widget->prepare_to_destroy();
 
     libvlc_release(m_vlc_inst);
 }
@@ -181,6 +190,16 @@ void App::save_subtitle_priority(const QString& video_file, const SubsCollection
 const srs::IFactory* App::get_srs_factory() const
 {
     return m_card_factory.get();
+}
+
+IVideoWidget* App::get_player_widget(PLAYER_ENGINE engine)
+{
+    switch (engine)
+    {
+    case PLAYER_ENGINE::VLC: return m_vlc_widget.get();
+    case PLAYER_ENGINE::Web: return m_web_widget.get();
+    default: return nullptr;
+    }
 }
 
 SubsCollection App::get_subtitles(const QString& video_file, const QString& priorities)

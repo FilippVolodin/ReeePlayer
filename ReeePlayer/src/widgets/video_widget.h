@@ -8,10 +8,11 @@ class CallBackTimer;
 class VideoWidget : public QWidget, public IVideoWidget
 {
 public:
-    VideoWidget(libvlc_instance_t*, QWidget* parent);
+    VideoWidget(libvlc_instance_t*, QWidget* parent = nullptr);
     ~VideoWidget();
 
     void set_file_name(const QString&, bool auto_play = false) override;
+    void unload() override;
 
     void play() override;
     void play(int from, int to, int repeats) override;
