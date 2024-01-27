@@ -38,7 +38,7 @@ void WebVideoWidget::set_file_name(const QString& file_name, bool)
     m_last_emitted_time = 0.0;
 
     if (!file_name.isEmpty())
-        page()->runJavaScript(QString("set_source('file:///%1');").arg(file_name));
+        page()->runJavaScript(QString("set_source(\"file:///%1\");").arg(file_name));
     else
         page()->runJavaScript(QString("set_source('');"));
 }

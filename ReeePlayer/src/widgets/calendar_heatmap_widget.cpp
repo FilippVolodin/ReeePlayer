@@ -213,7 +213,7 @@ void CalendarHeatmapWidget::mouseMoveEvent(QMouseEvent* event)
         {
             int year_index = y / m_layout.year_interval_height;
             int year = m_max_year - year_index;
-            if (year >= m_min_year && year >= m_max_year)
+            if (year >= m_min_year && year <= m_max_year)
             {
                 QDate jan1(year, 1, 1);
                 int jan1_day_of_week = jan1.dayOfWeek();

@@ -15,6 +15,9 @@ StatsWindow::StatsWindow(const std::vector<File*>& files, QWidget *parent)
 
     auto update_first_last = [&](TimePoint time)
     {
+        if (time == TimePoint(Duration::zero()))
+            return;
+
         if (!seen_any_time)
         {
             first = time;
@@ -58,20 +61,27 @@ StatsWindow::StatsWindow(const std::vector<File*>& files, QWidget *parent)
     for (const File* file : files)
         for (const Clip* clip : file->get_clips())
         {
-            int rel_day = get_rel_day(clip->get_adding_time());
-            if (rel_day >= 0 && rel_day < num_days)
+            TimePoint adding_time = clip->get_adding_time();
+            if (adding_time != TimePoint(Duration::zero()))
             {
-                ++m_num_added_clips[rel_day];
-                ++m_total_num_clips[rel_day];
+                int rel_day = get_rel_day(clip->get_adding_time());
+                if (rel_day >= 0 && rel_day < num_days)
+                {
+                    ++m_num_added_clips[rel_day];
+                    ++m_total_num_clips[rel_day];
+                }
             }
 
             for (TimePoint time : clip->get_repeats())
             {
-                rel_day = get_rel_day(time);
-                if (rel_day >= 0 && rel_day < num_days)
+                if (time != TimePoint(Duration::zero()))
                 {
-                    ++m_num_repeated_clips[rel_day];
-                    ++m_total_num_clips[rel_day];
+                    int rel_day = get_rel_day(time);
+                    if (rel_day >= 0 && rel_day < num_days)
+                    {
+                        ++m_num_repeated_clips[rel_day];
+                        ++m_total_num_clips[rel_day];
+                    }
                 }
             }
         }
