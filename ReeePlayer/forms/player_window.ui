@@ -182,7 +182,7 @@ QSlider::sub-page:horizontal {
     <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="windowTitle">
-    <string>Subtitles 1</string>
+    <string>Subtitles 1 (learning)</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -234,7 +234,7 @@ QSlider::sub-page:horizontal {
     <set>QDockWidget::DockWidgetFeatureMask</set>
    </property>
    <property name="windowTitle">
-    <string>Subtitles 2</string>
+    <string>Subtitles 2 (native)</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>

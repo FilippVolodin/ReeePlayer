@@ -147,8 +147,8 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
     setup_playback_rates();
     restore_state();
 
-    ui.dockWidget1->toggleViewAction()->setText("Show/hide subtitles 1");
-    ui.dockWidget2->toggleViewAction()->setText("Show/hide subtitles 2");
+    ui.dockWidget1->toggleViewAction()->setText("Show/hide subtitles 1 (learning)");
+    ui.dockWidget2->toggleViewAction()->setText("Show/hide subtitles 2 (native)");
     ui.dockJC->toggleViewAction()->setText("Show/hide VAD Settings");
 
     for (const qsubs::ICue*& cue : m_cues)
