@@ -6,13 +6,14 @@ flatbuffers==2.0
 frozendict==2.3.2
 future==0.18.2
 genanki==0.13.0
-numpy==1.22.1
-onnxruntime==1.10.0
-pefile==2021.9.3
+numpy==1.25.1
+onnx == 1.11.0
+onnxruntime==1.11.0
+pefile==2023.2.7
 protobuf==3.19.3
 pycparser==2.21
-pyinstaller==4.8
-pyinstaller-hooks-contrib==2021.5
-pywin32-ctypes==0.2.0
+pyinstaller==6.3.0
+pyinstaller-hooks-contrib==2024.0
+pywin32-ctypes==0.2.2
 PyYAML==6.0
 SoundFile==0.10.3.post1
