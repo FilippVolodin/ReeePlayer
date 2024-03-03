@@ -14,6 +14,12 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
      <number>0</number>
@@ -33,6 +39,9 @@
     <item>
      <layout class="QHBoxLayout" name="playbackLayout">
       <property name="leftMargin">
+       <number>3</number>
+      </property>
+      <property name="topMargin">
        <number>3</number>
       </property>
       <item>
@@ -71,33 +80,14 @@
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>16</height>
+          <height>25</height>
          </size>
         </property>
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="styleSheet">
-         <string notr="true">QSlider::groove:horizontal {
-    background: red;
-    position: absolute; /* absolutely position 4px from the left and right of the widget. setting margins on the widget should work too... */
-    left: 4px; right: 4px;
-	top: 2px; bottom: 4px;
-}
-
-QSlider::handle:horizontal {
-    height: 20px;
-    background: white; /*DarkOrange;*/
-    margin: 0px -4px; /* expand outside the groove */
-}
-
-QSlider::add-page:horizontal {
-    background: lightgray;
-}
-
-QSlider::sub-page:horizontal {
-    background: darkgreen; /*CornflowerBlue;*/
-}</string>
+         <string notr="true"/>
         </property>
         <property name="pageStep">
          <number>60000</number>
@@ -112,7 +102,7 @@ QSlider::sub-page:horizontal {
          <bool>false</bool>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TicksBelow</enum>
+         <enum>QSlider::TicksBothSides</enum>
         </property>
        </widget>
       </item>

@@ -9,6 +9,7 @@
 #include "library_tree_model.h"
 #include "clips_view_model.h"
 #include "player_window.h"
+#include <player_window_modular.h>
 #include "waiting_dialog.h"
 #include "video_download_dialog.h"
 #include "about_window.h"
@@ -449,11 +450,11 @@ void MainWindow::set_default_ui(State state)
     }
 }
 
-PlayerWindow* MainWindow::getPlayerWindow()
+PlayerWindowModular* MainWindow::getPlayerWindow()
 {
     if (!m_player_window)
     {
-        m_player_window = new PlayerWindow(m_app);
+        m_player_window = new PlayerWindowModular(m_app);
         m_player_window->setAttribute(Qt::WA_DeleteOnClose);
         Qt::WindowFlags f = m_player_window->windowFlags();
         m_player_window->setWindowFlags(f | Qt::Dialog);
@@ -523,7 +524,7 @@ void MainWindow::watch(File* file)
 
     hide();
 
-    PlayerWindow* pw = getPlayerWindow();
+    PlayerWindowModular* pw = getPlayerWindow();
     //pw->set_vad(vad);
 
     std::shared_ptr<IClipQueue> queue =

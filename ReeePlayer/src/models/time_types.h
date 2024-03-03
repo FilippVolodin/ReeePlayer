@@ -12,4 +12,8 @@ QString get_interval_str(Duration);
 
 int round50(int val);
 
+using PlaybackTime = int;
+
+QString ms_to_str(int ms);
+
 #endif // !TIME_TYPES_H

@@ -80,3 +80,18 @@ int round50(int val)
 {
     return (val + 25) / 50 * 50;
 }
+
+QString ms_to_str(int ms)
+{
+    int s = ms / 1000;
+    int m = s / 60;
+    int h = m / 60;
+    if (h == 0)
+    {
+        return QString("%1:%2").arg(m).arg(s % 60, 2, 10, QChar('0'));
+    }
+    else
+    {
+        return QString("%1:%2:%3").arg(h).arg(m % 60, 2, 10, QChar('0')).arg(s % 60, 2, 10, QChar('0'));
+    }
+}

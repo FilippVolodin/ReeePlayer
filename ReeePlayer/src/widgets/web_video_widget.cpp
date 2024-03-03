@@ -51,6 +51,7 @@ void WebVideoWidget::unload()
 void WebVideoWidget::play()
 {
     page()->runJavaScript("play();");
+    set_audio_track(2);
 }
 
 void WebVideoWidget::play(int start_time, int stop_time, int /*repeats*/)

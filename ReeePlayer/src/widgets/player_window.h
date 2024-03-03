@@ -19,7 +19,10 @@ class JCSettingsWidget;
 class StarWidget;
 class IClipQueue;
 class AudioTools;
+struct PlayerContext;
 struct ClipUserData;
+
+struct SubtitlesModule;
 
 using Waveform = std::vector<uint8_t>;
 
@@ -298,6 +301,9 @@ private:
 
     StarWidget* m_star_widget = nullptr;
     QAction* m_star_widget_action = nullptr;
+
+    std::unique_ptr<SubtitlesModule> m_subtitles_module;
+    std::unique_ptr<PlayerContext> m_player_context;
 };
 
 #endif // !PLAYER_WINDOW_H

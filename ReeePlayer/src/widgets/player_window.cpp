@@ -18,6 +18,9 @@
 #include <jc_settings_widget.h>
 #include <audio_tools.h>
 
+#include <subtitles_module.h>
+#include <player_types.h>
+
 struct PlaybackRateItem
 {
     float rate;
@@ -161,6 +164,10 @@ PlayerWindow::PlayerWindow(App* app, QWidget* parent)
     m_lbl_info = new QLabel(this);
     m_lbl_info->setMargin(2);
     ui.statusbar->addWidget(m_lbl_info);
+
+    m_player_context = std::make_unique<PlayerContext>();
+    m_subtitles_module = std::make_unique<SubtitlesModule>(m_app, m_player_context.get());
+    m_subtitles_module->setup(this);
 }
 
 PlayerWindow::~PlayerWindow()
@@ -559,6 +566,9 @@ void PlayerWindow::on_player_time_changed(int time)
     set_slider_value(time);
     set_time(time);
     m_ui_state->on_time_changed(time);
+
+    m_player_context->time = time;
+    m_subtitles_module->time_changed(time);
 }
 
 void PlayerWindow::on_player_playing()
@@ -821,6 +831,8 @@ void PlayerWindow::show_video()
     }
 
     startTimer(25);
+
+    m_subtitles_module->show_video(filename);
 }
 
 void PlayerWindow::show_clip(bool clip_changed)

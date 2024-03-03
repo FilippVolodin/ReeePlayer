@@ -5,6 +5,7 @@
 
 class App;
 class PlayerWindow;
+class PlayerWindowModular;
 class LibraryTree;
 class ClipModel;
 class File;
@@ -62,7 +63,7 @@ private:
     void set_state(State);
     void set_default_ui(State);
 
-    PlayerWindow* getPlayerWindow();
+    PlayerWindowModular* getPlayerWindow();
 
     QSize load_size(const QString&) const;
     void save_size(const QString&, QSize) const;
@@ -80,7 +81,7 @@ private:
     
     State m_state = State::ProjectNotLoaded;
 
-    PlayerWindow* m_player_window = nullptr;
+    PlayerWindowModular* m_player_window = nullptr;
 
     std::unique_ptr<LibraryTree> m_library_tree;
     std::unique_ptr<ClipModel> m_clips_model;

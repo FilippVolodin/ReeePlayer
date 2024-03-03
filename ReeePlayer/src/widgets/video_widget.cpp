@@ -343,6 +343,7 @@ Emitter* VideoWidget::get_emitter()
 void VideoWidget::mouseReleaseEvent(QMouseEvent *)
 {
     this->setFocus();
+    set_audio_track(1);
 }
 
 void VideoWidget::repeat()

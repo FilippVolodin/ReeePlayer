@@ -53,6 +53,8 @@ target_sources(ReeePlayer PRIVATE
     src/widgets/export_dialog.cpp
     src/widgets/clips_view.cpp
     src/widgets/star_widget.cpp
+
+	src/widgets/player_window_modular.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -70,12 +72,30 @@ target_sources(ReeePlayer PRIVATE
     src/models/srs.cpp
     src/models/audio_tools.cpp
 )
+
+target_sources(ReeePlayer PRIVATE
+	src/player_modules/subtitles/subtitles_module.cpp
+	src/player_modules/subtitles/subtitles_module_text_edit.cpp
+	src/player_modules/subtitles/subtitles_module_view.cpp
+
+	src/player_modules/video_module/video_module.cpp
+	src/player_modules/playback_control_module/playback_control_module.cpp
+)
+
+target_sources(ReeePlayer PRIVATE
+	src/presenters/playback_presenter.cpp
+)
 	
 target_include_directories(ReeePlayer PRIVATE
     3rdparty/vlc/include
     src
     src/models
     src/widgets
+    src/player_modules
+    src/player_modules/subtitles
+    src/player_modules/video_module
+    src/player_modules/playback_control_module
+    src/presenters
 )
 
 target_precompile_headers(ReeePlayer PUBLIC src/pch.h)
