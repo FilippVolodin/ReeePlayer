@@ -27,10 +27,15 @@ WebVideoWidget::~WebVideoWidget()
 {
 }
 
-void WebVideoWidget::set_file_name(const QString& file_name, bool)
+void WebVideoWidget::set_file_name(const QString& file_name, bool auto_play, int start_time)
 {
     if (m_file_name == file_name)
+    {
+        set_time(start_time);
+        if (auto_play)
+            play();
         return;
+    }
 
     m_file_name = file_name;
     m_duration = 0;
@@ -38,7 +43,9 @@ void WebVideoWidget::set_file_name(const QString& file_name, bool)
     m_last_emitted_time = 0.0;
 
     if (!file_name.isEmpty())
-        page()->runJavaScript(QString("set_source(\"file:///%1\");").arg(file_name));
+        page()->runJavaScript(
+            QString("set_source(\"file:///%1\", %2, %3);")
+            .arg(file_name).arg(auto_play).arg(start_time * 0.001));
     else
         page()->runJavaScript(QString("set_source('');"));
 }
@@ -56,6 +63,8 @@ void WebVideoWidget::play()
 
 void WebVideoWidget::play(int start_time, int stop_time, int /*repeats*/)
 {
+    qDebug("%d WebVideoWidget::play(a,b)", QDateTime::currentMSecsSinceEpoch());
+
     page()->runJavaScript(QString("seek_and_play(%1);").arg(start_time * 0.001),
         [this, stop_time](const QVariant&) {set_timer(stop_time); });
 }
@@ -92,6 +101,7 @@ bool WebVideoWidget::is_stopped() const
 
 void WebVideoWidget::set_time(int value)
 {
+    qDebug("WebVideoWidget::set_time(%d)", value);
     page()->runJavaScript(QString("set_time(%1);").arg(value * 0.001));
 }
 

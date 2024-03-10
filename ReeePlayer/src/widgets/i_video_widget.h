@@ -8,7 +8,7 @@ class IVideoWidget
 public:
     virtual ~IVideoWidget() = default;
 
-    virtual void set_file_name(const QString&, bool auto_play = false) = 0;
+    virtual void set_file_name(const QString&, bool auto_play = false, int start_time = 0) = 0;
     virtual void unload() = 0;
 
     virtual void play() = 0;

@@ -56,7 +56,7 @@
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="styleSheet">
-         <string notr="true">border : none</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>Play</string>
@@ -66,6 +66,15 @@
           <width>16</width>
           <height>16</height>
          </size>
+        </property>
+        <property name="autoExclusive">
+         <bool>false</bool>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonIconOnly</enum>
+        </property>
+        <property name="autoRaise">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -85,9 +94,6 @@
         </property>
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
         </property>
         <property name="pageStep">
          <number>60000</number>
@@ -113,6 +119,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Courier New</family>
+          <pointsize>12</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>0:00 / 0:00</string>

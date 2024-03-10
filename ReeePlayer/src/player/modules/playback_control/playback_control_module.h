@@ -2,20 +2,18 @@
 
 #include <QObject>
 #include <time_types.h>
+#include <playback_mediator.h>
 
 class QSlider;
 
 class Ui_PlayerWindow;
 
 class App;
-class PlaybackPresenter;
-
-enum class PlaybackEventSource : int;
 
 class PlaybackControlModule : public QObject
 {
 public:
-    PlaybackControlModule(App* app, PlaybackPresenter*);
+    PlaybackControlModule(App* app, PlaybackMediator*);
     void setup_player(Ui_PlayerWindow* player_window);
 protected:
     void timerEvent(QTimerEvent* event);
@@ -24,18 +22,20 @@ private:
     void slider_moved(int);
     void slider_released();
 
-    void slider_value_changed(int);
+    void act_play_pause_triggered();
 
-    void set_time(PlaybackTime, PlaybackEventSource);
+    void set_time(PlaybackTime);
     void set_length(PlaybackTime);
+    void set_state(PlayState);
 
     void update_label(PlaybackTime time);
 
     App* m_app = nullptr;
-    PlaybackPresenter* m_playback_presenter = nullptr;
+    PlaybackMediator* m_playback_mediator = nullptr;
 
     QSlider* m_slider = nullptr;
     QLabel* m_lbl_time = nullptr;
+    QAction* m_act_play_pause = nullptr;
 
     PlaybackTime m_press_slider_time = 0;
     PlaybackTime m_sent_time = 0;

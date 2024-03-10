@@ -167,7 +167,7 @@ void VideoWidget::init(libvlc_instance_t* vlc_inst)
     }
 }
 
-void VideoWidget::set_file_name(const QString& file_name, bool)
+void VideoWidget::set_file_name(const QString& file_name, bool auto_play, int start_time)
 {
     void* drawable = reinterpret_cast<unsigned __int64*>(this->winId());
     libvlc_media_player_set_hwnd(m_vlc_mp, drawable);

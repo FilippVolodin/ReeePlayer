@@ -74,16 +74,20 @@ target_sources(ReeePlayer PRIVATE
 )
 
 target_sources(ReeePlayer PRIVATE
-	src/player_modules/subtitles/subtitles_module.cpp
-	src/player_modules/subtitles/subtitles_module_text_edit.cpp
-	src/player_modules/subtitles/subtitles_module_view.cpp
+	src/player/modules/subtitles/subtitles_module.cpp
+	src/player/modules/subtitles/subtitles_module_text_edit.cpp
+	src/player/modules/subtitles/subtitles_module_view.cpp
 
-	src/player_modules/video_module/video_module.cpp
-	src/player_modules/playback_control_module/playback_control_module.cpp
+	src/player/modules/clip_module.cpp
+	src/player/modules/video/video_module.cpp
+	src/player/modules/playback_control/playback_control_module.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
-	src/presenters/playback_presenter.cpp
+	src/player/mediators/mode_mediator.cpp
+	src/player/mediators/playback_mediator.cpp
+	src/player/mediators/subtitles_mediator.cpp
+	src/player/mediators/clip_mediator.cpp
 )
 	
 target_include_directories(ReeePlayer PRIVATE
@@ -91,11 +95,11 @@ target_include_directories(ReeePlayer PRIVATE
     src
     src/models
     src/widgets
-    src/player_modules
-    src/player_modules/subtitles
-    src/player_modules/video_module
-    src/player_modules/playback_control_module
-    src/presenters
+    src/player/modules
+    src/player/modules/subtitles
+    src/player/modules/video
+    src/player/modules/playback_control
+    src/player/mediators
 )
 
 target_precompile_headers(ReeePlayer PUBLIC src/pch.h)

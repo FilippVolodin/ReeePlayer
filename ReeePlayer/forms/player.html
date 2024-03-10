@@ -87,13 +87,18 @@ function get_duration() {
     return myVid.duration;
 }
 
-function set_source(filename) {
+function set_source(filename, auto_play, start_time) {
     //myVid.pause();
     source.src = filename;
     myVid.load();
-    // myVid.addEventListener('loadeddata', function(){
-    //     myVid.play();
-    // });
+    if (auto_play)
+    {
+        myVid.currentTime = start_time;
+        myVid.play();
+        // myVid.addEventListener('loadeddata', function(){
+        // });        
+    }
+
 }
 
 function set_audio_track(track_index){

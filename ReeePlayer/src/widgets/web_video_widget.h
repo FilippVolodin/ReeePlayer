@@ -27,7 +27,7 @@ public:
     WebVideoWidget(QWidget* parent = nullptr);
     ~WebVideoWidget();
 
-    void set_file_name(const QString&, bool auto_play = false) override;
+    void set_file_name(const QString&, bool auto_play = false, int start_time = 0) override;
     void unload() override;
 
     void play() override;
