@@ -10,7 +10,9 @@
 #include <vector>
 
 class App;
+class SubtitlesList;
 struct PlaybackMediator;
+struct File;
 
 //namespace pm
 //{
@@ -28,7 +30,7 @@ namespace qsubs
 class SubtitlesModule : public QObject, public ClipUnit
 {
 public:
-    SubtitlesModule(int subs_index, App* app, ModeMediator*, PlaybackMediator*);
+    SubtitlesModule(int subs_id, App* app, SubtitlesList*, ModeMediator*, PlaybackMediator*);
 
     void setup_player(Ui_PlayerWindow* player_window);
 
@@ -37,22 +39,30 @@ public:
 private:
     void set_mode(PlayerWindowMode);
 
-    void set_file(const QString&);
+    void set_file(const File*);
     void set_time(int);
 
-    void set_subtitles(int index, const QString& filename);
+    void set_subtitles(const QString& filename);
 
     void update_cue(int time);
     void update_insert_button(int value);
 
-    int m_subs_index = -1;
+    void on_show_always_changed(bool);
+    void on_insert_clicked(int);
+    void on_subs_file_changed(int);
+
+    void save_subs_priority();
+
+    int m_subs_id = -1;
     App* m_app = nullptr;
+    SubtitlesList* m_subtitles_list;
     ModeMediator* m_mode_mediator = nullptr;
     PlaybackMediator* m_playback_mediator = nullptr;
 
     SubtitlesView* m_view = nullptr;
 
-    std::vector<QString> m_subtitle_files;
-    std::shared_ptr<const qsubs::ISubtitles> m_subtitles;
+    //std::vector<QString> m_subtitle_files;
+    //std::shared_ptr<const qsubs::ISubtitles> m_subtitles;
+    const qsubs::ISubtitles* m_subtitles = nullptr;
     const qsubs::ICue* m_current_cue;
 };

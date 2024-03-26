@@ -12,6 +12,15 @@ void ClipMediator::load(const Clip& clip)
         unit->load(clip);
 }
 
+std::unique_ptr<ClipUserData> ClipMediator::save()
+{
+    std::unique_ptr<ClipUserData> user_data = std::make_unique<ClipUserData>();
+    user_data->subtitles.resize(2);
+    for (ClipUnit* unit : m_units)
+        unit->save(*user_data.get());
+    return user_data;
+}
+
 void ClipMediator::save(ClipUserData& clip)
 {
     for (ClipUnit* unit : m_units)

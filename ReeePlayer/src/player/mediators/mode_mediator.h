@@ -1,6 +1,6 @@
 #pragma once
 
-enum class PlayerWindowMode { NotLoaded, Watching, AddingClip, WatchingClip, Repeating };
+enum class PlayerWindowMode { NotLoaded, Watching, AddingClip, WatchingClip, Repeating, Closing };
 
 class ModeMediator : public QObject
 {

@@ -188,7 +188,7 @@ void WebVideoWidget::timerEvent(QTimerEvent*)
         {
             m_time = time;
 
-            if (std::abs(m_time - m_last_emitted_time) > 500)
+            if (std::abs(m_time - m_last_emitted_time) > 100)
             {
                 emit m_emitter->time_changed(m_time);
                 m_last_emitted_time = m_time;

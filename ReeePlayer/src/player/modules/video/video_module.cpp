@@ -4,6 +4,7 @@
 #include <playback_mediator.h>
 #include <ui_player_window.h>
 #include <emitter.h>
+#include <clip_storage.h>
 
 #include <QMainWindow>
 #include <QBoxLayout>
@@ -21,6 +22,7 @@ VideoModule::VideoModule(App* app, PlaybackMediator* playback_mediator)
     connect(m_playback_mediator, &PlaybackMediator::time_changed, this, &VideoModule::set_time);
     connect(m_playback_mediator, &PlaybackMediator::trigger_time_changed, this, &VideoModule::set_trigger_time);
     connect(m_playback_mediator, &PlaybackMediator::file_changed, this, &VideoModule::set_file);
+    connect(m_playback_mediator, &PlaybackMediator::rate_changed, this, &VideoModule::set_rate);
 
     connect(m_video_widget->get_emitter(), &Emitter::time_changed, this, &VideoModule::time_changed);
     connect(m_video_widget->get_emitter(), &Emitter::length_changed, this, &VideoModule::length_changed);
@@ -89,9 +91,14 @@ void VideoModule::set_trigger_time(PlaybackTime time)
     m_video_widget->set_timer(time);
 }
 
-void VideoModule::set_file(const QString& file_path, bool auto_play, int start_time)
+void VideoModule::set_file(const File* file, bool auto_play, int start_time)
 {
-    m_video_widget->set_file_name(file_path, auto_play, start_time);
+    m_video_widget->set_file_name(file->get_path(), auto_play, start_time);
+}
+
+void VideoModule::set_rate(PlaybackRate rate)
+{
+    m_video_widget->set_rate(rate);
 }
 
 void VideoModule::time_changed(int time)

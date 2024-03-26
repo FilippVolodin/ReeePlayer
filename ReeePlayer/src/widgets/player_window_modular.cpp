@@ -5,11 +5,16 @@
 #include <playback_control_module.h>
 #include <subtitles_module.h>
 #include <clip_module.h>
+#include <vad_module.h>
 
 #include <playback_mediator.h>
 #include <clip_mediator.h>
 #include <session.h>
 #include <clip_storage.h>
+#include <subtitles_list.h>
+
+constexpr const char* PLAYER_WINDOW_GEOMETRY_KEY = "player_window_geometry";
+constexpr const char* WINDOW_STATE_KEY = "player_window_state";
 
 PlayerWindowModular::PlayerWindowModular(App* app, QWidget* parent)
     : QMainWindow(parent), m_app(app)
@@ -27,15 +32,19 @@ void PlayerWindowModular::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
     //this->setCentralWidget(centralwidget);
     //QVBoxLayout* verticalLayout = new QVBoxLayout(centralwidget);
 
+    m_subtitles_list = std::make_unique<SubtitlesList>(m_app, m_clip_queue->get_file_path());
+
     m_mode_mediator = std::make_unique<ModeMediator>();
     m_playback_mediator = std::make_unique<PlaybackMediator>();
     m_clip_mediator = std::make_unique<ClipMediator>();
     
     m_video_module = std::make_unique<VideoModule>(m_app, m_playback_mediator.get());
-    m_playback_module = std::make_unique<PlaybackControlModule>(m_app, m_playback_mediator.get());
-    m_subtitles_modules[0] = std::make_unique<SubtitlesModule>(0, m_app, m_mode_mediator.get(), m_playback_mediator.get());
-    m_subtitles_modules[1] = std::make_unique<SubtitlesModule>(1, m_app, m_mode_mediator.get(), m_playback_mediator.get());
-    m_clip_module = std::make_unique<ClipModule>(m_app, m_mode_mediator.get(), m_playback_mediator.get());
+    m_playback_module = std::make_unique<PlaybackControlModule>(m_app, m_clip_queue.get(), m_mode_mediator.get(), m_playback_mediator.get());
+    m_subtitles_modules[0] = std::make_unique<SubtitlesModule>(0, m_app, m_subtitles_list.get(), m_mode_mediator.get(), m_playback_mediator.get());
+    m_subtitles_modules[1] = std::make_unique<SubtitlesModule>(1, m_app, m_subtitles_list.get(), m_mode_mediator.get(), m_playback_mediator.get());
+    m_clip_module = std::make_unique<ClipModule>(m_app, m_subtitles_list.get(), m_clip_queue.get(),
+        m_mode_mediator.get(), m_playback_mediator.get(), m_clip_mediator.get());
+    m_vad_module = std::make_unique<VADModule>(m_app, m_mode_mediator.get(), m_playback_mediator.get());
 
     m_clip_mediator->add_unit(m_subtitles_modules[0].get());
     m_clip_mediator->add_unit(m_subtitles_modules[1].get());
@@ -46,26 +55,15 @@ void PlayerWindowModular::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
     m_subtitles_modules[0]->setup_player(&ui);
     m_subtitles_modules[1]->setup_player(&ui);
     m_clip_module->setup_player(&ui);
+    m_vad_module->setup_player(&ui);
 
-    connect(m_mode_mediator.get(), &ModeMediator::mode_changed,
-        this, &PlayerWindowModular::set_mode);
-
-    ui.toolBar->addAction(ui.actAddClip);
-    connect(ui.actAddClip, &QAction::triggered,
-        this, &PlayerWindowModular::add_new_clip_activated);
-
-    ui.toolBar->addAction(ui.actSaveClip);
-    connect(ui.actSaveClip, &QAction::triggered,
-        this, &PlayerWindowModular::save_new_clip_activated);
-
-    ui.toolBar->addAction(ui.actCancelClip);
-    connect(ui.actCancelClip, &QAction::triggered,
-        this, &PlayerWindowModular::cancel_new_clip_activated);
+    m_playback_mediator->set_rewinder(m_subtitles_list.get());
 
     if (m_mode == Mode::Watching)
     {
         m_mode_mediator->set_mode(PlayerWindowMode::Watching);
-        m_playback_mediator->set_file(m_clip_queue->get_file_path());
+        m_playback_mediator->set_file(m_clip_queue->get_current_file());
+        // m_playback_mediator->set_time(0);
         m_playback_mediator->set_state(PlayState::Playing);
     }
     else if (m_mode == Mode::WatchingClip)
@@ -73,14 +71,25 @@ void PlayerWindowModular::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
         m_mode_mediator->set_mode(PlayerWindowMode::WatchingClip);
 
         const Clip* clip = m_clip_queue->get_clip();
-        const ClipUserData* data = clip->get_user_data();
+
+        // const ClipUserData* data = clip->get_user_data();
+        m_playback_mediator->set_file(m_clip_queue->get_current_file());
+        m_clip_mediator->load(*clip);
         //if (clip)
         //    m_playback_mediator->play(clip->get_user_data()->begin, clip->get_user_data()->end);
-        m_playback_mediator->set_file(m_clip_queue->get_file_path());
-        m_playback_mediator->set_time(clip->get_user_data()->begin);
-        m_playback_mediator->set_state(PlayState::Playing);
+        //m_playback_mediator->set_time(clip->get_user_data()->begin);
+        //m_playback_mediator->set_state(PlayState::Playing);
 
         // m_playback_mediator->set_file(m_clip_queue->get_file_path(), true, clip->get_user_data()->begin);
+    }
+    else if (m_mode == Mode::Repeating)
+    {
+        m_mode_mediator->set_mode(PlayerWindowMode::Repeating);
+        const Clip* clip = m_clip_queue->get_clip();
+
+        // const ClipUserData* data = clip->get_user_data();
+        m_playback_mediator->set_file(m_clip_queue->get_current_file());
+        m_clip_mediator->load(*clip);
     }
     show();
 }
@@ -92,49 +101,19 @@ void PlayerWindowModular::showEvent(QShowEvent* event)
     if (m_showed)
         return;
     m_showed = true;
+
+    QByteArray s = m_app->get_setting("gui", WINDOW_STATE_KEY).toByteArray();
+    QByteArray g = m_app->get_setting("gui", PLAYER_WINDOW_GEOMETRY_KEY).toByteArray();
+    restoreState(s);
+    restoreGeometry(g);
 }
 
-void PlayerWindowModular::set_mode(PlayerWindowMode mode)
+void PlayerWindowModular::closeEvent(QCloseEvent* event)
 {
-    if (mode == PlayerWindowMode::Watching)
-    {
-        ui.actAddClip->setVisible(true);
-        ui.actSaveClip->setVisible(false);
-        ui.actCancelClip->setVisible(false);
-    }
-    else if (mode == PlayerWindowMode::AddingClip)
-    {
-        ui.actAddClip->setVisible(false);
-        ui.actSaveClip->setVisible(true);
-        ui.actCancelClip->setVisible(true);
-    }
-    else
-    {
-        ui.actAddClip->setVisible(false);
-        ui.actSaveClip->setVisible(false);
-        ui.actCancelClip->setVisible(false);
-    }
-}
+    m_mode_mediator->set_mode(PlayerWindowMode::Closing);
 
-void PlayerWindowModular::add_new_clip_activated()
-{
-    m_mode_mediator->set_mode(PlayerWindowMode::AddingClip);
-}
+    m_app->set_setting("gui", WINDOW_STATE_KEY, saveState());
+    m_app->set_setting("gui", PLAYER_WINDOW_GEOMETRY_KEY, saveGeometry());
 
-void PlayerWindowModular::save_new_clip_activated()
-{
-    // m_clip_queue->set_clip_user_data(get_clip_user_data());
-    std::unique_ptr<ClipUserData> user_data = std::make_unique<ClipUserData>();
-    user_data->subtitles.resize(2);
-    m_clip_mediator->save(*user_data.get());
-    m_clip_queue->set_clip_user_data(std::move(user_data));
-    m_clip_queue->set_removed(ui.actRemoveClip->isChecked());
-    m_clip_queue->save_library();
-
-    m_mode_mediator->set_mode(PlayerWindowMode::Watching);
-}
-
-void PlayerWindowModular::cancel_new_clip_activated()
-{
-    m_mode_mediator->set_mode(PlayerWindowMode::Watching);
+    QWidget::closeEvent(event);
 }

@@ -832,7 +832,7 @@ namespace qsubs::webvtt
     const ICue* Subtitles::pick_cue(Timestamp time, bool check_end_time) const
     {
         auto comp = [](const ICue* cue, int time) -> bool {
-            return cue->get_start_time() < time;
+            return cue->get_start_time() <= time;
         };
 
         auto it = std::lower_bound(m_cues.begin(), m_cues.end(), time, comp);

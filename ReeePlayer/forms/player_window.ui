@@ -38,6 +38,9 @@
     </property>
     <item>
      <layout class="QHBoxLayout" name="playbackLayout">
+      <property name="spacing">
+       <number>9</number>
+      </property>
       <property name="leftMargin">
        <number>3</number>
       </property>
@@ -63,8 +66,8 @@
         </property>
         <property name="iconSize">
          <size>
-          <width>16</width>
-          <height>16</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="autoExclusive">
@@ -75,6 +78,19 @@
         </property>
         <property name="autoRaise">
          <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="btnReplayClip">
+        <property name="text">
+         <string>Replay</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
         </property>
        </widget>
       </item>
@@ -133,6 +149,27 @@
          <number>3</number>
         </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="ratesLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="pushButton_2">
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>PushButton</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
@@ -454,6 +491,24 @@
    </property>
    <property name="shortcut">
     <string>F5</string>
+   </property>
+  </action>
+  <action name="actReplayClip">
+   <property name="icon">
+    <iconset resource="mainwindow.qrc">
+     <normaloff>:/MainWindow/replay</normaloff>:/MainWindow/replay</iconset>
+   </property>
+   <property name="text">
+    <string>Replay Clip</string>
+   </property>
+   <property name="toolTip">
+    <string>Replay Clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
    </property>
   </action>
  </widget>

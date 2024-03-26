@@ -17,7 +17,9 @@ class ClipMediator
 public:
     void add_unit(ClipUnit*);
     void load(const Clip& clip);
+    std::unique_ptr<ClipUserData> save();
     void save(ClipUserData& clip);
+
 private:
     std::vector<ClipUnit*> m_units;
 };

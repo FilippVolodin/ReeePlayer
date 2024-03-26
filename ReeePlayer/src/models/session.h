@@ -49,6 +49,7 @@ public:
     virtual void set_clip_user_data(std::unique_ptr<ClipUserData>) = 0;
     virtual void set_removed(bool) = 0;
 
+    virtual const File* get_current_file() const = 0;
     virtual const QString get_file_path() const = 0;
     virtual const FileUserData* get_file_user_data() const = 0;
     virtual void set_file_user_data(std::unique_ptr<FileUserData>) = 0;
@@ -78,6 +79,7 @@ public:
 
     void set_removed(bool) override;
 
+    const File* get_current_file() const;
     const QString get_file_path() const override;
     const FileUserData* get_file_user_data() const override;
     void set_file_user_data(std::unique_ptr<FileUserData>) override;
@@ -101,7 +103,6 @@ protected:
     const Clip* get_current_clip() const;
     void set_current_clip(Clip*);
 
-    virtual const File* get_current_file() const;
     virtual File* get_current_file();
 
     TodayClipStat* get_today_clip_stat();
@@ -166,9 +167,9 @@ class AddingClipsQueue : public BaseClipQueue
 public:
     AddingClipsQueue(Library*, File*, const srs::IFactory*);
 
+    const File* get_current_file() const override;
     void set_clip_user_data(std::unique_ptr<ClipUserData>) override;
 protected:
-    const File* get_current_file() const override;
     File* get_current_file() override;
 private:
     const srs::IFactory* m_srs_factory;

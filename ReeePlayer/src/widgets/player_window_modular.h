@@ -12,10 +12,13 @@ class VideoModule;
 class PlaybackControlModule;
 class SubtitlesModule;
 class ClipModule;
+class VADModule;
 
 class PlaybackMediator;
 class ModeMediator;
 class ClipMediator;
+
+class SubtitlesList;
 
 class IClipQueue;
 
@@ -27,15 +30,9 @@ public:
 
 protected:
     void showEvent(QShowEvent* event);
+    void closeEvent(QCloseEvent* event);
 
 private:
-
-    void set_mode(PlayerWindowMode);
-
-    void add_new_clip_activated();
-    void save_new_clip_activated();
-    void cancel_new_clip_activated();
-
     bool m_showed = false;
     App* m_app;
     std::shared_ptr<IClipQueue> m_clip_queue;
@@ -45,10 +42,13 @@ private:
     std::unique_ptr<PlaybackControlModule> m_playback_module;
     std::array<std::unique_ptr<SubtitlesModule>, 2> m_subtitles_modules;
     std::unique_ptr<ClipModule> m_clip_module;
+    std::unique_ptr<VADModule> m_vad_module;
 
     std::unique_ptr<ModeMediator> m_mode_mediator;
     std::unique_ptr<PlaybackMediator> m_playback_mediator;
     std::unique_ptr<ClipMediator> m_clip_mediator;
+
+    std::unique_ptr<SubtitlesList> m_subtitles_list;
 
     Ui::PlayerWindow ui;
 };

@@ -8,6 +8,7 @@ class QMainWindow;
 class App;
 class IVideoWidget;
 class PlaybackMediator;
+class File;
 
 class Ui_PlayerWindow;
 
@@ -23,7 +24,8 @@ private:
     void play(PlaybackTime, PlaybackTime);
     void set_time(PlaybackTime);
     void set_trigger_time(PlaybackTime);
-    void set_file(const QString&, bool auto_play = false, int start_time = 0);
+    void set_file(const File*, bool auto_play = false, int start_time = 0);
+    void set_rate(PlaybackRate);
 
     // Signals from player
     void time_changed(int time);

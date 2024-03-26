@@ -13,6 +13,7 @@ QString get_interval_str(Duration);
 int round50(int val);
 
 using PlaybackTime = int;
+using PlaybackTimeDiff = int;
 
 QString ms_to_str(int ms);
 

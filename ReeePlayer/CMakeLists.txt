@@ -71,6 +71,7 @@ target_sources(ReeePlayer PRIVATE
     src/models/srs_fsrs.cpp
     src/models/srs.cpp
     src/models/audio_tools.cpp
+    src/models/subtitles_list.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
@@ -81,6 +82,7 @@ target_sources(ReeePlayer PRIVATE
 	src/player/modules/clip_module.cpp
 	src/player/modules/video/video_module.cpp
 	src/player/modules/playback_control/playback_control_module.cpp
+	src/player/modules/vad_module.cpp
 )
 
 target_sources(ReeePlayer PRIVATE
