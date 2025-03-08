@@ -8,7 +8,7 @@
 class App;
 class ClipModel;
 class LibraryItem;
-class PlayerWindow;
+class PlayerWindowModular;
 
 class SearchDialog : public QDialog
 {
@@ -30,7 +30,7 @@ private:
     void search(const QString& text);
     void export_clips(const std::vector<Clip*>&);
     std::vector<Clip*> get_selected_clips() const;
-    PlayerWindow* get_player_window();
+    PlayerWindowModular* get_player_window();
 
     Ui::SearchDialog ui;
 

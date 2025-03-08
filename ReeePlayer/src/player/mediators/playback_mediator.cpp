@@ -4,6 +4,12 @@
 #include <seeker.h>
 #include <clip_storage.h>
 
+void PlaybackMediator::set_precision_time_producer(
+    const PrecisionTimeProducer* precision_time_producer)
+{
+    m_precision_time_producer = precision_time_producer;
+}
+
 void PlaybackMediator::set_rewinder(const Rewinder* rewinder)
 {
     m_rewinder = rewinder;
@@ -41,13 +47,25 @@ void PlaybackMediator::play(PlaybackTime a, PlaybackTime b)
     //emit trigger_time_changed(b);
     //set_time(a);
     //set_state(PlayState::Playing);
-    emit played(a, b);
+
+    set_time(a);
+    set_trigger_time(b, TimerAction::Pause);
+    set_state(PlayState::Playing);
+
+    // emit played(a, b);
 }
 
-void PlaybackMediator::set_trigger_time(PlaybackTime time)
+void PlaybackMediator::set_trigger_time(PlaybackTime time, TimerAction timer_action)
 {
+    m_timer_action = timer_action;
     if (m_trigger_time != time)
         emit trigger_time_changed(time);
+}
+
+void PlaybackMediator::timer_triggered(PlaybackTime)
+{
+    if (m_timer_action == TimerAction::Pause)
+        set_state(PlayState::Paused);
 }
 
 void PlaybackMediator::rewind(PlaybackTimeDiff diff)
@@ -61,17 +79,17 @@ void PlaybackMediator::rewind(PlaybackTimeDiff diff)
 
 PlaybackRate PlaybackMediator::get_rate() const
 {
-    return m_rate;
+    return m_overridden_rate ? m_overridden_rate.value() : m_default_rate;
 }
 
-void PlaybackMediator::set_rate(PlaybackRate rate)
-{
-    if (m_rate != rate)
-    {
-        m_rate = rate;
-        emit rate_changed(m_default_rate);
-    }
-}
+//void PlaybackMediator::set_rate(PlaybackRate rate)
+//{
+//    if (m_rate != rate)
+//    {
+//        m_rate = rate;
+//        emit rate_changed(m_default_rate);
+//    }
+//}
 
 PlaybackRate PlaybackMediator::get_default_rate() const
 {
@@ -80,11 +98,35 @@ PlaybackRate PlaybackMediator::get_default_rate() const
 
 void PlaybackMediator::set_default_rate(PlaybackRate default_rate)
 {
+    PlaybackRate old_rate = get_rate();
     if (m_default_rate != default_rate)
     {
         m_default_rate = default_rate;
         emit default_rate_changed(m_default_rate);
     }
+    if (old_rate != get_rate())
+        emit rate_changed(get_rate());
+}
+
+std::optional<PlaybackRate> PlaybackMediator::get_overridden_rate() const
+{
+    return m_overridden_rate;
+}
+
+void PlaybackMediator::set_overridden_rate(std::optional<PlaybackRate> overridden_rate)
+{
+    PlaybackRate old_rate = get_rate();
+    m_overridden_rate = overridden_rate;
+    if (old_rate != get_rate())
+        emit rate_changed(get_rate());
+}
+
+int PlaybackMediator::get_precision_time() const
+{
+    if (m_precision_time_producer)
+        return m_precision_time_producer->get_precision_time();
+    else
+        return m_time;
 }
 
 void PlaybackMediator::update_rate()
@@ -96,7 +138,7 @@ void PlaybackMediator::update_rate()
     //    if (overridden_rate)
     //        rate = overridden_rate->value();
     //}
-    set_rate(rate);
+    // set_rate(rate);
 }
 
 PlaybackTime PlaybackMediator::get_time() const
@@ -111,7 +153,7 @@ void PlaybackMediator::set_time(PlaybackTime time)
         m_time = time;
         emit time_changed(time);
 
-        update_rate();
+        // update_rate();
     }
 }
 

@@ -155,14 +155,23 @@ VADPtr AudioTools::get_vad() const
 
 void AudioTools::request()
 {
+    if (m_requested)
+    {
+        if (m_waveform)
+            emit waveform_is_ready(m_waveform);
+        if (m_vad)
+            emit vad_is_ready(m_vad);
+        return;
+    }
+    m_requested = true;
     QString hash = filepath_hash(m_media_file);
 
     QString cache_dir = fetch_cache_dir();
 
     QFileInfo vol_fileinfo(cache_dir, hash + ".vol");
     m_vol_file = vol_fileinfo.absoluteFilePath();
-    WaveformPtr waveform = load_waveform(m_vol_file);
-    m_vol_loaded = waveform != nullptr;
+    m_waveform = load_waveform(m_vol_file);
+    m_vol_loaded = m_waveform != nullptr;
 
     QFileInfo vad_fileinfo(cache_dir, hash + ".vad");
     QString vad_file = vad_fileinfo.absoluteFilePath();
@@ -172,7 +181,7 @@ void AudioTools::request()
     bool ready = m_vol_loaded && m_vad_loaded;
 
     if (m_vol_loaded)
-        emit waveform_is_ready(waveform);
+        emit waveform_is_ready(m_waveform);
 
     if (m_vad_loaded)
     {
@@ -212,6 +221,7 @@ void AudioTools::create_wav_finished()
             {
                 WaveformPtr waveform = m_waveform_watcher->result();
                 save_waveform(m_vol_file, *waveform);
+                m_vol_loaded = true;
                 emit waveform_is_ready(waveform);
             });
 
@@ -224,6 +234,7 @@ void AudioTools::create_wav_finished()
     {
         m_vad_data->extract(m_wav_file);
         m_vad = std::make_shared<VAD>(std::move(m_vad_data));
+        m_vad_loaded = true;
         emit vad_is_ready(m_vad);
     }
 }

@@ -65,6 +65,11 @@ void VideoModule::setup_player(Ui_PlayerWindow* player_window)
     }
 }
 
+int VideoModule::get_precision_time() const
+{
+    return m_video_widget->get_time();
+}
+
 void VideoModule::set_state(PlayState ps)
 {
     if (ps == PlayState::Playing)
@@ -127,7 +132,9 @@ void VideoModule::stopped()
     m_playback_mediator->set_state(PlayState::Stopped);
 }
 
-void VideoModule::timer_triggered()
+void VideoModule::timer_triggered(PlaybackTime time)
 {
-    m_playback_mediator->set_state(PlayState::Paused);
+    m_video_time = time;
+    m_playback_mediator->set_time(time);
+    m_playback_mediator->timer_triggered(time);
 }

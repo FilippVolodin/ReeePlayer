@@ -109,7 +109,7 @@ void PlaybackControlModule::setup_playback_rates(Ui_PlayerWindow* pw)
         // b->setMaximumWidth(fm.horizontalAdvance(item.text) + 10);
         b->setMaximumWidth(30);
         b->setFocusPolicy(Qt::NoFocus);
-        b->setStyleSheet("QPushButton:checked {font: bold 14px;}");
+        b->setStyleSheet("QPushButton { font: 14px; }");
         m_rate_btn_group->addButton(b);
         m_rate_btn_group->setId(b, id);
         pw->ratesLayout->addWidget(b);
@@ -118,9 +118,9 @@ void PlaybackControlModule::setup_playback_rates(Ui_PlayerWindow* pw)
             [b](bool checked)
             {
                 if (checked)
-                    b->setStyleSheet("font: bold 14px; background-color: red;");
+                    b->setStyleSheet("QPushButton { font: 14px; background-color: #47BA00; }");
                 else
-                    b->setStyleSheet(QString());
+                    b->setStyleSheet("QPushButton { font: 14px; }");
             });
 
         QShortcut* shortcut = new QShortcut(item.key, pw->centralwidget);

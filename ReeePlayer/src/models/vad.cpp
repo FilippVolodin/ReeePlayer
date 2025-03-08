@@ -303,6 +303,7 @@ bool VADData::extract(const QString& wav_file)
         return false;
 
     connect(m_server.get(), &QTcpServer::newConnection, this, &VADData::new_conn);
+
     const int first_chunk = m_vad_data.size();
 
     QStringList args;
@@ -315,6 +316,7 @@ bool VADData::extract(const QString& wav_file)
 
     m_vad_process->start("pyutils/vad.exe", args);
     return m_vad_process->waitForStarted(10000);
+    return true;
 }
 
 void VADData::stop()

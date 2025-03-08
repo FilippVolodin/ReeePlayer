@@ -156,7 +156,7 @@ void WaveformView::paintEvent(QPaintEvent *)
     {
         int x = global_x + x0;
         int ch = (double)x / width() * ch_time_window;
-        if (ch < 0 || ch + 2 >= (*m_waveform).size())
+        if (ch < 0 || ch + 3 >= (*m_waveform).size())
             continue;
 
         uint8_t max = *std::max(begin(*m_waveform) + ch, begin(*m_waveform) + ch + 3);

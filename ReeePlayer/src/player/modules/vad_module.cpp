@@ -9,19 +9,38 @@
 
 #include <ui_player_window.h>
 
-VADModule::VADModule(App* app, ModeMediator* mode_mediator, PlaybackMediator* playback_mediator)
-    : m_app(app), m_mode_mediator(mode_mediator), m_playback_mediator(playback_mediator)
+VADModule::VADModule(App* app, AudioTools* audio_tools,
+    ModeMediator* mode_mediator, PlaybackMediator* playback_mediator)
+    : m_app(app), m_audio_tools(audio_tools), m_mode_mediator(mode_mediator), m_playback_mediator(playback_mediator)
 {
+    if (mode_mediator->get_mode() == PlayerWindowMode::WatchingClip ||
+        mode_mediator->get_mode() == PlayerWindowMode::Repeating)
+        return;
+
+    load_jc_settings();
+
     connect(m_mode_mediator, &ModeMediator::mode_changed, this, &VADModule::set_mode);
 
     connect(m_playback_mediator, &PlaybackMediator::file_changed, this, &VADModule::set_file);
+    connect(m_playback_mediator, &PlaybackMediator::time_changed, this, &VADModule::set_time);
+
+    connect(m_audio_tools, &AudioTools::waveform_is_ready,
+        [this](WaveformPtr waveform)
+        {
+            m_waveform = waveform;
+        });
+
+    connect(m_audio_tools, &AudioTools::vad_is_ready,
+        [this](VADPtr vad)
+        {
+            m_vad = vad;
+            m_vad->apply_settings(get_vad_settings());
+        });
 }
 
 void VADModule::setup_player(Ui_PlayerWindow* pw)
 {
     m_pw = pw;
-
-    load_jc_settings();
     //if (m_vad)
     //{
     bool jc_enabled = m_app->get_setting("jumpcutter", "activated", true).toBool();
@@ -40,16 +59,50 @@ void VADModule::setup_player(Ui_PlayerWindow* pw)
             m_jc_settings = m_jc_settings_widget->get_settings();
             if (m_vad)
                 m_vad->apply_settings(get_vad_settings());
+
+            if (!m_jc_settings->is_activated())
+            {
+                m_playback_mediator->set_overridden_rate(std::nullopt);
+                // TODO volume
+            }
         });
     pw->dockJC->setWidget(m_jc_settings_widget);
 
     bool show_vad_setting = m_app->get_setting("gui", "show_vad_settings", true).toBool();
     pw->dockJC->setVisible(show_vad_setting);
     pw->dockJC->widget()->setEnabled(false);
+
+    connect(m_audio_tools, &AudioTools::waveform_is_ready,
+        [this](WaveformPtr waveform)
+        {
+            m_pw->waveform->set_waveform(m_waveform.get());
+            update_waveform_ui();
+        });
+
+    connect(m_audio_tools, &AudioTools::vad_is_ready,
+        [this](VADPtr vad)
+        {
+            m_pw->dockJC->widget()->setEnabled(true);
+            m_pw->waveform->set_vad(m_vad.get());
+        });
+    m_audio_tools->request();
+
+    startTimer(10);
+}
+
+void VADModule::timerEvent(QTimerEvent* event)
+{
+    if (m_waveform && m_playback_mediator->get_state() == PlayState::Playing)
+    {
+        int time = m_playback_mediator->get_precision_time();
+        m_pw->waveform->set_time(time);
+        m_pw->waveform->repaint();
+    }
 }
 
 void VADModule::set_mode(PlayerWindowMode mode)
 {
+    m_pw->waveform->setVisible(mode == PlayerWindowMode::Watching);
     if (mode == PlayerWindowMode::Closing)
     {
         save_jc_settings();
@@ -60,26 +113,53 @@ void VADModule::set_file(const File* file)
 {
     if (m_mode_mediator->is_film_mode())
     {
-        m_audio_tools = std::make_unique<AudioTools>(file->get_path());
-        connect(m_audio_tools.get(), &AudioTools::waveform_is_ready,
-            [this](WaveformPtr waveform)
-            {
-                m_waveform = waveform;
-                m_pw->waveform->set_waveform(m_waveform.get());
-                update_waveform_ui();
-            });
+        // m_audio_tools = std::make_unique<AudioTools>(file->get_path());
 
-        connect(m_audio_tools.get(), &AudioTools::vad_is_ready,
-            [this](VADPtr vad)
-            {
-                m_vad = vad;
-                m_vad->apply_settings(get_vad_settings());
+    }
+}
 
-                m_pw->dockJC->widget()->setEnabled(true);
+void VADModule::set_time(PlaybackTime time)
+{
+    if (m_mode_mediator->get_mode() != PlayerWindowMode::Watching)
+        return;
 
-                m_pw->waveform->set_vad(m_vad.get());
-            });
-        m_audio_tools->request();
+    if (!m_vad || !m_jc_settings || !m_jc_settings->is_activated())
+        return;
+
+    bool current_interval_is_loud = m_vad->is_voice(time);
+    int next_interval = m_vad->next_interval(time);
+
+    if (next_interval - time < 300)
+        return;
+
+    if (m_jc_settings->is_non_voice_skipping())
+    {
+        m_playback_mediator->set_overridden_rate(std::nullopt);
+        // m_video_widget->set_volume(100);
+        if (current_interval_is_loud)
+        {
+            // TODO
+            m_playback_mediator->set_trigger_time(next_interval, TimerAction::DoNothing);
+        }
+        else
+        {
+            m_playback_mediator->set_time(next_interval);
+        }
+    }
+    else
+    {
+        // TODO
+        m_playback_mediator->set_trigger_time(next_interval, TimerAction::DoNothing);
+        if (current_interval_is_loud)
+        {
+            m_playback_mediator->set_overridden_rate(std::nullopt);
+            // m_video_widget->set_volume(100);
+        }
+        else
+        {
+            m_playback_mediator->set_overridden_rate(m_jc_settings->get_non_voice_speed());
+            // m_video_widget->set_volume(m_jc_settings->get_non_voice_volume());
+        }
     }
 }
 

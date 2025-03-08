@@ -12,12 +12,15 @@ class File;
 
 class Ui_PlayerWindow;
 
-class VideoModule : public QObject
+class VideoModule : public QObject, public PrecisionTimeProducer
 {
 public:
     VideoModule(App* app, PlaybackMediator*);
     ~VideoModule();
     void setup_player(Ui_PlayerWindow*);
+
+    int get_precision_time() const override;
+
 private:
     // Signals from mediator
     void set_state(PlayState);
@@ -33,7 +36,7 @@ private:
     void playing();
     void paused();
     void stopped();
-    void timer_triggered();
+    void timer_triggered(PlaybackTime);
 
     App* m_app;
     PlaybackMediator* m_playback_mediator;

@@ -233,7 +233,7 @@ void ClipModule::on_save_new_clip()
     m_clip_queue->set_clip_user_data(m_clip_mediator->save());
     m_clip_queue->save_library();
 
-    m_playback_mediator->set_trigger_time(-1);
+    m_playback_mediator->set_trigger_time(0, TimerAction::DoNothing);
     m_playback_mediator->set_time(m_edt_loop_a->value());
     m_playback_mediator->set_state(PlayState::Playing);
 
@@ -242,7 +242,7 @@ void ClipModule::on_save_new_clip()
 
 void ClipModule::on_cancel_new_clip()
 {
-    m_playback_mediator->set_trigger_time(-1);
+    m_playback_mediator->set_trigger_time(0, TimerAction::DoNothing);
     m_playback_mediator->set_state(PlayState::Playing);
     m_mode_mediator->set_mode(PlayerWindowMode::Watching);
 }

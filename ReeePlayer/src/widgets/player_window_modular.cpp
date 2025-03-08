@@ -12,6 +12,7 @@
 #include <session.h>
 #include <clip_storage.h>
 #include <subtitles_list.h>
+#include <audio_tools.h>
 
 constexpr const char* PLAYER_WINDOW_GEOMETRY_KEY = "player_window_geometry";
 constexpr const char* WINDOW_STATE_KEY = "player_window_state";
@@ -33,6 +34,7 @@ void PlayerWindowModular::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
     //QVBoxLayout* verticalLayout = new QVBoxLayout(centralwidget);
 
     m_subtitles_list = std::make_unique<SubtitlesList>(m_app, m_clip_queue->get_file_path());
+    m_audio_tools = std::make_unique<AudioTools>(m_clip_queue->get_file_path());
 
     m_mode_mediator = std::make_unique<ModeMediator>();
     m_playback_mediator = std::make_unique<PlaybackMediator>();
@@ -44,7 +46,7 @@ void PlayerWindowModular::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
     m_subtitles_modules[1] = std::make_unique<SubtitlesModule>(1, m_app, m_subtitles_list.get(), m_mode_mediator.get(), m_playback_mediator.get());
     m_clip_module = std::make_unique<ClipModule>(m_app, m_subtitles_list.get(), m_clip_queue.get(),
         m_mode_mediator.get(), m_playback_mediator.get(), m_clip_mediator.get());
-    m_vad_module = std::make_unique<VADModule>(m_app, m_mode_mediator.get(), m_playback_mediator.get());
+    m_vad_module = std::make_unique<VADModule>(m_app, m_audio_tools.get(), m_mode_mediator.get(), m_playback_mediator.get());
 
     m_clip_mediator->add_unit(m_subtitles_modules[0].get());
     m_clip_mediator->add_unit(m_subtitles_modules[1].get());
@@ -58,6 +60,7 @@ void PlayerWindowModular::run(Mode mode, std::shared_ptr<IClipQueue> clip_queue)
     m_vad_module->setup_player(&ui);
 
     m_playback_mediator->set_rewinder(m_subtitles_list.get());
+    m_playback_mediator->set_precision_time_producer(m_video_module.get());
 
     if (m_mode == Mode::Watching)
     {
@@ -104,8 +107,8 @@ void PlayerWindowModular::showEvent(QShowEvent* event)
 
     QByteArray s = m_app->get_setting("gui", WINDOW_STATE_KEY).toByteArray();
     QByteArray g = m_app->get_setting("gui", PLAYER_WINDOW_GEOMETRY_KEY).toByteArray();
-    restoreState(s);
     restoreGeometry(g);
+    restoreState(s);
 }
 
 void PlayerWindowModular::closeEvent(QCloseEvent* event)

@@ -19,6 +19,7 @@ class ModeMediator;
 class ClipMediator;
 
 class SubtitlesList;
+class AudioTools;
 
 class IClipQueue;
 
@@ -49,6 +50,7 @@ private:
     std::unique_ptr<ClipMediator> m_clip_mediator;
 
     std::unique_ptr<SubtitlesList> m_subtitles_list;
+    std::unique_ptr<AudioTools> m_audio_tools;
 
     Ui::PlayerWindow ui;
 };

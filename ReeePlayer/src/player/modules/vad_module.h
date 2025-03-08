@@ -19,13 +19,15 @@ class Ui_PlayerWindow;
 class VADModule : public QObject
 {
 public:
-    VADModule(App* app, ModeMediator*, PlaybackMediator*);
+    VADModule(App* app, AudioTools*, ModeMediator*, PlaybackMediator*);
     void setup_player(Ui_PlayerWindow* player_window);
-
+protected:
+    void timerEvent(QTimerEvent* event) override;
 private:
     void set_mode(PlayerWindowMode);
 
     void set_file(const File*);
+    void set_time(PlaybackTime);
 
     void load_jc_settings();
     void save_jc_settings();
@@ -38,7 +40,7 @@ private:
 
     Ui_PlayerWindow* m_pw = nullptr;
 
-    std::unique_ptr<AudioTools> m_audio_tools;
+    AudioTools* m_audio_tools;
     std::shared_ptr<Waveform> m_waveform;
     std::shared_ptr<VAD> m_vad;
     std::shared_ptr<JumpCutterSettings> m_jc_settings;

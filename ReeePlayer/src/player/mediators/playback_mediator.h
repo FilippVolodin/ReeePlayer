@@ -8,8 +8,15 @@ class Seeker;
 class File;
 
 enum class PlayState { Playing, Paused, Stopped };
+enum class TimerAction { DoNothing, Pause };
 
 using PlaybackRate = float;
+
+class PrecisionTimeProducer
+{
+public:
+    virtual int get_precision_time() const = 0;
+};
 
 class PlaybackMediator : public QObject
 {
@@ -26,6 +33,7 @@ signals:
     void default_rate_changed(PlaybackRate);
 
 public:
+    void set_precision_time_producer(const PrecisionTimeProducer*);
     void set_rewinder(const Rewinder*);
     void set_seeker(const Seeker*);
 
@@ -43,18 +51,23 @@ public:
 
     void play(PlaybackTime a, PlaybackTime b);
 
-    void set_trigger_time(PlaybackTime);
+    void set_trigger_time(PlaybackTime, TimerAction);
+    void timer_triggered(PlaybackTime);
 
     void rewind(PlaybackTimeDiff);
 
     PlaybackRate get_rate() const;
     PlaybackRate get_default_rate() const;
     void set_default_rate(PlaybackRate);
+    std::optional<PlaybackRate> get_overridden_rate() const;
+    void set_overridden_rate(std::optional<PlaybackRate>);
 
+    int get_precision_time() const;
 private:
-    void set_rate(PlaybackRate);
+    // void set_rate(PlaybackRate);
     void update_rate();
 
+    const PrecisionTimeProducer* m_precision_time_producer = nullptr;
     const Rewinder* m_rewinder = nullptr;
     const Seeker* m_seeker = nullptr;
 
@@ -63,8 +76,10 @@ private:
     PlaybackTime m_trigger_time = 0;
     PlaybackTime m_length = 0;
     PlayState m_state = PlayState::Stopped;
-    PlaybackRate m_rate = 0.0f;
+    // PlaybackRate m_rate = 0.0f;
     PlaybackRate m_default_rate = 0.0f;
+    std::optional<PlaybackRate> m_overridden_rate = 0.0f;
 
     std::chrono::time_point<std::chrono::system_clock> m_last_set_user_time;
+    TimerAction m_timer_action = TimerAction::DoNothing;
 };

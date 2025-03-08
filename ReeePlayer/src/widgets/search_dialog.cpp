@@ -4,7 +4,7 @@
 #include "models/library.h"
 #include "models/session.h"
 #include "clips_view_model.h"
-#include "player_window.h"
+#include "player_window_modular.h"
 #include "export_dialog.h"
 #include "clips_view.h"
 
@@ -308,9 +308,9 @@ std::vector<Clip*> SearchDialog::get_selected_clips() const
     return clips;
 }
 
-PlayerWindow* SearchDialog::get_player_window()
+PlayerWindowModular* SearchDialog::get_player_window()
 {
-    PlayerWindow* player_window = new PlayerWindow(m_app, this);
+    PlayerWindowModular* player_window = new PlayerWindowModular(m_app);
     player_window->setAttribute(Qt::WA_DeleteOnClose);
     player_window->setWindowModality(Qt::ApplicationModal);
     return player_window;

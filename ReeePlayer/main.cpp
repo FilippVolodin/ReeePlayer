@@ -3,6 +3,8 @@
 #include "widgets/mainwindow.h"
 #include "models/jumpcutter.h"
 
+#include <QStyleHints>
+
 int main(int argc, char *argv[])
 {
     char ARG_DISABLE_WEB_SECURITY[] = "--disable-web-security";
@@ -20,6 +22,7 @@ int main(int argc, char *argv[])
 
     QApplication a(newArgc, newArgv);
     a.setStyle("Fusion");
+    QStyleHints* sh = a.styleHints();
 
     App app;
 

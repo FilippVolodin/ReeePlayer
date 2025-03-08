@@ -32,6 +32,7 @@ private:
 
     QString m_media_file;
 
+    bool m_requested = false;
     bool m_vol_loaded = false;
     bool m_vad_loaded = false;
     QString m_wav_file;

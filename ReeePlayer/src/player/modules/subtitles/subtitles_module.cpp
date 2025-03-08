@@ -10,6 +10,11 @@
 
 #include <QDockWidget>
 
+namespace
+{
+    constexpr const char* SHOW_SUBTITLES_KEY = "show_subtitles_%1_%2";
+}
+
 SubtitlesModule::SubtitlesModule(int subs_id, App* app, SubtitlesList* subtitles_list, ModeMediator* mode_mediator, PlaybackMediator* playback_mediator) :
     m_subs_id(subs_id),
     m_app(app),
@@ -127,6 +132,10 @@ void SubtitlesModule::set_mode(PlayerWindowMode mode)
         m_view->set_show_offset_buttons(true);
         m_view->set_editable(false);
         m_view->set_show_insert_buttons(false);
+
+        QVariant v = m_app->get_setting("gui",
+            QString(SHOW_SUBTITLES_KEY).arg(m_subs_id).arg("watching"));
+        m_view->set_show_always(v.isNull() ? true : v.toBool());
     }
     else if (mode == PlayerWindowMode::AddingClip)
     {
@@ -134,10 +143,24 @@ void SubtitlesModule::set_mode(PlayerWindowMode mode)
         m_view->set_show_offset_buttons(false);
         m_view->set_editable(true);
         m_view->set_show_insert_buttons(true);
+        if (m_subs_id == 0)
+            m_view->set_show_always(true);
 
         m_view->reset_insert_counters();
         update_insert_button(-1);
         update_insert_button(1);
+    }
+    else if (mode == PlayerWindowMode::WatchingClip)
+    {
+        QVariant v = m_app->get_setting("gui",
+            QString(SHOW_SUBTITLES_KEY).arg(m_subs_id).arg("watching_clip"));
+        m_view->set_show_always(v.isNull() ? true : v.toBool());
+    }
+    else if (mode == PlayerWindowMode::Repeating)
+    {
+        QVariant v = m_app->get_setting("gui",
+            QString(SHOW_SUBTITLES_KEY).arg(m_subs_id).arg("repeating"));
+        m_view->set_show_always(v.isNull() ? true : v.toBool());
     }
 }
 
